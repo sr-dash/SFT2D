@@ -46,7 +46,7 @@ include-package-data = true
 # Write the version to a file inside your package
 write_to = "sft2d/_version.py"
 version_scheme = "post-release"
-local_scheme = "dirty-tag"
+local_scheme = "no-local-version"
 fallback_version = "0.0.1"
 
 [tool.setuptools.packages.find]
