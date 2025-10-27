@@ -1,5 +1,7 @@
 ### Surface Flux Transport (SFT) model
 
+[![DOI](https://zenodo.org/badge/1084494967.svg)](https://doi.org/10.5281/zenodo.17459135)
+
 Magnetic flux evolution on the solar/stellar surface is governed primarily by the large scale flows and flux cancellation.
 It can be modelled by solving the magnetic induction in two dimension.
 For a sun-like star where spherical geometry suits best to study the global surface flux distribution,
