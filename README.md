@@ -82,4 +82,4 @@ The datafile of compiled sunspot properties can be downloaded from [here](sunspo
 #### Stay tuned for further updates. Contact us to collaborate on any of the to-do lists.
 
 Contact: Soumyaranjan Dash
-Email: dashs@hawaii.edu
+Email: sdash@nso.edu
