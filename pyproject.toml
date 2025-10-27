@@ -40,7 +40,6 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["sft2d"]
 include-package-data = true
 
 [tool.setuptools_scm]
@@ -51,7 +50,7 @@ local_scheme = "dirty-tag"
 fallback_version = "0.0.1"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["sft2d"]
 
 [tool.black]
 line-length = 88
