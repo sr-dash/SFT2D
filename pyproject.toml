@@ -1,11 +1,65 @@
 [build-system]
-requires = ["setuptools", "wheel", "versioneer"]
+requires = [
+  "setuptools>=61",
+  "wheel",
+  "setuptools_scm[toml]>=8"
+]
 build-backend = "setuptools.build_meta"
 
-[tool.versioneer]
-VCS = "git"
-style = "pep440"
-versionfile_source = "sft2d/_version.py"
-versionfile_build = "sft2d/_version.py"
-tag_prefix = "v"  # Change this to match your Git tag prefix (e.g., "v1.0.0")
-parentdir_prefix = "sft2d"  # Adjust if necessary
+[project]
+name = "sft2d"
+description = "2D Surface Flux Transport (SFT) simulation and analysis package."
+readme = "README.md"
+authors = [
+  { name = "Soumyaranjan Dash", email = "dash.soumya922@gmail.com" }
+]
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.22",
+  "scipy>=1.8",
+  "matplotlib>=3.7",
+  "h5py>=3.8",
+]
+# SCM handles version automatically
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/sr-dash/SFT2D"
+Repository = "https://github.com/sr-dash/SFT2D"
+Issues = "https://github.com/sr-dash/SFT2D/issues"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "build",
+  "twine",
+  "black",
+  "isort",
+  "ruff",
+]
+
+[tool.setuptools]
+packages = ["sft2d"]
+include-package-data = true
+
+[tool.setuptools_scm]
+# Write the version to a file inside your package
+write_to = "sft2d/_version.py"
+version_scheme = "post-release"
+local_scheme = "dirty-tag"
+fallback_version = "0.0.1"
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
+

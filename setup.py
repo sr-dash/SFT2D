@@ -1,10 +1,8 @@
 from setuptools import setup, find_packages
-import versioneer
+#import versioneer
 
 setup(
     name="sft2d",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
     description="A modular Python package for simulating solar surface flux transport.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

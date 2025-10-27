@@ -2,3 +2,6 @@ __pycache__
 *.pyc
 *.pyo
 sft2d.egg-info
+dist/
+build/
+*.egg-info/

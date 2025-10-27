@@ -35,5 +35,9 @@ __all__ = [
     "plot_mag"
 ]
 
-from . import _version
-__version__ = _version.get_versions()['version']
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("sft2d")
+except PackageNotFoundError:
+    __version__ = "0.0.0"
