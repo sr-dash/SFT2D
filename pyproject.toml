@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools", "wheel", "versioneer"]
+build-backend = "setuptools.build_meta"
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "sft2d/_version.py"
+versionfile_build = "sft2d/_version.py"
+tag_prefix = "v"  # Change this to match your Git tag prefix (e.g., "v1.0.0")
+parentdir_prefix = "sft2d"  # Adjust if necessary

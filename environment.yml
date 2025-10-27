@@ -1,0 +1,11 @@
+    name: sft2d  # Name for conda environment
+    channels:
+        - conda-forge  # Optional: Use conda-forge channel for wider package selection
+    dependencies:
+        - python>=3.8  # Specify Python version
+        - numpy
+        - astropy
+        - matplotlib
+        - scipy
+        - tqdm
+        - versioneer  # Optional: For version control
