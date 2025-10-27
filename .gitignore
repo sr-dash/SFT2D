@@ -5,3 +5,4 @@ sft2d.egg-info
 dist/
 build/
 *.egg-info/
+.DS_Store
