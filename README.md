@@ -24,7 +24,7 @@ The module is packaged to be installed with `pip`. It is recomended to create a 
    If you want to join us for development do let us know.
 
    ```
-   git clone https://github.com/sr-dash/sft2d.git
+   git clone https://github.com/sr-dash/SFT2D.git
    ```
 
 2. Create a new `conda` enviornment specific for `sft2d` package with
@@ -37,7 +37,7 @@ The module is packaged to be installed with `pip`. It is recomended to create a 
 3. Install the package with the following command.
 
    ```
-   git+https://<TOKEN>@github.com/sr-dash/sft2d.git sft2d
+   pip install git+https://github.com/sr-dash/SFT2D.git sft2d
    ```
 
    Since this is a private repository, you will need to access it with a personalized github token. You can create your own personalized token in your account developper settings.
