@@ -1,12 +1,4 @@
 __pycache__
 *.pyc
 *.pyo
-test_package_sft2d.ipynb
 sft2d.egg-info
-tilt_sn.txt
-RGO_BMRs
-RGO_Sunspots/
-test_data/
-ens_sft2d.ipynb
-sft_cessi.f90
-SC_Calibrated/

@@ -1,0 +1,13 @@
+details
+
+Observed polar flux from Andres's data
+PolarN_obs.dat
+PolarS_obs.dat
+
+SFT simulated polar flux
+PolarN15-24_sft.dat
+PolarS15_24_sft.dat
+
+SFT prediction (standard/mean run): declining phase of cycle 24
+PolarN_pred.dat
+PolarS_pred.dat
