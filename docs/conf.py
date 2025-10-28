@@ -6,7 +6,7 @@ import sys
 # -- Path setup --------------------------------------------------------------
 
 # Add project source directory to sys.path for autodoc
-sys.path.insert(0, os.path.abspath("../sft2d/src"))  # Adjust if docs/ is one level below root
+sys.path.insert(0, os.path.abspath("../sft2d"))  # Adjust if docs/ is one level below root
 
 # -- Project information -----------------------------------------------------
 
