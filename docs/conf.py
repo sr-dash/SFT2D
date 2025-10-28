@@ -5,6 +5,7 @@ from pathlib import Path
 
 # Add repo root to PYTHONPATH so autodoc can find sft2d
 sys.path.insert(0, str(Path(__file__).parents[1].resolve()))
+## Updated here.
 
 # -- Project information -----------------------------------------------------
 project = 'SFT Simulation 2D and Analysis'

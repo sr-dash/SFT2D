@@ -48,7 +48,7 @@ jobs:
             ${{ runner.os }}-sphinx-
 
       - name: Build Sphinx docs
-        run: sphinx-build -b html . docs/_build
+        run: sphinx-build -b html -c docs docs docs/_build
         env:
           PYTHONPATH: ${{ github.workspace }}
 
