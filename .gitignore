@@ -8,3 +8,5 @@ build/
 .DS_Store
 docs/**/.ipynb_checkpoints/
 test_package_sft2d.ipynb
+.ipynb_checkpoints
+sft2d/src/.ipynb_checkpoints
