@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'docs/**'
+      - '**/*.py'   # Also rebuild if Python scripts change
 
 permissions:
   contents: write
@@ -11,29 +12,32 @@ permissions:
 jobs:
   docs:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y pandoc
-          pip install --upgrade sphinx sphinx_rtd_theme myst_parser nbsphinx pypandoc ipykernel sphinx-autodoc-typehints
+      - name: Install system dependencies
+        run: sudo apt update && sudo apt install -y pandoc
 
-      - name: Build Sphinx documentation
+      - name: Install Python dependencies
         run: |
-          sphinx-build -b html docs docs/_build
+          pip install --upgrade pip
+          pip install sphinx sphinx_rtd_theme myst_parser nbsphinx pypandoc ipykernel sphinx-autodoc-typehints
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Build Sphinx docs
+        working-directory: docs
+        run: sphinx-build -b html . _build
 
       - name: Deploy to GitHub Pages
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
