@@ -26,7 +26,7 @@ into the heliosphere etc. Surface flux transport model solves the radial compone
 on the solar surface by using prescribed flow profiles, flux cencellation process and source terms. This code suite provides
 a numerical model of SFT developed in PYTHON.
 
-Link to the GitHub repository: `https://sr-dash.github.io/sft2d/ <https://sr-dash.github.io/sft2d/>`_.
+Link to the GitHub repository: `https://sr-dash.github.io/SFT2D/ <https://sr-dash.github.io/SFT2D/>`_.
 
 .. note::
    The code is under active development and is not yet ready for production use. 
