@@ -5,8 +5,7 @@ import sys
 
 # -- Path setup --------------------------------------------------------------
 # Add the repo root so 'sft2d' is importable
-sys.path.insert(0, os.path.abspath(".."))
-# Updated here 
+sys.path.insert(0, os.path.abspath("..")) 
 
 # -- Project information -----------------------------------------------------
 project = 'SFT Simulation 2D and Analysis'

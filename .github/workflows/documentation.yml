@@ -1,10 +1,12 @@
-name: Sphinx Doc
+name: Sphinx Documentation
 
 on:
   push:
     paths:
       - 'docs/**'
-      - '**/*.py'   # Also rebuild if Python scripts change
+      - 'sft2d/**'
+      - 'setup.py'
+      - 'pyproject.toml'
 
 permissions:
   contents: write
@@ -13,31 +15,58 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
+      # Checkout repository
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # Setup Python
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
+      # Cache pip packages
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt','setup.py','pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # Cache Sphinx build output
+      - name: Cache Sphinx _build
+        uses: actions/cache@v3
+        with:
+          path: docs/_build
+          key: ${{ runner.os }}-sphinx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-sphinx-
+
+      # Install system dependencies
       - name: Install system dependencies
-        run: sudo apt update && sudo apt install -y pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
 
+      # Install Python dependencies
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme myst_parser nbsphinx pypandoc ipykernel sphinx-autodoc-typehints
 
-      - name: Install package
+      # Install your package in editable mode
+      - name: Install sft2d package
+        working-directory: .
         run: pip install -e .
 
-      - name: Build Sphinx docs
+      # Build Sphinx docs
+      - name: Build Sphinx documentation
         working-directory: docs
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: sphinx-build -b html . _build
 
+      # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
