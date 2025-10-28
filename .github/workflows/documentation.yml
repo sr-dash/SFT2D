@@ -1,12 +1,10 @@
-name: Sphinx Documentation
+name: Sphinx Docs
 
 on:
   push:
     paths:
       - 'docs/**'
-      - 'sft2d/**'
-      - 'setup.py'
-      - 'pyproject.toml'
+      - 'sft2d/**'  # rebuild docs if code changes
 
 permissions:
   contents: write
@@ -14,40 +12,48 @@ permissions:
 jobs:
   docs:
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout repository
       - uses: actions/checkout@v4
 
-      # Setup Python
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: 3.11
 
-      # Install system dependencies
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y pandoc
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-      # Install Python dependencies
-      - name: Install Python dependencies
+      - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
           pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme myst_parser nbsphinx pypandoc ipykernel sphinx-autodoc-typehints
 
-      # Install your package in editable mode
       - name: Install sft2d package
-        working-directory: .
-        run: pip install git+https://github.com/sr-dash/SFT2D.git sft2d
+        run: pip install -e .
 
-      # Build Sphinx docs
-      - name: Build Sphinx documentation
-        working-directory: docs
+      - name: Cache Sphinx _build
+        uses: actions/cache@v3
+        with:
+          path: docs/_build
+          key: ${{ runner.os }}-sphinx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-sphinx-
+
+      - name: Build Sphinx docs
+        run: sphinx-build -b html docs docs/_build
         env:
           PYTHONPATH: ${{ github.workspace }}
-        run: sphinx-build -b html . _build
 
-      # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           publish_branch: gh-pages
