@@ -1,11 +1,10 @@
 # Configuration file for the Sphinx documentation builder.
 
-import os
 import sys
+from pathlib import Path
 
-# -- Path setup --------------------------------------------------------------
-# Add the repo root so 'sft2d' is importable
-sys.path.insert(0, os.path.abspath(".."))
+# Add repo root to PYTHONPATH so autodoc can find sft2d
+sys.path.insert(0, str(Path(__file__).parents[1].resolve()))
 
 # -- Project information -----------------------------------------------------
 project = 'SFT Simulation 2D and Analysis'

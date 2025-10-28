@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'docs/**'
-      - 'sft2d/**'  # rebuild docs if code changes
+      - 'sft2d/**'
 
 permissions:
   contents: write
@@ -48,7 +48,7 @@ jobs:
             ${{ runner.os }}-sphinx-
 
       - name: Build Sphinx docs
-        run: sphinx-build -b html docs docs/_build
+        run: sphinx-build -b html . docs/_build
         env:
           PYTHONPATH: ${{ github.workspace }}
 
