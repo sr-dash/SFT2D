@@ -23,24 +23,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Cache pip packages
-      - name: Cache pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt','setup.py','pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      # Cache Sphinx build output
-      - name: Cache Sphinx _build
-        uses: actions/cache@v3
-        with:
-          path: docs/_build
-          key: ${{ runner.os }}-sphinx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-sphinx-
-
       # Install system dependencies
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y pandoc
