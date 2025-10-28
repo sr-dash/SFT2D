@@ -10,7 +10,6 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # Optional: confirm in the build logs
 print("sys.path =", sys.path[:3])
-## Updated here.
 
 # -- Project information -----------------------------------------------------
 
