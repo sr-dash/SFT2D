@@ -42,6 +42,7 @@ Link to the GitHub repository: `https://sr-dash.github.io/sft2d/ <https://sr-das
    notebooks/example-run.ipynb
    examples/test_package_sft2d
    sft2d-theory.md
+   api_reference
 
 ..
    some-feature.md
