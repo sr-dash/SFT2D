@@ -1,10 +1,12 @@
-name: Sphinx Docs
+name: Sphinx Documentation
 
 on:
   push:
     paths:
       - 'docs/**'
       - 'sft2d/**'
+      - 'setup.py'
+      - 'requirements.txt'
 
 permissions:
   contents: write
@@ -12,15 +14,18 @@ permissions:
 jobs:
   docs:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      # Step 2: Set up Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
+      # Step 3: Cache pip packages
       - name: Cache pip
         uses: actions/cache@v3
         with:
@@ -29,17 +34,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      # Step 4: Install dependencies
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y pandoc
-          pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
           pip install sphinx sphinx_rtd_theme myst_parser nbsphinx pypandoc ipykernel sphinx-autodoc-typehints
 
-      - name: Install sft2d package
+      # Step 5: Install your package in editable mode
+      - name: Install SFT2D package
         run: pip install -e .
 
-      - name: Cache Sphinx _build
+      # Step 6: Pre-check SFT2D import
+      - name: Check SFT2D import
+        run: |
+          python -c "import sft2d; print('sft2d import successful')"
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      # Step 7: Cache Sphinx build directory
+      - name: Cache Sphinx build
         uses: actions/cache@v3
         with:
           path: docs/_build
@@ -47,13 +61,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sphinx-
 
+      # Step 8: Build Sphinx documentation
       - name: Build Sphinx docs
         run: sphinx-build -b html -c docs docs docs/_build
         env:
           PYTHONPATH: ${{ github.workspace }}
 
+      # Step 9: Deploy to GitHub Pages (optional)
       - name: Deploy to GitHub Pages
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           publish_branch: gh-pages
