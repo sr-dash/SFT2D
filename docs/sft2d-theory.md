@@ -225,7 +225,7 @@ This is the **mathematical representation of the BMR source term** used in surfa
 
 ---
 
-## 10. Summary
+### 10. Summary
 
 - Represents **idealized BMR emergence** on the solar surface.  
 - Incorporates **Joy’s law tilt** and **Hale’s law polarity orientation**.  
