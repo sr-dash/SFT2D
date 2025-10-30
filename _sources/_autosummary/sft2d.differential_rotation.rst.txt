@@ -1,0 +1,6 @@
+﻿sft2d.differential\_rotation
+============================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: differential_rotation

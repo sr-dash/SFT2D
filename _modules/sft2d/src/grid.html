@@ -1,0 +1,173 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.src.grid &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/test_package_sft2d.html">Surface flux transport (SFT) simulation Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theoretical background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.src.grid</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.src.grid</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">grid.py</span>
+
+<span class="sd">This module handles the creation and management of the uniform grid used in the Solar Surface Flux Transport (SFT) model.</span>
+
+<span class="sd">Functions:</span>
+<span class="sd">    - create_grid: Generates a uniform grid in spherical polar coordinates (theta, phi).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<div class="viewcode-block" id="create_grid">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.create_grid.html#sft2d.create_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_grid</span><span class="p">(</span><span class="n">n_theta</span><span class="p">,</span> <span class="n">n_phi</span><span class="p">,</span> <span class="n">exclude_poles</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a uniform grid in spherical polar coordinates (theta, phi).</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        n_theta (int): Number of grid points in the theta (co-latitude) direction.</span>
+<span class="sd">        n_phi (int): Number of grid points in the phi (longitude) direction.</span>
+<span class="sd">        exclude_poles (bool): Whether to exclude 5 degrees near the poles. Default is True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary containing:</span>
+<span class="sd">            - &#39;theta&#39;: Array of theta values (in radians).</span>
+<span class="sd">            - &#39;phi&#39;: Array of phi values (in radians).</span>
+<span class="sd">            - &#39;dtheta&#39;: Spacing in the theta direction (in radians).</span>
+<span class="sd">            - &#39;dphi&#39;: Spacing in the phi direction (in radians).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Define the theta (co-latitude) range</span>
+    <span class="k">if</span> <span class="n">exclude_poles</span><span class="p">:</span>
+        <span class="n">theta_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># 5 degrees from the pole</span>
+        <span class="n">theta_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mi">175</span><span class="p">)</span>  <span class="c1"># 5 degrees from the other pole</span>
+        <span class="n">delta_theta_coarse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">n_theta</span>
+        <span class="n">delta_phi</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">n_phi</span>
+        <span class="n">leave_out</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">delta_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="mi">0</span> <span class="o">+</span> <span class="p">(</span><span class="n">delta_theta_coarse</span> <span class="o">*</span> <span class="n">leave_out</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="p">(</span><span class="n">delta_theta_coarse</span> <span class="o">*</span> <span class="n">leave_out</span><span class="p">)))</span> <span class="o">/</span> <span class="n">n_theta</span>
+
+        <span class="c1"># Create latitude and longitude grids</span>
+        <span class="n">colatitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">leave_out</span> <span class="o">*</span> <span class="n">delta_theta_coarse</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">leave_out</span> <span class="o">*</span> <span class="n">delta_theta_coarse</span><span class="p">,</span> <span class="n">n_theta</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># latitude =  colatitude - 0.5 * np.pi</span>
+        <span class="n">longitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_phi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">theta_min</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># Include poles</span>
+        <span class="n">theta_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="c1"># Define the phi (longitude) range</span>
+        <span class="n">phi_min</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">phi_max</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="c1"># Create the theta and phi grids</span>
+        <span class="n">colatitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">theta_min</span><span class="p">,</span> <span class="n">theta_max</span><span class="p">,</span> <span class="n">n_theta</span><span class="p">)</span>
+        <span class="n">longitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">phi_min</span><span class="p">,</span> <span class="n">phi_max</span><span class="p">,</span> <span class="n">n_phi</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Calculate grid spacings</span>
+        <span class="n">delta_theta</span> <span class="o">=</span> <span class="p">(</span><span class="n">theta_max</span> <span class="o">-</span> <span class="n">theta_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_theta</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">delta_phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">phi_max</span> <span class="o">-</span> <span class="n">phi_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">n_phi</span>
+
+    <span class="c1"># Return the grid information as a dictionary</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;colatitude&#39;</span><span class="p">:</span> <span class="n">colatitude</span><span class="p">,</span>
+        <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="n">longitude</span><span class="p">,</span>
+        <span class="s1">&#39;dtheta&#39;</span><span class="p">:</span> <span class="n">delta_theta</span><span class="p">,</span>
+        <span class="s1">&#39;dphi&#39;</span><span class="p">:</span> <span class="n">delta_phi</span>
+    <span class="p">}</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

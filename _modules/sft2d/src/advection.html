@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.src.advection &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/test_package_sft2d.html">Surface flux transport (SFT) simulation Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theoretical background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.src.advection</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.src.advection</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">advection.py</span>
+
+<span class="sd">This module handles the advection terms in the Solar Surface Flux Transport (SFT) model.</span>
+<span class="sd">It computes the advection of the magnetic field due to differential rotation and meridional flow.</span>
+
+<span class="sd">Functions:</span>
+<span class="sd">    - calculate_advection: Computes the advection term for the SFT model.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<div class="viewcode-block" id="calculate_advection">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.calculate_advection.html#sft2d.calculate_advection">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_advection</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">differential_rotation</span><span class="p">,</span> <span class="n">meridional_flow</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the advection of the magnetic field due to differential rotation and meridional flow.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        field (np.ndarray): The magnetic field on the grid (2D array).</span>
+<span class="sd">        differential_rotation (np.ndarray): Angular velocity profile (1D array).</span>
+<span class="sd">        meridional_flow (np.ndarray): Meridional flow profile (1D array).</span>
+<span class="sd">        grid (dict): Dictionary containing grid information (&#39;theta&#39;, &#39;phi&#39;, and their spacings).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Updated magnetic field after applying advection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
+    <span class="n">dtheta</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s1">&#39;dtheta&#39;</span><span class="p">]</span>
+    <span class="n">dphi</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s1">&#39;dphi&#39;</span><span class="p">]</span>
+
+    <span class="n">Colatitude</span><span class="p">,</span> <span class="n">Longitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span><span class="n">phi</span><span class="p">,</span><span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">solar_radius</span> <span class="o">=</span> <span class="mf">6.955</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span>  <span class="c1"># Solar radius in meters</span>
+    
+    <span class="c1"># Compute staggered velocities</span>
+    <span class="n">u_theta</span> <span class="o">=</span> <span class="n">meridional_flow</span>
+
+    <span class="c1"># Create an array to store the updated field</span>
+    <span class="n">updated_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># field.copy()</span>
+
+    <span class="c1"># Calculate advection terms</span>
+    <span class="c1"># Upwind discretization for adv_theta_term</span>
+    <span class="n">adv_theta_term</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">updated_field</span><span class="p">)</span>
+
+    <span class="c1"># For positive v_theta (upwind from lower latitudes)</span>
+    <span class="n">positive_v_theta</span> <span class="o">=</span> <span class="n">u_theta</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">adv_theta_term</span><span class="p">[</span><span class="n">positive_v_theta</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">u_theta</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_v_theta</span><span class="p">]</span> <span class="o">*</span> <span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_v_theta</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Colatitude</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_v_theta</span><span class="p">])</span>
+        <span class="o">-</span> <span class="n">u_theta</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_v_theta</span><span class="p">]</span> <span class="o">*</span> <span class="n">field</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_v_theta</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Colatitude</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_v_theta</span><span class="p">]))</span>
+        <span class="o">/</span> <span class="p">(</span><span class="n">solar_radius</span> <span class="o">*</span> <span class="n">dtheta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Colatitude</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_v_theta</span><span class="p">]))</span>
+    <span class="p">)</span>
+
+    <span class="c1"># For negative v_theta (upwind from higher latitudes)</span>
+    <span class="n">negative_v_theta</span> <span class="o">=</span> <span class="n">u_theta</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="n">adv_theta_term</span><span class="p">[</span><span class="n">negative_v_theta</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">u_theta</span><span class="p">[</span><span class="mi">2</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_v_theta</span><span class="p">]</span> <span class="o">*</span> <span class="n">field</span><span class="p">[</span><span class="mi">2</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_v_theta</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Colatitude</span><span class="p">[</span><span class="mi">2</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_v_theta</span><span class="p">])</span>
+        <span class="o">-</span> <span class="n">u_theta</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_v_theta</span><span class="p">]</span> <span class="o">*</span> <span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_v_theta</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Colatitude</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_v_theta</span><span class="p">]))</span>
+        <span class="o">/</span> <span class="p">(</span><span class="n">solar_radius</span> <span class="o">*</span> <span class="n">dtheta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">Colatitude</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_v_theta</span><span class="p">]))</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Upwind discretization for adv_phi_term</span>
+    <span class="n">adv_phi_term</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">updated_field</span><span class="p">)</span>
+
+    <span class="c1"># For positive omega (upwind from left)</span>
+    <span class="n">positive_omega</span> <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">adv_phi_term</span><span class="p">[</span><span class="n">positive_omega</span><span class="p">]</span> <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_omega</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">positive_omega</span><span class="p">]</span> <span class="o">-</span> <span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="n">positive_omega</span><span class="p">])</span> <span class="o">/</span> <span class="n">dphi</span>
+    <span class="p">)</span>
+
+    <span class="c1"># For negative omega (upwind from right)</span>
+    <span class="n">negative_omega</span> <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="n">adv_phi_term</span><span class="p">[</span><span class="n">negative_omega</span><span class="p">]</span> <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_omega</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:][</span><span class="n">negative_omega</span><span class="p">]</span> <span class="o">-</span> <span class="n">field</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">negative_omega</span><span class="p">])</span> <span class="o">/</span> <span class="n">dphi</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Update field based on advection</span>
+    <span class="n">updated_field</span> <span class="o">=</span> <span class="n">adv_theta_term</span> <span class="o">+</span> <span class="n">adv_phi_term</span>
+
+    <span class="k">return</span> <span class="n">updated_field</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

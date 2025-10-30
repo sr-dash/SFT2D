@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theoretical background &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/logosft2d.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api_reference.html" />
+    <link rel="prev" title="Surface flux transport (SFT) simulation Notebook" href="examples/test_package_sft2d.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/test_package_sft2d.html">Surface flux transport (SFT) simulation Notebook</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Theoretical background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#magnetic-field-evolution-on-the-solar-surface">Magnetic field evolution on the solar surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bipolar-magnetic-region-bmr-flux-injection-theoretical-explanation">Bipolar Magnetic Region (BMR) Flux Injection — Theoretical Explanation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mesh-and-area-elements">1. Mesh and Area Elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#convert-center-location">2. Convert Center Location</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-tangent-basis">3. Local Tangent Basis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tilt-and-separation">4. Tilt and Separation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#convert-to-spherical-coordinates">5. Convert to Spherical Coordinates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#polarity-signs-hales-law">6. Polarity Signs (Hale’s Law)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gaussian-field-distribution">7. Gaussian Field Distribution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flux-normalization">8. Flux Normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#final-equation">9. Final Equation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary">10. Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Theoretical background</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/sft2d-theory.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="theoretical-background">
+<h1>Theoretical background<a class="headerlink" href="#theoretical-background" title="Link to this heading"></a></h1>
+<section id="magnetic-field-evolution-on-the-solar-surface">
+<h2>Magnetic field evolution on the solar surface<a class="headerlink" href="#magnetic-field-evolution-on-the-solar-surface" title="Link to this heading"></a></h2>
+<p>The surface flux transport (SFT) model, which solves the radial
+component of the magnetic field on the solar/stellar surface, has demonstrated
+remarkable effectiveness in simulating the dynamics of the large-scale
+magnetic field on the solar photosphere. The governing equation can be written
+as,</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial B_r}{\partial t}
++ \frac{1}{R_\odot \sin\theta}
+  \frac{\partial}{\partial \theta}
+  \!\left( \sin\theta\, u_\theta B_r \right)
++ \Omega(\theta)
+  \frac{\partial B_r}{\partial \phi}
+=
+\frac{\eta}{R_\odot^2 \sin\theta}
+  \frac{\partial}{\partial \theta}
+  \!\left( \sin\theta\, \frac{\partial B_r}{\partial \theta} \right)
++ \frac{\eta}{R_\odot^2 \sin^2\theta}
+  \frac{\partial^2 B_r}{\partial \phi^2}
++ S.\]</div>
+<p>where <span class="math notranslate nohighlight">\(\eta\)</span> is the magnetic diffusivity, <span class="math notranslate nohighlight">\(\Omega (s)\)</span>
+is the angular velocity in east-west direction on a uniform latitude grid,
+<span class="math notranslate nohighlight">\(u_\theta\)</span> is the flow profile along north-south direction on a
+latitude grid and <span class="math notranslate nohighlight">\(\phi\)</span> is the longitude. The velocity profiles
+involved in transporting the magnetic flux on the photosphere is a
+function of latitude only. The flux from newly emerging sun/star spots are coupled to the model via an ad-hoc source term <span class="math notranslate nohighlight">\(S\)</span>.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="_images/flows.png"><img alt="Meridional flow profile" src="_images/flows.png" style="width: 70%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Example meridional flow profile.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="bipolar-magnetic-region-bmr-flux-injection-theoretical-explanation">
+<h2>Bipolar Magnetic Region (BMR) Flux Injection — Theoretical Explanation<a class="headerlink" href="#bipolar-magnetic-region-bmr-flux-injection-theoretical-explanation" title="Link to this heading"></a></h2>
+<p>Here is how we model the <strong>bipolar magnetic region (BMR) source term</strong> in our SFT simulation.<br />
+It describes how a pair of magnetic polarities (leading and following) is injected on the solar/stellar surface, following <strong>Joy’s law</strong> tilt and <strong>Hale’s polarity law</strong>.<br />
+The resulting field is a <strong>normalized radial magnetic field distribution</strong> representing the emergence of one BMR with a specified total flux and geometric configuration.</p>
+<hr class="docutils" />
+<section id="mesh-and-area-elements">
+<h3>1. Mesh and Area Elements<a class="headerlink" href="#mesh-and-area-elements" title="Link to this heading"></a></h3>
+<p>The surface of the Sun is represented using a <strong>spherical grid</strong>:</p>
+<div class="math notranslate nohighlight">
+\[\theta \in [0, \pi], \quad \phi \in [0, 2\pi)\]</div>
+<p>The <strong>surface element</strong> on a sphere of radius ( R_\odot ) is:</p>
+<div class="math notranslate nohighlight">
+\[dA = R_\odot^2 \sin\theta \, d\theta \, d\phi\]</div>
+<p>This is used to compute total flux over the spherical surface.</p>
+</section>
+<hr class="docutils" />
+<section id="convert-center-location">
+<h3>2. Convert Center Location<a class="headerlink" href="#convert-center-location" title="Link to this heading"></a></h3>
+<p>The central location of the bipole in latitude <span class="math notranslate nohighlight">\(\lambda\)</span> and longitude <span class="math notranslate nohighlight">\(\phi\)</span> is converted to <strong>colatitude</strong>:</p>
+<div class="math notranslate nohighlight">
+\[\theta_0 = \frac{\pi}{2} - \lambda, \quad \phi_0 = \phi \mod 2\pi\]</div>
+<p>The corresponding unit vector on the sphere is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{r}_0 =
+\begin{bmatrix}
+\cos\lambda \cos\phi \\
+\cos\lambda \sin\phi \\
+\sin\lambda
+\end{bmatrix}\end{split}\]</div>
+</section>
+<hr class="docutils" />
+<section id="local-tangent-basis">
+<h3>3. Local Tangent Basis<a class="headerlink" href="#local-tangent-basis" title="Link to this heading"></a></h3>
+<p>At the emergence center, a <strong>local tangent plane</strong> is defined using orthonormal vectors:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\mathbf{e}_\phi = 
+\begin{bmatrix} -\sin\phi \\ \cos\phi \\ 0 \end{bmatrix} , \quad
+\mathbf{e}_\theta =
+\begin{bmatrix} -\sin\lambda \cos\phi \\ -\sin\lambda \sin\phi \\ \cos\lambda \end{bmatrix} , \quad
+\mathbf{e}_\lambda = - \mathbf{e}_\theta\end{split}\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\mathbf{e}_\phi\)</span> → eastward direction</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathbf{e}_\lambda\)</span> → northward direction</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="tilt-and-separation">
+<h3>4. Tilt and Separation<a class="headerlink" href="#tilt-and-separation" title="Link to this heading"></a></h3>
+<p>The <strong>tilt angle</strong> <span class="math notranslate nohighlight">\(\alpha\)</span> defines the orientation of the bipole line relative to the local east-west direction:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{s} = \cos\alpha \, \mathbf{e}_\phi + \sin\alpha \, \mathbf{e}_\lambda\]</div>
+<p>The <strong>leading</strong> and <strong>following polarity centers</strong> are positioned symmetrically along the separation vector:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{r}_\text{lead} = \mathbf{r}_0 + \frac{\Delta}{2} \mathbf{s}, \quad
+\mathbf{r}_\text{foll} = \mathbf{r}_0 - \frac{\Delta}{2} \mathbf{s}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Delta\)</span> is the angular separation (in radians).</p>
+</section>
+<hr class="docutils" />
+<section id="convert-to-spherical-coordinates">
+<h3>5. Convert to Spherical Coordinates<a class="headerlink" href="#convert-to-spherical-coordinates" title="Link to this heading"></a></h3>
+<p>The 3D vectors are converted back to spherical coordinates:</p>
+<div class="math notranslate nohighlight">
+\[\theta = \arccos\left(\frac{z}{|\mathbf{r}|}\right), \quad
+\phi = \arctan2(y, x) \mod 2\pi\]</div>
+</section>
+<hr class="docutils" />
+<section id="polarity-signs-hales-law">
+<h3>6. Polarity Signs (Hale’s Law)<a class="headerlink" href="#polarity-signs-hales-law" title="Link to this heading"></a></h3>
+<p>The polarity signs are determined according to hemisphere:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}(\text{sign}_\text{lead}, \text{sign}_\text{foll}) =
+\begin{cases}
+(+1, -1), &amp; \lambda &gt; 0 \text{ (northern hemisphere)} \\
+(-1, +1), &amp; \lambda &lt; 0 \text{ (southern hemisphere)}
+\end{cases}\end{split}\]</div>
+<p>Optionally, Hale’s law can be disabled and the leading polarity is set positive.</p>
+</section>
+<hr class="docutils" />
+<section id="gaussian-field-distribution">
+<h3>7. Gaussian Field Distribution<a class="headerlink" href="#gaussian-field-distribution" title="Link to this heading"></a></h3>
+<p>Each polarity is modeled as a <strong>2D Gaussian</strong> on the sphere:</p>
+<div class="math notranslate nohighlight">
+\[B_i(\theta, \phi) = s_i \exp\left[ -\frac{(\theta - \theta_i)^2 + \Delta\phi^2(\phi, \phi_i)}{2\sigma^2} \right]\]</div>
+<p>where:</p>
+<div class="math notranslate nohighlight">
+\[\Delta\phi(\phi, \phi_i) = \min\left(|\phi - \phi_i|, 2\pi - |\phi - \phi_i|\right)\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\sigma\)</span> → angular width of the polarity</p></li>
+<li><p><span class="math notranslate nohighlight">\(s_i = \pm 1\)</span> → polarity sign</p></li>
+</ul>
+<p>The <strong>combined unscaled radial field</strong> is:</p>
+<div class="math notranslate nohighlight">
+\[B_\text{unit}(\theta, \phi) = B_\text{lead}(\theta, \phi) + B_\text{foll}(\theta, \phi)\]</div>
+</section>
+<hr class="docutils" />
+<section id="flux-normalization">
+<h3>8. Flux Normalization<a class="headerlink" href="#flux-normalization" title="Link to this heading"></a></h3>
+<p>Compute the total unsigned flux:</p>
+<div class="math notranslate nohighlight">
+\[\Phi_\text{unit} = \sum |B_\text{unit}| \, dA\]</div>
+<p>Scale the field to match the specified total flux ( \Phi ):</p>
+<div class="math notranslate nohighlight">
+\[S = \frac{\Phi}{\Phi_\text{unit}}\]</div>
+<p>The <strong>normalized radial field</strong> is then:</p>
+<div class="math notranslate nohighlight">
+\[B_r(\theta, \phi) = S \, B_\text{unit}(\theta, \phi)\]</div>
+<p>ensuring:</p>
+<div class="math notranslate nohighlight">
+\[\int |B_r(\theta, \phi)| \, dA = \Phi\]</div>
+</section>
+<hr class="docutils" />
+<section id="final-equation">
+<h3>9. Final Equation<a class="headerlink" href="#final-equation" title="Link to this heading"></a></h3>
+<p>The normalized radial magnetic field of the bipole is:</p>
+<div class="math notranslate nohighlight">
+\[B_r(\theta, \phi) = \frac{\Phi}{\sum |B_\text{unit}| \, dA} 
+\left[
+s_\text{lead} e^{- \frac{(\theta - \theta_\text{lead})^2 + \Delta\phi^2(\phi, \phi_\text{lead})}{2\sigma^2}} +
+s_\text{foll} e^{- \frac{(\theta - \theta_\text{foll})^2 + \Delta\phi^2(\phi, \phi_\text{foll})}{2\sigma^2}}
+\right]\]</div>
+<p>This is the <strong>mathematical representation of the BMR source term</strong> used in surface flux transport simulations.</p>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h3>10. Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Represents <strong>idealized BMR emergence</strong> on the solar surface.</p></li>
+<li><p>Incorporates <strong>Joy’s law tilt</strong> and <strong>Hale’s law polarity orientation</strong>.</p></li>
+<li><p>Normalized to ensure the <strong>total unsigned flux</strong> equals the specified value.</p></li>
+<li><p>Provides a <strong>smooth Gaussian representation</strong> suitable for numerical simulations.</p></li>
+</ul>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="_images/example_bmr.png"><img alt="example modeled BMR" src="_images/example_bmr.png" style="width: 70%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Example modeled BMR.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples/test_package_sft2d.html" class="btn btn-neutral float-left" title="Surface flux transport (SFT) simulation Notebook" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api_reference.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

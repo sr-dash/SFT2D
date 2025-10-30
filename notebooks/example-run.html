@@ -1,0 +1,349 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/logosft2d.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Surface flux transport (SFT) simulation Notebook" href="../examples/test_package_sft2d.html" />
+    <link rel="prev" title="Quick Start" href="../quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/test_package_sft2d.html">Surface flux transport (SFT) simulation Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sft2d-theory.html">Theoretical background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/example-run.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is an example file to run the model with standard set of parameters.</span>
+<span class="sd">    A small visualization routine is also provided to plot and check the outputs.</span>
+
+<span class="sd">    Currently we are developing this model and more functionalities will be added in due course.</span>
+
+<span class="sd">    Author: Soumyaranjan Dash</span>
+<span class="sd">    Email: dash.soumya922@gmail.com</span>
+<span class="sd">    Date: 15th Jan 2025</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Import basic packages for simulation and visualization</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">rc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.style</span>
+<span class="c1">## Plotting canvas properties.</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;legend.fontsize&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+          <span class="s1">&#39;axes.labelsize&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+          <span class="s1">&#39;axes.titlesize&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+          <span class="s1">&#39;xtick.labelsize&#39;</span> <span class="p">:</span><span class="mi">10</span><span class="p">,</span>
+          <span class="s1">&#39;ytick.labelsize&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+          <span class="s1">&#39;grid.color&#39;</span><span class="p">:</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;grid.linestyle&#39;</span><span class="p">:</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;grid.linewidth&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+          <span class="s1">&#39;mathtext.fontset&#39;</span> <span class="p">:</span> <span class="s1">&#39;stix&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;mathtext.rm&#39;</span>      <span class="p">:</span> <span class="s1">&#39;DejaVu serif&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;font.family&#39;</span>      <span class="p">:</span> <span class="s1">&#39;DejaVu serif&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;font.serif&#39;</span>       <span class="p">:</span> <span class="s2">&quot;Times New Roman&quot;</span><span class="p">,</span> <span class="c1"># or &quot;Times&quot;</span>
+         <span class="p">}</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s1">&#39;../../&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import packagess from the SFT model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_grid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.initial_conditions</span><span class="w"> </span><span class="kn">import</span> <span class="n">initialize_field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.transport_profiles</span><span class="w"> </span><span class="kn">import</span> <span class="n">meridional_flow</span><span class="p">,</span> <span class="n">differential_rotation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.time_step</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_time_step</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.diffusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_diffusion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.advection</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_advection</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define and initialize some essential model input parameters.</span>
+
+<span class="c1">## Grid creation (180x360) Uniform in latitude-longitude</span>
+<span class="n">grid_sft</span> <span class="o">=</span> <span class="n">create_grid</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="mi">360</span><span class="p">)</span>
+<span class="c1">## Meridional flow profile</span>
+<span class="n">mf_</span> <span class="o">=</span> <span class="n">meridional_flow</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="c1">## Differential rotation profile</span>
+<span class="n">dr_</span> <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="c1">## Initial magnetic field (dipole)</span>
+<span class="c1">## There is a choice between Dipole or HMI CR map for initial condition</span>
+<span class="c1">## For HMI map, set &#39;read&#39; in place of &#39;dipole&#39;.</span>
+<span class="n">field</span> <span class="o">=</span> <span class="n">initialize_field</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s1">&#39;dipole&#39;</span><span class="p">)</span>
+<span class="c1">## Magnetic diffusivity</span>
+<span class="n">diffusivity</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span> <span class="c1"># cm^2/s</span>
+<span class="c1">## Time step calculation</span>
+<span class="n">ts</span><span class="p">,</span> <span class="n">ndt</span> <span class="o">=</span> <span class="n">calculate_time_step</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">diffusivity</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">## Create basic grid for visualization</span>
+<span class="n">colatitude</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span>
+<span class="n">longitude</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
+<span class="n">delta_theta</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;dtheta&#39;</span><span class="p">]</span>
+<span class="n">delta_phi</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;dphi&#39;</span><span class="p">]</span>
+<span class="n">solar_radius</span> <span class="o">=</span> <span class="mf">6.955</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span>  <span class="c1"># Solar radius in meters</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">## Visualize the flow profiles (set 1 to show the plot)</span>
+<span class="k">if</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">9</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">mf_</span><span class="p">[:,</span><span class="mi">180</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Meridional flow&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Velocity [m/s]&#39;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Meridional flow&#39;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">90</span><span class="p">])</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
+
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">dr_</span><span class="p">[:,</span><span class="mi">180</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">solar_radius</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Differential rotation&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Velocity [m/s]&#39;</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Differential rotation&#39;</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">90</span><span class="p">])</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">## Run the SFT evolution.</span>
+
+<span class="c1">## Total number of days to run the simulation</span>
+<span class="c1">## Time-step is rounded off to fit exactly into one day</span>
+<span class="n">num_days</span> <span class="o">=</span> <span class="mi">15</span><span class="o">*</span><span class="mi">365</span>  <span class="c1"># Example total time [days]</span>
+
+<span class="c1">## Grid properties</span>
+<span class="n">num_theta</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+<span class="n">num_phi</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+
+<span class="c1">## Initialize arrays to store the data</span>
+<span class="n">bfly_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">num_theta</span><span class="p">))</span>
+<span class="n">all_br_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">num_theta</span><span class="p">,</span><span class="n">num_phi</span><span class="p">))</span>
+<span class="n">all_br_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">bfly_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">field</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1">## Define temporary arrays for updating the field</span>
+<span class="n">B_temp</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">B_temp_update</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Time loop for evolution</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Simulation days: &#39;</span><span class="p">):</span>
+    <span class="n">delta_t</span> <span class="o">=</span> <span class="n">ts</span>
+    <span class="k">for</span> <span class="n">steps</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndt</span><span class="p">):</span>
+        <span class="c1"># Calculate the diffusion term</span>
+        <span class="n">B_temp_diff</span> <span class="o">=</span> <span class="n">calculate_diffusion</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span> <span class="n">diffusivity</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="c1"># Calculate the advection term</span>
+        <span class="n">B_temp_adv</span> <span class="o">=</span> <span class="n">calculate_advection</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span> <span class="n">dr_</span><span class="p">,</span> <span class="n">mf_</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+        <span class="c1"># Update magnetic field using all terms</span>
+        <span class="n">B_temp_update</span> <span class="o">=</span> <span class="n">B_temp</span> <span class="o">+</span> <span class="n">delta_t</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">B_temp_diff</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">B_temp_adv</span><span class="p">)</span>
+
+        <span class="c1"># Apply periodic boundary conditions in the phi direction</span>
+        <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># First column matches second-to-last column</span>
+        <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># Last column matches second column</span>
+
+        <span class="c1"># Apply open boundary conditions in the theta direction</span>
+        <span class="n">B_temp_update</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>    <span class="c1"># Northern boundary (pole)</span>
+        <span class="n">B_temp_update</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># Southern boundary (pole)</span>
+        <span class="n">B_temp</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># Save the butterfly diagram</span>
+    <span class="n">bfly_data</span><span class="p">[</span><span class="n">t</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">all_br_data</span><span class="p">[</span><span class="n">t</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">B_temp</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">## Visualize the butterfly diagram (set 1 to run the following script)</span>
+<span class="k">if</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">7</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="n">bmax</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">pm1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span><span class="n">bfly_data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="n">bmax</span><span class="p">,</span><span class="n">vmin</span><span class="o">=-</span><span class="n">bmax</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">## Calculate the total unsigned flux from the magnetic field</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_usflx</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">):</span>
+    <span class="n">temp_bsinth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:])</span>
+    <span class="n">usflx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">longitude</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">temp_bsinth</span><span class="p">[:,</span><span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">[</span><span class="n">i</span><span class="p">,:,</span><span class="n">i1</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">colatitude</span><span class="p">)</span>
+        <span class="n">usf_1d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">temp_bsinth</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta_theta</span> <span class="o">*</span> <span class="n">delta_phi</span> <span class="o">*</span> <span class="p">(</span><span class="n">solar_radius</span><span class="o">*</span><span class="mf">1e2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">usflx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">usf_1d</span>
+    <span class="k">return</span> <span class="n">usflx</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">## Calculate the total unsigned flux</span>
+<span class="n">usflx_diff</span> <span class="o">=</span> <span class="n">calc_usflx</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">)</span>
+
+<span class="c1">## Plot the USFLUX variation (set 1 to run the following script)</span>
+<span class="k">if</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">usflx_diff</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Total unsigned flux [Mx]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Total unsigned flux&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../quickstart.html" class="btn btn-neutral float-left" title="Quick Start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../examples/test_package_sft2d.html" class="btn btn-neutral float-right" title="Surface flux transport (SFT) simulation Notebook" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

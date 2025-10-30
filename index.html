@@ -1,0 +1,178 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Surface Flux Transport 2D documentation &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="_static/logosft2d.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quick Start" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/test_package_sft2d.html">Surface flux transport (SFT) simulation Notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sft2d-theory.html">Theoretical background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Surface Flux Transport 2D documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="surface-flux-transport-2d-documentation">
+<h1>Surface Flux Transport 2D documentation<a class="headerlink" href="#surface-flux-transport-2d-documentation" title="Link to this heading"></a></h1>
+<p>Radiative and energetic output on our host star is primarily governed by the surface plasma and magnetic field dynamics.
+Hence, it is essential for us to understand the magnetic field distribution on the solar surface. However,
+with our current observational capabilities, we can only observe half of the solar surface routinely. Even direct
+observations are not reliable near high latitudes due to the forshortening effect. In this context the unobserved
+farside of the Sun also poses increased uncertainity on the estimation of global surface magnetic flux estimates.
+Such problems are more pronounced for observations of other magnetically active stellar objects due to short observating window and low resolving power.</p>
+<p>Magnetic fields generated in the interior of a star manifests on the surface due to bouyancy subjected to large scale plasma flows on the surface.
+This phenomena distributes the magnetic field globally along with possible flux cancellation processes. With the available observations and our
+theoretical understanding, we can numerically model this flux transport process by solving the magnetic induction equation.
+Such modelled global distribution of the surface magnetic field is
+essential for understanding and forecasting solar/stellar activity and evolution. Sun is magnetically active and this
+activity cycle lasts for about 11 years during which the magnetic field distribution on the solar
+surface – the photosphere, evolves and generates a vast range of events e.g., emergece and
+decay of sunspots, solar flares, coronal mass ejections, flow of solar wind and energetic particles
+into the heliosphere etc. Surface flux transport model solves the radial component of the magnetic induction equation
+on the solar surface by using prescribed flow profiles, flux cencellation process and source terms. This code suite provides
+a numerical model of SFT developed in PYTHON.</p>
+<p>Link to the GitHub repository: <a class="reference external" href="https://sr-dash.github.io/SFT2D/">https://sr-dash.github.io/SFT2D/</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The code is under active development and is not yet ready for production use.
+Please report any issues on the GitHub repository.</p>
+</div>
+<p>Last Updated on 2025-10-30.</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#acknowledgments">Acknowledgments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#system-requirements">System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#a-brief-description-of-the-sft-2d-code">A Brief Description of the SFT 2D code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/test_package_sft2d.html">Surface flux transport (SFT) simulation Notebook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/test_package_sft2d.html#Import-sft2d-package-and-check-teh-latest-version.">Import sft2d package and check teh latest version.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/test_package_sft2d.html#Load-BMR-property-for-a-solar-cycle-for-a-test-run">Load BMR property for a solar cycle for a test run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/test_package_sft2d.html#Compute-and-plot-the-solar-cycle-parameters">Compute and plot the solar cycle parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/test_package_sft2d.html#To-Do-List">To-Do List</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sft2d-theory.html">Theoretical background</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sft2d-theory.html#magnetic-field-evolution-on-the-solar-surface">Magnetic field evolution on the solar surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sft2d-theory.html#bipolar-magnetic-region-bmr-flux-injection-theoretical-explanation">Bipolar Magnetic Region (BMR) Flux Injection — Theoretical Explanation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_advection.html">sft2d.calculate_advection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_diffusion.html">sft2d.calculate_diffusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_time_step.html">sft2d.calculate_time_step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.create_grid.html">sft2d.create_grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.initialize_field.html">sft2d.initialize_field</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.meridional_flow.html">sft2d.meridional_flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.differential_rotation.html">sft2d.differential_rotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_usflx.html">sft2d.calculate_usflx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_dm.html">sft2d.calculate_dm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_polar_field.html">sft2d.calculate_polar_field</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_polar_flux.html">sft2d.calculate_polar_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.plot_bfly.html">sft2d.plot_bfly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.plot_mag.html">sft2d.plot_mag</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-right" title="Quick Start" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

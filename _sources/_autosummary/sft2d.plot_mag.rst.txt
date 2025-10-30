@@ -1,0 +1,6 @@
+﻿sft2d.plot\_mag
+===============
+
+.. currentmodule:: sft2d
+
+.. autofunction:: plot_mag

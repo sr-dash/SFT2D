@@ -1,0 +1,6 @@
+﻿sft2d.plot\_bfly
+================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: plot_bfly

@@ -1,0 +1,6 @@
+﻿sft2d.calculate\_dm
+===================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: calculate_dm

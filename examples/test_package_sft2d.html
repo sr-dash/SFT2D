@@ -1,0 +1,757 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Surface flux transport (SFT) simulation Notebook &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/logosft2d.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Theoretical background" href="../sft2d-theory.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="../notebooks/example-run.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Surface flux transport (SFT) simulation Notebook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Import-sft2d-package-and-check-teh-latest-version.">Import sft2d package and check teh latest version.</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Initial-model-setup">Initial model setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Initialise-arrays-for-plotting.">Initialise arrays for plotting.</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Visualizing-the-initial-dipole">Visualizing the initial dipole</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Visualizing-the-flow-profiles.">Visualizing the flow profiles.</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Simulating-flux-transport-process">Simulating flux transport process</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Some-derived-quantities-for-visualization">Some derived quantities for visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Bipolar-Magnetic-Region-(BMR)-modelling">Bipolar Magnetic Region (BMR) modelling</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Load-BMR-property-for-a-solar-cycle-for-a-test-run">Load BMR property for a solar cycle for a test run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Compute-and-plot-the-solar-cycle-parameters">Compute and plot the solar cycle parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#To-Do-List">To-Do List</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../sft2d-theory.html">Theoretical background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Surface flux transport (SFT) simulation Notebook</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/test_package_sft2d.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Surface-flux-transport-(SFT)-simulation-Notebook">
+<h1>Surface flux transport (SFT) simulation Notebook<a class="headerlink" href="#Surface-flux-transport-(SFT)-simulation-Notebook" title="Link to this heading"></a></h1>
+<p>Soumyaranjan Dash | National Solar Observatory</p>
+<hr class="docutils" />
+<p><strong>About this notebook:</strong></p>
+<ul class="simple">
+<li><p>This notebook shows example SFT simulation for solar surface.</p></li>
+<li><p>Flux transport is driven by prescribed solar meridional (pole-ward flow) flow and differential rotation.</p></li>
+<li><p>An initial global dipolar field is evolved here without any sun/star spots.</p></li>
+</ul>
+<hr class="docutils" />
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">rc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.style</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;font.family&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DejaVu Serif&#39;</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; Arial font not available - using default&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+    <span class="s2">&quot;font.size&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>  <span class="c1"># Default font size for all text</span>
+    <span class="s2">&quot;axes.labelsize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>  <span class="c1"># Font size for x and y labels</span>
+    <span class="s2">&quot;xtick.labelsize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>  <span class="c1"># Font size for x-axis ticks</span>
+    <span class="s2">&quot;ytick.labelsize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>  <span class="c1"># Font size for y-axis ticks</span>
+    <span class="s2">&quot;legend.fontsize&quot;</span><span class="p">:</span> <span class="mi">10</span>  <span class="c1"># Font size for legends</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<section id="Import-sft2d-package-and-check-teh-latest-version.">
+<h2>Import sft2d package and check teh latest version.<a class="headerlink" href="#Import-sft2d-package-and-check-teh-latest-version." title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>For installing the package you can run</p></li>
+</ul>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install git+https://github.com/sr-dash/SFT2D.git sft2d
+</pre></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sft2d</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sft2d</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0.0.2.post3+dirty
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sft2d</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_grid</span><span class="p">,</span> <span class="n">initialize_field</span><span class="p">,</span> <span class="n">meridional_flow</span><span class="p">,</span> <span class="n">differential_rotation</span><span class="p">,</span> <span class="n">calculate_time_step</span><span class="p">,</span> <span class="n">calculate_diffusion</span><span class="p">,</span> <span class="n">calculate_advection</span><span class="p">,</span><span class="n">calculate_polar_flux</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_usflx</span><span class="p">,</span> <span class="n">calculate_dm</span><span class="p">,</span> <span class="n">calculate_polar_field</span><span class="p">,</span> <span class="n">plot_bfly</span><span class="p">,</span> <span class="n">plot_mag</span>
+<br/></pre></div>
+</div>
+</div>
+<section id="Initial-model-setup">
+<h3>Initial model setup<a class="headerlink" href="#Initial-model-setup" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Setup the grid resolution</p></li>
+<li><p>Model the pre-defined meridional flow and differential rotation of the grid.</p></li>
+<li><p>Initialize the global dipole on the gird.</p></li>
+<li><p>Set the magnetic diffusivity.</p></li>
+<li><p>Compute the global timestep based on grid resolution, flows and diffusivity.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">grid_sft</span> <span class="o">=</span> <span class="n">create_grid</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="mi">360</span><span class="p">)</span>
+<span class="n">mf_</span> <span class="o">=</span> <span class="n">meridional_flow</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="n">dr_</span> <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span><span class="n">rotation</span><span class="o">=</span><span class="s1">&#39;solar&#39;</span><span class="p">,</span><span class="n">frame</span><span class="o">=</span><span class="s1">&#39;carrington&#39;</span><span class="p">)</span>
+<span class="n">field</span> <span class="o">=</span> <span class="n">initialize_field</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s1">&#39;dipole&#39;</span><span class="p">)</span>
+<span class="n">diffusivity</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span> <span class="c1"># cm^2/s</span>
+<span class="n">ts</span><span class="p">,</span> <span class="n">ndt</span> <span class="o">=</span> <span class="n">calculate_time_step</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">diffusivity</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Initialise-arrays-for-plotting.">
+<h4>Initialise arrays for plotting.<a class="headerlink" href="#Initialise-arrays-for-plotting." title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p>Import arrays from sft grid for plotting.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">colatitude</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span>
+<span class="n">longitude</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span>
+<span class="n">delta_theta</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;dtheta&#39;</span><span class="p">]</span>
+<span class="n">delta_phi</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;dphi&#39;</span><span class="p">]</span>
+<span class="n">solar_radius</span> <span class="o">=</span> <span class="mf">6.955</span> <span class="o">*</span> <span class="mi">10</span><span class="o">**</span><span class="mi">8</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Visualizing-the-initial-dipole">
+<h4>Visualizing the initial dipole<a class="headerlink" href="#Visualizing-the-initial-dipole" title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">7</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">longitude</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">colatitude</span><span class="p">),</span><span class="n">field</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">361</span><span class="p">,</span><span class="mi">90</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Br [G]&#39;</span><span class="p">,</span><span class="n">ticks</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.1</span><span class="p">,</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Initial condition&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Longitude [deg]&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Co-latitude [deg]&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_test_package_sft2d_10_0.png" src="../_images/examples_test_package_sft2d_10_0.png" />
+</div>
+</div>
+</section>
+<section id="Visualizing-the-flow-profiles.">
+<h4>Visualizing the flow profiles.<a class="headerlink" href="#Visualizing-the-flow-profiles." title="Link to this heading"></a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">9</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+
+<span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]),</span><span class="n">mf_</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">180</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Meridional flow&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Velocity [m/s]&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Meridional flow&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">90</span><span class="p">])</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
+
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]),</span><span class="n">dr_</span><span class="p">[:,</span><span class="mi">180</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">solar_radius</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Differential rotation&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Velocity [m/s]&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Differential rotation&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">90</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">30</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+<span class="c1"># plt.savefig(&#39;./docs/flows.png&#39;,dpi=300)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_test_package_sft2d_12_0.png" src="../_images/examples_test_package_sft2d_12_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Simulating-flux-transport-process">
+<h3>Simulating flux transport process<a class="headerlink" href="#Simulating-flux-transport-process" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Evolution of surface magnetic flux distribution is driven by flows and diffusion only.</p></li>
+<li><p>Here we show the dynamics over 1 year.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">num_days</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="mi">365</span>  <span class="c1"># Example total time steps</span>
+<span class="n">num_theta</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+<span class="n">num_phi</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+<span class="n">bfly_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">num_theta</span><span class="p">))</span>
+<span class="n">all_br_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">num_theta</span><span class="p">,</span><span class="n">num_phi</span><span class="p">))</span>
+<span class="n">all_br_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="mi">5</span><span class="o">*</span><span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="n">bfly_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">field</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">B_temp</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="mi">5</span><span class="o">*</span><span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="n">B_temp_update</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+<span class="c1"># Time loop for evolution</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Simulation days: &#39;</span><span class="p">):</span>
+    <span class="n">delta_t</span> <span class="o">=</span> <span class="n">ts</span>
+    <span class="k">for</span> <span class="n">steps</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndt</span><span class="p">):</span>
+        <span class="c1"># Calculate the diffusion term</span>
+        <span class="n">B_temp_diff</span> <span class="o">=</span> <span class="n">calculate_diffusion</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span> <span class="n">diffusivity</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="c1"># Calculate the advection term</span>
+        <span class="n">B_temp_adv</span> <span class="o">=</span> <span class="n">calculate_advection</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span> <span class="n">dr_</span><span class="p">,</span> <span class="n">mf_</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+        <span class="c1"># Update magnetic field using all terms</span>
+        <span class="n">B_temp_update</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B_temp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">delta_t</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">B_temp_diff</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">B_temp_adv</span><span class="p">)</span>
+
+        <span class="c1"># Apply periodic boundary conditions in the phi direction</span>
+        <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># First column matches second-to-last column</span>
+        <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># Last column matches second column</span>
+
+        <span class="c1"># Apply open boundary conditions in the theta direction</span>
+        <span class="n">B_temp_update</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>    <span class="c1"># Northern boundary (pole)</span>
+        <span class="n">B_temp_update</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># Southern boundary (pole)</span>
+        <span class="n">B_temp</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># Save the butterfly diagram</span>
+    <span class="n">bfly_data</span><span class="p">[</span><span class="n">t</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">all_br_data</span><span class="p">[</span><span class="n">t</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">B_temp</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Simulation days: 100%|██████████| 365/365 [03:56&lt;00:00,  1.54it/s]
+</pre></div></div>
+</div>
+</section>
+<section id="Some-derived-quantities-for-visualization">
+<h3>Some derived quantities for visualization<a class="headerlink" href="#Some-derived-quantities-for-visualization" title="Link to this heading"></a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">usflx</span> <span class="o">=</span> <span class="n">calculate_usflx</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">num_days</span><span class="p">])</span>
+<span class="n">dm_sft</span> <span class="o">=</span> <span class="n">calculate_dm</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">num_days</span><span class="p">])</span>
+<span class="n">polar_n</span><span class="p">,</span> <span class="n">polar_s</span> <span class="o">=</span> <span class="n">calculate_polar_field</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">num_days</span><span class="p">])</span>
+<span class="n">polar_fln</span><span class="p">,</span> <span class="n">polar_fls</span> <span class="o">=</span> <span class="n">calculate_polar_flux</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">num_days</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">usflx</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Total unsigned flux [Mx]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Total unsigned flux&#39;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">polar_fln</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;North pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">polar_fls</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;South pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Flux [Mx]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Polar flux&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">polar_n</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;North pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">polar_s</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;South pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Field [G]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Polar field&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">dm_sft</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;North pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;DM&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Dipole moment&#39;</span><span class="p">)</span>
+
+<span class="n">pm1</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">colatitude</span><span class="p">),</span><span class="n">bfly_data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="n">vmin</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Br [G]&#39;</span><span class="p">,</span><span class="n">ticks</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mf">5.1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Butterfly diagram (Br)&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+
+<span class="n">idx</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">pm2</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">longitude</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">colatitude</span><span class="p">),</span><span class="n">all_br_data</span><span class="p">[</span><span class="n">idx</span><span class="p">,:,:],</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="n">vmin</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Br [G]&#39;</span><span class="p">,</span><span class="n">ticks</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mf">5.1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">361</span><span class="p">,</span><span class="mi">90</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Br on day </span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s1">03d</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Longitude [deg]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_test_package_sft2d_17_0.png" src="../_images/examples_test_package_sft2d_17_0.png" />
+</div>
+</div>
+</section>
+<section id="Bipolar-Magnetic-Region-(BMR)-modelling">
+<h3>Bipolar Magnetic Region (BMR) modelling<a class="headerlink" href="#Bipolar-Magnetic-Region-(BMR)-modelling" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>BMRs or Active regions (ARs) are often observed on the surface of the star. Transport of this emerged flux has to be incorporated into SFT model as source terms.</p></li>
+<li><p>There can be different ways to model a BMR. Or one can choose to directly assimilate magnetic field distribution from observations for the Sun.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">inject_bipole_flux_normalized</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">flux_Mx</span><span class="p">,</span> <span class="n">tilt_deg</span><span class="p">,</span> <span class="n">sep_deg</span><span class="p">,</span>
+    <span class="n">sigma_deg</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">Rsun_cm</span><span class="o">=</span><span class="mf">6.96e10</span><span class="p">,</span> <span class="n">apply_hale</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Injects a bipole with correct Joy&#39;s law tilt: defined as angle from local E-W (latitude) line.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+    <span class="c1"># --- Mesh and area elements ---</span>
+    <span class="n">theta_2d</span><span class="p">,</span> <span class="n">phi_2d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+    <span class="n">dtheta</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dphi</span> <span class="o">=</span> <span class="n">phi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">phi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dA</span> <span class="o">=</span> <span class="n">Rsun_cm</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_2d</span><span class="p">)</span> <span class="o">*</span> <span class="n">dtheta</span> <span class="o">*</span> <span class="n">dphi</span>
+
+    <span class="c1"># --- Convert center location ---</span>
+    <span class="n">lat_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+    <span class="n">lon_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="n">colat_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="n">lat</span><span class="p">)</span>
+
+    <span class="c1"># --- Tilt angle and separation ---</span>
+    <span class="n">tilt_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">tilt_deg</span><span class="p">)</span>
+    <span class="n">sep_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">sep_deg</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">sigma_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">sigma_deg</span><span class="p">)</span>
+
+    <span class="c1"># --- Unit vector at center (on unit sphere) ---</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lon_rad</span><span class="p">)</span>
+    <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lon_rad</span><span class="p">)</span>
+    <span class="n">z0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span>
+    <span class="n">r0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">z0</span><span class="p">])</span>
+
+    <span class="c1"># --- Define local tangent basis vectors at r0 ---</span>
+    <span class="c1"># e_phi: east direction</span>
+    <span class="n">e_phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lon_rad</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lon_rad</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="c1"># e_theta: south direction (increasing theta)</span>
+    <span class="n">e_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lon_rad</span><span class="p">),</span>
+        <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lon_rad</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span>
+    <span class="p">])</span>
+    <span class="c1"># e_lat: north direction (decreasing theta)</span>
+    <span class="n">e_lat</span> <span class="o">=</span> <span class="o">-</span><span class="n">e_theta</span>
+
+    <span class="c1"># --- Separation vector in tangent plane ---</span>
+    <span class="c1"># Tilt is measured from e_phi (east) toward north (positive lat direction)</span>
+    <span class="c1"># So: sep_vec = cos(tilt) * east + sin(tilt) * north</span>
+    <span class="n">sep_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">tilt_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">e_phi</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">tilt_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">e_lat</span>
+
+    <span class="c1"># --- Polarity centers on sphere ---</span>
+    <span class="n">lead_vec</span> <span class="o">=</span> <span class="n">r0</span> <span class="o">+</span> <span class="n">sep_rad</span> <span class="o">*</span> <span class="n">sep_vec</span>
+    <span class="n">foll_vec</span> <span class="o">=</span> <span class="n">r0</span> <span class="o">-</span> <span class="n">sep_rad</span> <span class="o">*</span> <span class="n">sep_vec</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">vec_to_sph</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert 3D vector to (theta, phi)&quot;&quot;&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>     <span class="c1"># colatitude</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">theta</span><span class="p">,</span> <span class="n">phi</span>
+
+    <span class="n">th_lead</span><span class="p">,</span> <span class="n">ph_lead</span> <span class="o">=</span> <span class="n">vec_to_sph</span><span class="p">(</span><span class="n">lead_vec</span><span class="p">)</span>
+    <span class="n">th_foll</span><span class="p">,</span> <span class="n">ph_foll</span> <span class="o">=</span> <span class="n">vec_to_sph</span><span class="p">(</span><span class="n">foll_vec</span><span class="p">)</span>
+
+    <span class="c1"># --- Determine polarity signs from Hale&#39;s Law ---</span>
+    <span class="k">if</span> <span class="n">apply_hale</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">lat</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Northern hemisphere</span>
+            <span class="n">sign_lead</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+            <span class="n">sign_foll</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sign_lead</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">sign_foll</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sign_lead</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+        <span class="n">sign_foll</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># --- Angular distance handling ---</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">phi_dist</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p1</span> <span class="o">-</span> <span class="n">p2</span><span class="p">),</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p1</span> <span class="o">-</span> <span class="n">p2</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaussian</span><span class="p">(</span><span class="n">th_c</span><span class="p">,</span> <span class="n">ph_c</span><span class="p">,</span> <span class="n">sign</span><span class="p">):</span>
+        <span class="n">dth2</span> <span class="o">=</span> <span class="p">(</span><span class="n">theta_2d</span> <span class="o">-</span> <span class="n">th_c</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">dph2</span> <span class="o">=</span> <span class="n">phi_dist</span><span class="p">(</span><span class="n">phi_2d</span><span class="p">,</span> <span class="n">ph_c</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="p">(</span><span class="n">dth2</span> <span class="o">+</span> <span class="n">dph2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma_rad</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="c1"># --- Compute raw B field pattern ---</span>
+    <span class="n">B_unit</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">gaussian</span><span class="p">(</span><span class="n">th_lead</span><span class="p">,</span> <span class="n">ph_lead</span><span class="p">,</span> <span class="n">sign_lead</span><span class="p">)</span> <span class="o">+</span>
+        <span class="n">gaussian</span><span class="p">(</span><span class="n">th_foll</span><span class="p">,</span> <span class="n">ph_foll</span><span class="p">,</span> <span class="n">sign_foll</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">flux_unit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">B_unit</span><span class="p">)</span> <span class="o">*</span> <span class="n">dA</span><span class="p">)</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">flux_Mx</span> <span class="o">/</span> <span class="n">flux_unit</span>
+    <span class="n">B_scaled</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">B_unit</span>
+    <span class="k">return</span> <span class="n">B_scaled</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Load-BMR-property-for-a-solar-cycle-for-a-test-run">
+<h2>Load BMR property for a solar cycle for a test run<a class="headerlink" href="#Load-BMR-property-for-a-solar-cycle-for-a-test-run" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>This is a test run to check the performance of SFT simulation.</p></li>
+<li><p>We are not caliberating the SFT obtained fluxes to the observations here. This can be done by changing initial condition, BMR properties, flow parameters.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="n">sc14</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;/data/sdash/SFT2D/test_data/SC_14.txt&#39;</span><span class="p">)</span>
+<span class="n">sc15</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s1">&#39;/data/sdash/SFT2D/test_data/SC_15.txt&#39;</span><span class="p">)</span>
+
+<span class="n">sc14_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">sc14</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">,</span> <span class="s1">&#39;Latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;Tilt&#39;</span><span class="p">,</span> <span class="s1">&#39;Radius&#39;</span><span class="p">,</span> <span class="s1">&#39;Longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;USFLUX&#39;</span><span class="p">])</span>
+<span class="n">sc15_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">sc15</span><span class="p">[</span><span class="mi">1</span><span class="p">:,],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">,</span> <span class="s1">&#39;Latitude&#39;</span><span class="p">,</span> <span class="s1">&#39;Tilt&#39;</span><span class="p">,</span> <span class="s1">&#39;Radius&#39;</span><span class="p">,</span> <span class="s1">&#39;Longitude&#39;</span><span class="p">,</span> <span class="s1">&#39;USFLUX&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># initial_field = sc14_all_br[-1,:,:]</span>
+
+<span class="n">num_days</span> <span class="o">=</span>  <span class="nb">int</span><span class="p">(</span><span class="mi">120</span><span class="o">*</span><span class="mi">28</span><span class="p">)</span>  <span class="c1"># Example total time steps</span>
+<span class="n">num_theta</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+<span class="n">num_phi</span> <span class="o">=</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+<span class="n">bfly_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">num_theta</span><span class="p">))</span>
+<span class="n">all_br_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">num_theta</span><span class="p">,</span><span class="n">num_phi</span><span class="p">))</span>
+<span class="c1"># all_br_data[0,:,:] = initial_field #-1*10*field.copy()/np.max(field.copy())</span>
+<span class="n">all_br_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="mi">10</span><span class="o">*</span><span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="n">bfly_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">field</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># B_temp = initial_field #-1*10*field.copy()/np.max(field.copy())</span>
+<span class="n">B_temp</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="mi">10</span><span class="o">*</span><span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="n">B_temp_update</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+<span class="n">n_cr</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="c1"># Time loop for evolution</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Simulation days: &#39;</span><span class="p">):</span>
+    <span class="n">delta_t</span> <span class="o">=</span> <span class="n">ts</span>
+    <span class="c1"># Add the sunspots from sc14_df dataframe when the time step divisble by 28 is equal to the current phase.</span>
+    <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">28</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">n_cr</span> <span class="o">=</span> <span class="n">t</span> <span class="o">//</span> <span class="mi">28</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">sc14_df</span><span class="p">[</span><span class="n">sc14_df</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">n_cr</span><span class="p">]</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">Br_spot</span> <span class="o">=</span> <span class="n">inject_bipole_flux_normalized</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">],</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span><span class="s1">&#39;longitude&#39;</span><span class="p">],</span>
+                                            <span class="n">lat</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Latitude&#39;</span><span class="p">],</span> <span class="n">lon</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Longitude&#39;</span><span class="p">],</span><span class="n">flux_Mx</span><span class="o">=-</span><span class="mf">1.0</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;USFLUX&#39;</span><span class="p">])</span><span class="o">*</span><span class="mf">1e16</span><span class="p">,</span>
+                                            <span class="n">tilt_deg</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Tilt&#39;</span><span class="p">]),</span> <span class="n">sep_deg</span><span class="o">=</span><span class="mf">1.0</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Radius&#39;</span><span class="p">]),</span> <span class="n">sigma_deg</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">apply_hale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">B_temp</span> <span class="o">+=</span> <span class="n">Br_spot</span>
+    <span class="k">for</span> <span class="n">steps</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndt</span><span class="p">):</span>
+        <span class="c1"># Calculate the diffusion term</span>
+        <span class="n">B_temp_diff</span> <span class="o">=</span> <span class="n">calculate_diffusion</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span> <span class="n">diffusivity</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="c1"># Calculate the advection term</span>
+        <span class="n">B_temp_adv</span> <span class="o">=</span> <span class="n">calculate_advection</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span> <span class="n">dr_</span><span class="p">,</span> <span class="n">mf_</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+        <span class="c1"># Update magnetic field using all terms</span>
+        <span class="n">B_temp_update</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B_temp</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">delta_t</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">B_temp_diff</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">B_temp_adv</span><span class="p">)</span>
+
+        <span class="c1"># Apply periodic boundary conditions in the phi direction</span>
+        <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># First column matches second-to-last column</span>
+        <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># Last column matches second column</span>
+
+        <span class="c1"># Apply open boundary conditions in the theta direction</span>
+        <span class="n">B_temp_update</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>    <span class="c1"># Northern boundary (pole)</span>
+        <span class="n">B_temp_update</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># Southern boundary (pole)</span>
+        <span class="n">B_temp</span> <span class="o">=</span> <span class="n">B_temp_update</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># Save the butterfly diagram</span>
+    <span class="n">bfly_data</span><span class="p">[</span><span class="n">t</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">B_temp</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">all_br_data</span><span class="p">[</span><span class="n">t</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">B_temp</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Simulation days: 100%|██████████| 3360/3360 [37:09&lt;00:00,  1.51it/s]
+</pre></div></div>
+</div>
+</section>
+<section id="Compute-and-plot-the-solar-cycle-parameters">
+<h2>Compute and plot the solar cycle parameters<a class="headerlink" href="#Compute-and-plot-the-solar-cycle-parameters" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">usflx</span> <span class="o">=</span> <span class="n">calculate_usflx</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">num_days</span><span class="p">])</span>
+<span class="n">dm_sft</span> <span class="o">=</span> <span class="n">calculate_dm</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">num_days</span><span class="p">])</span>
+<span class="n">polar_n</span><span class="p">,</span> <span class="n">polar_s</span> <span class="o">=</span> <span class="n">calculate_polar_field</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">num_days</span><span class="p">])</span>
+<span class="n">polar_fln</span><span class="p">,</span> <span class="n">polar_fls</span> <span class="o">=</span> <span class="n">calculate_polar_flux</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">num_days</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">usflx</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Total unsigned flux [Mx]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Total unsigned flux&#39;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">polar_fln</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;North pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">polar_fls</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;South pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Flux [Mx]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Polar flux&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">polar_n</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;North pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">polar_s</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;South pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Field [G]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Polar field&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">dm_sft</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;North pole&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;DM&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Dipole moment&#39;</span><span class="p">)</span>
+
+<span class="n">pm1</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_days</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">colatitude</span><span class="p">),</span><span class="n">bfly_data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="n">vmin</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Br [G]&#39;</span><span class="p">,</span><span class="n">ticks</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mf">5.1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Butterfly diagram (Br)&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time [days]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+
+<span class="n">idx</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">pm2</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">longitude</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="o">-</span><span class="n">colatitude</span><span class="p">),</span><span class="n">all_br_data</span><span class="p">[</span><span class="n">idx</span><span class="p">,:,:],</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="n">vmin</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Br [G]&#39;</span><span class="p">,</span><span class="n">ticks</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mf">5.1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">361</span><span class="p">,</span><span class="mi">90</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Br on day </span><span class="si">{</span><span class="n">idx</span><span class="si">:</span><span class="s1">03d</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Longitude [deg]&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Latitude [deg]&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_test_package_sft2d_25_0.png" src="../_images/examples_test_package_sft2d_25_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">idx</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">latitude1</span> <span class="o">=</span> <span class="n">sc14_df</span><span class="p">[</span><span class="s1">&#39;Latitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+<span class="n">longitude1</span> <span class="o">=</span> <span class="n">sc14_df</span><span class="p">[</span><span class="s1">&#39;Longitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+<span class="n">usflux1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sc14_df</span><span class="p">[</span><span class="s1">&#39;USFLUX&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+<span class="n">radius1</span> <span class="o">=</span> <span class="n">sc14_df</span><span class="p">[</span><span class="s1">&#39;Radius&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+<span class="n">tilt1</span> <span class="o">=</span> <span class="n">sc14_df</span><span class="p">[</span><span class="s1">&#39;Tilt&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+<span class="n">Br1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">grid_sft</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+<span class="n">Br1</span> <span class="o">=</span> <span class="n">inject_bipole_flux_normalized</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">],</span> <span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span><span class="s1">&#39;longitude&#39;</span><span class="p">],</span>
+                                        <span class="n">lat</span><span class="o">=</span><span class="n">latitude1</span><span class="p">,</span> <span class="n">lon</span><span class="o">=</span><span class="n">longitude1</span><span class="p">,</span><span class="n">flux_Mx</span><span class="o">=</span><span class="n">usflux1</span><span class="o">*</span><span class="mf">1e16</span><span class="p">,</span>
+                                        <span class="n">tilt_deg</span><span class="o">=</span><span class="n">tilt1</span><span class="p">,</span> <span class="n">sep_deg</span><span class="o">=</span><span class="mi">3</span><span class="o">*</span><span class="n">radius1</span><span class="p">,</span> <span class="n">apply_hale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">[</span><span class="mi">7</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span><span class="s1">&#39;longitude&#39;</span><span class="p">]),</span><span class="mi">90</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">grid_sft</span><span class="o">.</span><span class="n">copy</span><span class="p">()[</span><span class="s1">&#39;colatitude&#39;</span><span class="p">]),</span><span class="n">Br1</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;bwr&#39;</span><span class="p">,</span><span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mi">45</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">361</span><span class="p">,</span><span class="mi">90</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Bipole model for BMR at phase </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sc14_df</span><span class="p">[</span><span class="s1">&#39;Phase&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Longitude (degrees)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Latitude (degrees)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_test_package_sft2d_27_0.png" src="../_images/examples_test_package_sft2d_27_0.png" />
+</div>
+</div>
+</section>
+<section id="To-Do-List">
+<h2>To-Do List<a class="headerlink" href="#To-Do-List" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Add BMR Modelling</strong></p>
+<ul class="simple">
+<li><p>Implement the BMR (Bipolar Magnetic Region) modeling functionality.</p></li>
+<li><p>Integrate BMR modeling into the Surface Flux Transport (SFT) model.</p></li>
+<li><p>Provide users with an option to enable or disable BMR modeling.</p></li>
+</ul>
+</li>
+<li><p><strong>BMR Data Processing</strong></p>
+<ul class="simple">
+<li><p>Process BMR properties from various sources (RGO/HMI).</p></li>
+<li><p>Create standardized tables for BMR modeling input.</p></li>
+<li><p>Ensure compatibility of data formats across different sources.</p></li>
+</ul>
+</li>
+<li><p><strong>Date assimilation</strong></p>
+<ul class="simple">
+<li><p>Develop magnetogram data assimilation with interpolation.</p></li>
+<li><p>Cases for different sources HMI or any other Stellar processed data.</p></li>
+<li><p>Calibrate fluxes and add as a source term to the model.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../notebooks/example-run.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../sft2d-theory.html" class="btn btn-neutral float-right" title="Theoretical background" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
