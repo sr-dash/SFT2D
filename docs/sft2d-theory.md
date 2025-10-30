@@ -30,30 +30,12 @@ as,
 + S.
 ```
 
-where {math}`s` = sin{math}`\theta`, D is the magnetic diffusivity, {math}`\Omega (s)`
+where `\eta` is the magnetic diffusivity, {math}`\Omega (s)`
 is the angular velocity in east-west direction on a sine-latitude grid,
-{math}`v_s (s)` is the flow profile along north-south direction on a
-sine-latitude grid and {math}`\phi` is the longitude. As the velocity profiles
+{math}`u_\theta` is the flow profile along north-south direction on a
+latitude grid and {math}`\phi` is the longitude. As the velocity profiles
 involved in transporting the magnetic flux on the photosphere is a
-function of latitude only, we can simplify this equation by taking
-average in the longitudinal direction which will improve the
-computational efficiency and provide us a lesser parameter space to
-comprehensively explore the dynamics. After averaging the {math}`B_r`,
-
-```{math}
-\overline{B}(s,t)=(2\pi)^{-1}\int_0^{2\pi}B(s,\phi,t)\,\mathrm{d}\phi.
-```
-
-Using this reduced form of {math}`B_r`, we can re-write the
-equation as,
-
-```{math}
-\frac{\partial\overline{B}}{\partial t} = \frac{\partial}{\partial s}\left[\frac{D}{R_\odot^2}(1-s^2)\frac{\partial\overline{B}}{\partial s} - \frac{v_s(s)}{R_\odot}\sqrt{1-s^2}\overline{B}\right],
-```
-
-where the north-south velocity is, {math}`v_s(s) = D_us(1-s^2)^{p/2}.` In
-this form the velocity, {math}`s` = sin{math}`\theta` and {math}`D_u` controls the
-amplitude of the function.
+function of latitude only. The flux from newly emerging sun/star spots are coupled to the mode via an ad-hoc source term `S`.
 
 ```{figure} flows.png
 :height: 70 %
