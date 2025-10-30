@@ -17,11 +17,11 @@ The model can be run in a Jupyter-Notebook and the magnetic field maps can be ex
 
 ## Acknowledgments
 
-Original code was developed by [Yeates (2020)](https://doi.org/10.1007/s11207-020-01688-y) in Python. This distribution is a reproduction in FORTRAN.
+Original code for SFT model in one dimension was developed by [Yeates (2020)](https://doi.org/10.1007/s11207-020-01688-y) in Python. This distribution is a two dimensional version of the Surface Flux Transport model on a spherical polar coordinate system.
 
 ## System Requirements
 
-In order to install and run the SFT 1D the following minimum system
+In order to install and run the SFT 2D the following minimum system
 requirements apply.
 
 - The package requires a working Python enviornment under any operating system.

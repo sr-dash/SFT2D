@@ -9,13 +9,25 @@ title: Surface Flux Transport Model User Manual
 ## Magnetic field evolution on the solar surface
 
 The surface flux transport (SFT) model, which solves the radial
-component of the magnetic field on the solar surface, has demonstrated
+component of the magnetic field on the solar/stellar surface, has demonstrated
 remarkable effectiveness in simulating the dynamics of the large-scale
-magnetic field on the photosphere. The governing equation can be written
+magnetic field on the solar photosphere. The governing equation can be written
 as,
 
 ```{math}
-\frac{\partial B}{\partial t} = \frac{D}{R_\odot^2}\left[\frac{\partial}{\partial s}\left((1-s^2)\frac{\partial B}{\partial s}\right) + \frac{1}{1-s^2}\frac{\partial^2B}{\partial\phi^2}\right] - \frac{\partial}{\partial s}\left[\frac{v_s(s)}{R_\odot}\sqrt{1-s^2} B\right] - \Omega(s)\frac{\partial B}{\partial\phi}
+\frac{\partial B_r}{\partial t}
++ \frac{1}{R_\odot \sin\theta}
+  \frac{\partial}{\partial \theta}
+  \!\left( \sin\theta\, u_\theta B_r \right)
++ \Omega(\theta)
+  \frac{\partial B_r}{\partial \phi}
+=
+\frac{\eta}{R_\odot^2 \sin\theta}
+  \frac{\partial}{\partial \theta}
+  \!\left( \sin\theta\, \frac{\partial B_r}{\partial \theta} \right)
++ \frac{\eta}{R_\odot^2 \sin^2\theta}
+  \frac{\partial^2 B_r}{\partial \phi^2}
++ S.
 ```
 
 where {math}`s` = sin{math}`\theta`, D is the magnetic diffusivity, {math}`\Omega (s)`
