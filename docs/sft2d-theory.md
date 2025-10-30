@@ -30,12 +30,12 @@ as,
 + S.
 ```
 
-where `\eta` is the magnetic diffusivity, {math}`\Omega (s)`
-is the angular velocity in east-west direction on a sine-latitude grid,
+where {math}`\eta` is the magnetic diffusivity, {math}`\Omega (s)`
+is the angular velocity in east-west direction on a uniform latitude grid,
 {math}`u_\theta` is the flow profile along north-south direction on a
-latitude grid and {math}`\phi` is the longitude. As the velocity profiles
+latitude grid and {math}`\phi` is the longitude. The velocity profiles
 involved in transporting the magnetic flux on the photosphere is a
-function of latitude only. The flux from newly emerging sun/star spots are coupled to the mode via an ad-hoc source term `S`.
+function of latitude only. The flux from newly emerging sun/star spots are coupled to the model via an ad-hoc source term {math}`S`.
 
 ```{figure} flows.png
 :height: 70 %
@@ -46,46 +46,192 @@ function of latitude only. The flux from newly emerging sun/star spots are coupl
 Example meridional flow profile.
 ```
 
-## BMR modeling algorithm
+## Bipolar Magnetic Region (BMR) Flux Injection — Theoretical Explanation
 
-We follow the Bipolar Magnetic Region (BMR) modeling algorithm described in [Yeates (2020)](https://doi.org/10.1007/s11207-020-01688-y) to incorporate BMRs in SFT model using observed SHARP parameters. The location of the is modelled with the positive and negative polarity positions {math}`(s_+, \phi_+)` and {math}`(s_-,\phi_-)` on the computational grid. Here {math}`s` denotes sine-latitude and {math}`\phi` denotes (Carrington) longitude. Different properties of the source functions are modeles as following,
+Here is how we model the **bipolar magnetic region (BMR) source term** in our SFT simulation.  
+It describes how a pair of magnetic polarities (leading and following) is injected on the solar/stellar surface, following **Joy’s law** tilt and **Hale’s polarity law**.  
+The resulting field is a **normalized radial magnetic field distribution** representing the emergence of one BMR with a specified total flux and geometric configuration.
 
-1. Centroid of the BMR,
+---
 
-```{math}
-    s_0 = \frac12(s_+ + s_-),\qquad \phi_0 = \frac12(\phi_+ + \phi_-)
-    \label{eqn:center}
-```
+### 1. Mesh and Area Elements
 
-2. Polarity separation, which is the heliographic angle,
-
-```{math}
-    \rho = \arccos\left[s_+s_- + \sqrt{1-s_+^2}\sqrt{1 - s_-^2}\cos(\phi_+-\phi_-) \right]
-    \label{eqn:separation}
-```
-
-3. The tilt angle with respect to the equator, given by,
+The surface of the Sun is represented using a **spherical grid**:
 
 ```{math}
-    \gamma = \arctan\left[\frac{\arcsin(s_+) - \arcsin(s_-)}{\sqrt{1-s_0^2}(\phi_- - \phi_+)}\right]
-    \label{eqn:tilt}
+\theta \in [0, \pi], \quad \phi \in [0, 2\pi)
 ```
 
-Together with the unsigned flux, {math}`|\Phi|`, these parameters define the
-BMR as following. For an untilted BMR centered at
-{math}`s=\phi=0`, this functional form is defined as
+The **surface element** on a sphere of radius \( R_\odot \) is:
 
 ```{math}
-    B(s,\phi) = F(s,\phi) = -B_0\frac{\phi}{\rho}\exp\left[-\frac{\phi^2 + 2\arcsin^2(s)}{(a\rho)^2}\right],
-    \label{eqn:bmr}
+dA = R_\odot^2 \sin\theta \, d\theta \, d\phi
 ```
 
-where the amplitude {math}`B_0` is scaled to match the
-corrected flux of the observed region on the computational grid. To
-account for the location {math}`(s_0,\phi_0)` and tilt {math}`\gamma` of a general
-region, we set {math}`B(s,\phi) = F(s',\phi')`, where {math}`(s',\phi')` are
-spherical coordinates in a frame where the region is centered at
-{math}`s'=\phi'=0` and untilted.
+This is used to compute total flux over the spherical surface.
+
+---
+
+### 2. Convert Center Location
+
+The central location of the bipole in latitude {math}`\lambda` and longitude {math}`\phi` is converted to **colatitude**:
+
+```{math}
+\theta_0 = \frac{\pi}{2} - \lambda, \quad \phi_0 = \phi \mod 2\pi
+```
+
+The corresponding unit vector on the sphere is:
+
+```{math}
+\mathbf{r}_0 =
+\begin{bmatrix}
+\cos\lambda \cos\phi \\
+\cos\lambda \sin\phi \\
+\sin\lambda
+\end{bmatrix}
+```
+
+---
+
+### 3. Local Tangent Basis
+
+At the emergence center, a **local tangent plane** is defined using orthonormal vectors:
+
+```{math}
+\mathbf{e}_\phi = 
+\begin{bmatrix} -\sin\phi \\ \cos\phi \\ 0 \end{bmatrix} , \quad
+\mathbf{e}_\theta =
+\begin{bmatrix} -\sin\lambda \cos\phi \\ -\sin\lambda \sin\phi \\ \cos\lambda \end{bmatrix} , \quad
+\mathbf{e}_\lambda = - \mathbf{e}_\theta
+```
+
+- {math}`\mathbf{e}_\phi` → eastward direction  
+- {math}`\mathbf{e}_\lambda` → northward direction  
+
+---
+
+### 4. Tilt and Separation
+
+The **tilt angle** {math}`\alpha` defines the orientation of the bipole line relative to the local east-west direction:
+
+```{math}
+\mathbf{s} = \cos\alpha \, \mathbf{e}_\phi + \sin\alpha \, \mathbf{e}_\lambda
+```
+
+The **leading** and **following polarity centers** are positioned symmetrically along the separation vector:
+
+```{math}
+\mathbf{r}_\text{lead} = \mathbf{r}_0 + \frac{\Delta}{2} \mathbf{s}, \quad
+\mathbf{r}_\text{foll} = \mathbf{r}_0 - \frac{\Delta}{2} \mathbf{s}
+```
+
+where {math}`\Delta` is the angular separation (in radians).
+
+---
+
+### 5. Convert to Spherical Coordinates
+
+The 3D vectors are converted back to spherical coordinates:
+
+```{math}
+\theta = \arccos\left(\frac{z}{|\mathbf{r}|}\right), \quad
+\phi = \arctan2(y, x) \mod 2\pi
+```
+
+---
+
+### 6. Polarity Signs (Hale’s Law)
+
+The polarity signs are determined according to hemisphere:
+
+```{math}
+(\text{sign}_\text{lead}, \text{sign}_\text{foll}) =
+\begin{cases}
+(+1, -1), & \lambda > 0 \text{ (northern hemisphere)} \\
+(-1, +1), & \lambda < 0 \text{ (southern hemisphere)}
+\end{cases}
+```
+
+Optionally, Hale’s law can be disabled and the leading polarity is set positive.
+
+---
+
+### 7. Gaussian Field Distribution
+
+Each polarity is modeled as a **2D Gaussian** on the sphere:
+
+```{math}
+B_i(\theta, \phi) = s_i \exp\left[ -\frac{(\theta - \theta_i)^2 + \Delta\phi^2(\phi, \phi_i)}{2\sigma^2} \right]
+```
+
+where:
+
+```{math}
+\Delta\phi(\phi, \phi_i) = \min\left(|\phi - \phi_i|, 2\pi - |\phi - \phi_i|\right)
+```
+
+- {math}`\sigma` → angular width of the polarity  
+- {math}`s_i = \pm 1` → polarity sign  
+
+The **combined unscaled radial field** is:
+
+```{math}
+B_\text{unit}(\theta, \phi) = B_\text{lead}(\theta, \phi) + B_\text{foll}(\theta, \phi)
+```
+
+---
+
+### 8. Flux Normalization
+
+Compute the total unsigned flux:
+
+```{math}
+\Phi_\text{unit} = \sum |B_\text{unit}| \, dA
+```
+
+Scale the field to match the specified total flux \( \Phi \):
+
+```{math}
+S = \frac{\Phi}{\Phi_\text{unit}}
+```
+
+The **normalized radial field** is then:
+
+```{math}
+B_r(\theta, \phi) = S \, B_\text{unit}(\theta, \phi)
+```
+
+ensuring:
+
+```{math}
+\int |B_r(\theta, \phi)| \, dA = \Phi
+```
+
+---
+
+### 9. Final Equation
+
+The normalized radial magnetic field of the bipole is:
+
+```{math}
+B_r(\theta, \phi) = \frac{\Phi}{\sum |B_\text{unit}| \, dA} 
+\left[
+s_\text{lead} e^{- \frac{(\theta - \theta_\text{lead})^2 + \Delta\phi^2(\phi, \phi_\text{lead})}{2\sigma^2}} +
+s_\text{foll} e^{- \frac{(\theta - \theta_\text{foll})^2 + \Delta\phi^2(\phi, \phi_\text{foll})}{2\sigma^2}}
+\right]
+```
+
+This is the **mathematical representation of the BMR source term** used in surface flux transport simulations.
+
+---
+
+## 10. Summary
+
+- Represents **idealized BMR emergence** on the solar surface.  
+- Incorporates **Joy’s law tilt** and **Hale’s law polarity orientation**.  
+- Normalized to ensure the **total unsigned flux** equals the specified value.  
+- Provides a **smooth Gaussian representation** suitable for numerical simulations.
+
 
 ```{figure} example_bmr.png
 :height: 70 %
