@@ -11,7 +11,33 @@ surface flux dynamics.
 
 In this python-package, we develop a SFT model in 2D on a uniform latitude-longitude grid.
 
-The model uses upwind-scheme for solving the advection terms and central difference scheme for diffusion terms with a forward euler scheme for time integration.
+#### Numerics
+
+The model is a **finite-volume** solver on a pole-to-pole spherical mesh. Both
+spatial operators are written in flux form on the exact cell areas, so the
+area-weighted total flux is conserved to machine precision — there are no
+boundary conditions at the poles, because the poles are ordinary cells
+(spherical caps of angular radius `dtheta/2`).
+
+| ingredient | scheme |
+|---|---|
+| mesh | cell-centred, pole to pole, `n_theta` cells including both polar caps; `n_phi` unique longitude cells (periodic) |
+| advection | conservative MUSCL/TVD with selectable limiter (`vanleer` default; also `minmod`, `mc`, `superbee`, `upwind1`) |
+| diffusion | conservative 5-point Laplacian, symmetric negative semi-definite |
+| time integration | Strang splitting (advection → diffusion → advection) |
+| advection in time | SSPRK(3,3), sub-cycled at its own CFL |
+| diffusion in time | **RKL2 super-time-stepping**, which absorbs the stiff near-pole longitudinal limit in `O(sqrt)` stages |
+
+Super-time-stepping matters because the longitudinal diffusion term carries an
+explicit limit `dt < (R dphi sin(theta))^2 / eta` that collapses at the poles.
+RKL2 removes it without the near-pole Fourier filtering that explicit SFT codes
+normally resort to, so the discretisation stays faithful to the equation being
+solved. At 181×360 a one-day step takes ~62 RKL2 stages in place of ~960
+explicit diffusion steps.
+
+Verified against analytic free decay of the axisymmetric modes
+(`exp(-l(l+1) eta t / R^2)`, matched to better than 0.01% for l = 1, 2, 3);
+run `pytest tests/` for the full suite.
 
 An example file is shared with the repository to test the model with basic parameter setting.
 
@@ -46,7 +72,26 @@ The module is packaged to be installed with `pip`. It is recomended to create a 
 
 After this you should be able to import sft2d module in any python enviornment or notebook.
 
-#### An example file `example_run_packaged.py` is provided within the `sft2d/` directory to test your installed `sft2d` package.
+#### Testing your installation
+
+An example script is provided within the `sft2d/` directory:
+
+```
+python -m sft2d.example_run
+```
+
+It reports the grid extent, area closure, the chosen RKL2 stage / advection
+sub-cycle counts, and the conservation and polar-field diagnostics. The
+notebook `docs/notebooks/example-run.ipynb` walks through the same material
+interactively.
+
+To run the numerical test suite (mesh closure, flux conservation, operator
+symmetry, analytic decay rates, TVD monotonicity, second-order convergence of
+the polar-cap diagnostics):
+
+```
+pytest tests/
+```
 
 ### We are currently developing the model and in the process of packaging it as a software.
 
@@ -68,6 +113,14 @@ For now you can just download the whole repository and run the example.py file t
    - Develop routines for magnetogram data assimilation with interpolation.
    - Cases for different sources HMI or any other Stellar processed data.
    - Calibrate fluxes and add as a source term to the model.
+   - The `assimilate=` hook in `evolve` is already in place; what is missing is
+     the callable that inserts observed B_r in a low-latitude window each
+     Carrington rotation with flux balancing.
+4. **Performance**
+   - The operators are pure NumPy and cache their geometry, giving ~5 s per
+     simulated year at 91×180 and ~45 s/yr at 181×360 on a laptop. A parameter
+     scan is embarrassingly parallel across evaluations; run them in separate
+     processes rather than threading the solver.
 
 ### RGO Sunspot property processing.
 

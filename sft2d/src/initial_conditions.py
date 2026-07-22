@@ -1,86 +1,96 @@
 """
 initial_conditions.py
 
-This module handles the initial conditions for the Solar Surface Flux Transport (SFT) model.
+Initial radial-field maps on the pole-to-pole finite-volume mesh.
 
 Functions:
-    - initialize_field: Generates a uniform grid in spherical polar coordinates (theta, phi).
+    - initialize_field: axisymmetric dipole, or an observed synoptic map.
+    - correct_flux_multiplicative: area-weighted flux balancing.
 """
 
+from __future__ import annotations
+
 import numpy as np
-from astropy.io import fits
-from scipy.interpolate import RegularGridInterpolator as rgi
 
-def initialize_field(grid, field_type='dipole'):
+from .grid import polar_average
+
+
+def initialize_field(grid, field_type="dipole", path=None, balance=True):
+    """Build an initial radial field on ``grid``.
+
+    Parameters
+    ----------
+    grid : dict
+        Grid from :func:`~sft2d.src.grid.create_grid`.
+    field_type : {'dipole', 'read'}
+        ``'dipole'`` gives the usual ``sin(lat)|sin(lat)|^7`` axisymmetric
+        profile (amplitude 1 G; scale it yourself).  ``'read'`` interpolates a
+        sine-latitude synoptic FITS map onto the grid.
+    path : str, optional
+        FITS file for ``field_type='read'``.  Required for that mode; the old
+        version hard-coded a relative path that only worked from the repo root.
+    balance : bool
+        Remove any net flux, area-weighted.
+
+    Returns
+    -------
+    (n_theta, n_phi) ndarray
     """
-    Creates initial condition based on user choice (Dipole/Read from fits file).
+    theta = grid["colatitude"]
+    phi = grid["longitude"]
 
-    Parameters:
-        grid (dict): Dictionary containing grid information ('theta', 'phi', and their spacings).
-        field_type: Choice for setting the initial field as global dipole or read data from Carrington Rotation fits file.
+    if field_type == "dipole":
+        lat = 0.5 * np.pi - theta
+        prof = np.abs(np.sin(lat)) ** 7 * np.sin(lat)
+        B_init = np.repeat(prof[:, None], phi.size, axis=1)
 
-    Returns:
-        np.ndarray: Initial magnetic field.
-    """
-    # Read the grid information
-    theta = grid['colatitude']
-    phi = grid['longitude']
+    elif field_type == "read":
+        if path is None:
+            raise ValueError("field_type='read' requires an explicit `path`")
+        from astropy.io import fits
+        from scipy.interpolate import RegularGridInterpolator as rgi
 
-
-    # Number of grid points in theta and phi directions
-    num_theta = theta.size
-    num_phi = phi.size
-
-    # Initialize the magnetic field based on the chosen field type
-    B_init = np.zeros((num_theta, num_phi))
-
-    if field_type == 'dipole':
-        dipole_strength = 1.0
-        B_init = dipole_strength*np.outer(np.abs(np.sin(np.pi/2-theta))**7*(np.sin(np.pi/2-theta)),np.ones(phi.shape[0]))
-    elif field_type == 'read':
-        hmi_br = fits.getdata('./data/hmi_CR2097.fits')[::-1,:]
-        
-
-        # Coordinates of original map (pretend it goes only once around Sun in longitude!):
-        # Latitude axis is in sine of latitude.
-        nsm = np.size(hmi_br, axis=0)
-        npm = np.size(hmi_br, axis=1)
+        hmi_br = np.asarray(fits.getdata(path), dtype=float)[::-1, :]
+        nsm, npm = hmi_br.shape
         dsm = 2.0 / nsm
 
-        # Leaving a small gap at the poles for smoother interpolation:
+        # Source map is uniform in sine of latitude; leave a small gap at the
+        # poles so the interpolator stays inside its domain.
         scm = np.flip(np.arccos(np.linspace(-1 + 0.05 * dsm, 1 - 0.05 * dsm, nsm)))
-        pcm = np.linspace(0, 2 * np.pi, npm)
+        pcm = np.linspace(0.0, 2.0 * np.pi, npm)
 
-        # Interpolate to the computational grid:
-        bri = rgi((scm, pcm), hmi_br, method="nearest", bounds_error=False, fill_value=0)
-        # B_init = np.zeros((num_theta, num_phi))
+        bri = rgi((scm, pcm), hmi_br, method="linear",
+                  bounds_error=False, fill_value=None)
+        TH, PH = np.meshgrid(theta, phi, indexing="ij")
+        # Vectorised: the old version looped over every cell in Python, which
+        # cost minutes at production resolution.
+        B_init = bri(np.stack([TH.ravel(), PH.ravel()], axis=-1)).reshape(TH.shape)
 
-        for i in range(num_theta):
-            for j in range(num_phi):
-                B_init[i, j] = bri((theta[i], phi[j]))
+    else:
+        raise ValueError("field_type must be 'dipole' or 'read'")
 
-
-    # Correct for flux imbalance (if any)
-    B_init = correct_flux_multiplicative(B_init)
-
-    # Return the initial magnetic field array
+    polar_average(B_init)
+    if balance:
+        B_init = correct_flux_multiplicative(B_init, grid)
     return B_init
 
-def correct_flux_multiplicative(f):
+
+def correct_flux_multiplicative(f, grid):
+    """Rescale each polarity so the map carries zero net flux.
+
+    Weighted by the true cell areas.  The previous version explicitly assumed
+    "cells have equal area", which a latitude-longitude mesh does not: it
+    over-weighted the poles by up to ``1/sin(theta)``, so the correction itself
+    introduced an imbalance.
     """
-        Corrects the flux balance in the map f (assumes that cells have equal area).
-    """
-    
-    # Compute positive and negative fluxes:
-    ipos = f > 0
-    ineg = f < 0
-    fluxp = np.abs(np.sum(f[ipos]))
-    fluxn = np.abs(np.sum(f[ineg]))
-    
-    # Rescale both polarities to mean:
-    fluxmn = 0.5*(fluxn + fluxp)
+    w = np.broadcast_to(grid["area_cm2"], f.shape)
+    ipos, ineg = f > 0, f < 0
+    fluxp = float(np.sum(f[ipos] * w[ipos]))
+    fluxn = float(np.abs(np.sum(f[ineg] * w[ineg])))
+    if fluxp == 0.0 or fluxn == 0.0:
+        return f
+    fluxmn = 0.5 * (fluxp + fluxn)
     f1 = f.copy()
-    f1[ineg] *= fluxmn/fluxn
-    f1[ipos] *= fluxmn/fluxp
-    
-    return f1
+    f1[ipos] *= fluxmn / fluxp
+    f1[ineg] *= fluxmn / fluxn
+    return polar_average(f1)

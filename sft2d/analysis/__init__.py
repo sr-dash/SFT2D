@@ -6,13 +6,20 @@ Modules:
 """
 
 # Import analysis functionalities
-from .analysis import calculate_usflx, calculate_dm, calculate_polar_field, calculate_polar_flux
+from .analysis import (
+    calculate_dm,
+    calculate_net_flux,
+    calculate_polar_field,
+    calculate_polar_flux,
+    calculate_usflx,
+)
 from .visualize import plot_bfly, plot_mag
 
 
 __all__ = [
-    # Alanysis modules
+    # Analysis modules
     "calculate_usflx",
+    "calculate_net_flux",
     "calculate_dm",
     "calculate_polar_field",
     "calculate_polar_flux",

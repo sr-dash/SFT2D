@@ -1,41 +1,63 @@
 """
-sft_model: A Python package for simulating solar surface flux transport.
+sft2d: solar surface flux transport on a spherical finite-volume mesh.
 
 Modules:
-    - src: Contains the core logic for the SFT model, including advection, diffusion, and grid handling.
+    - src: mesh, spatial operators, time integration, sources.
+    - analysis: derived diagnostics and plotting.
 """
 
-# Import core functionalities
-from .src.advection import calculate_advection
-from .src.diffusion import calculate_diffusion
-from .src.time_step import calculate_time_step
-from .src.grid import create_grid
-from .src.initial_conditions import initialize_field
-from .src.transport_profiles import meridional_flow, differential_rotation
-from .analysis.analysis import calculate_usflx, calculate_dm, calculate_polar_field, calculate_polar_flux
+from .src import (
+    ARSource,
+    Advection,
+    Diffusion,
+    create_grid,
+    differential_rotation,
+    evolve,
+    initialize_field,
+    insert_bmr,
+    make_bmr,
+    meridional_flow,
+    polar_average,
+    solar_cycle_number,
+    total_flux,
+)
+from .analysis.analysis import (
+    calculate_dm,
+    calculate_net_flux,
+    calculate_polar_field,
+    calculate_polar_flux,
+    calculate_usflx,
+)
 from .analysis.visualize import plot_bfly, plot_mag
 
-
 __all__ = [
-    # Core modules
-    "calculate_advection",
-    "calculate_diffusion",
-    "calculate_time_step",
+    # mesh and solver
     "create_grid",
+    "polar_average",
+    "total_flux",
+    "Advection",
+    "Diffusion",
+    "evolve",
     "initialize_field",
     "meridional_flow",
     "differential_rotation",
-    # Analysis modules
+    # sources
+    "make_bmr",
+    "insert_bmr",
+    "ARSource",
+    "solar_cycle_number",
+    # analysis
     "calculate_usflx",
+    "calculate_net_flux",
     "calculate_dm",
     "calculate_polar_field",
     "calculate_polar_flux",
-    # Visualization modules
+    # visualization
     "plot_bfly",
-    "plot_mag"
+    "plot_mag",
 ]
 
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 try:
     __version__ = version("sft2d")

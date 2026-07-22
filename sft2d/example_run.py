@@ -1,158 +1,73 @@
 """
-    This is an example file to run the model with standard set of parameters.
-    A small visualization routine is also provided to plot and check the outputs.
+example_run.py
 
-    Currently we are developing this model and more functionalities will be added in due course.
-    Numerical schemes are also being tested.
+Minimal end-to-end check of an SFT2D installation: a free-decay run from a
+dipole initial condition, with the conservation and accuracy diagnostics that
+matter.
 
-    Author: Soumyaranjan Dash
-    Email: dash.soumya922@gmail.com
-    Date: 15th Jan 2025
+    python -m sft2d.example_run
 
+Everything is driven through :func:`sft2d.src.stepper.evolve`, which handles the
+Strang splitting, the advective sub-cycling and the RKL2 diffusion stages for
+you -- there is no hand-rolled time loop to get wrong.
 """
-# Import basic packages for simulation and visualization
+
+import time
+
 import numpy as np
-import matplotlib.pyplot as plt
-from tqdm import tqdm
 
-# Import packagess from the SFT model (For local installation)
-# Most likely this will also run after a simple clone of the repo. But it is recommended to install the package.
-# If you find any errors, please raise an issue in the GitHub repository.
-
-from src.grid import create_grid
-from src.initial_conditions import initialize_field
-from src.transport_profiles import meridional_flow, differential_rotation
-from src.time_step import calculate_time_step
-from src.diffusion import calculate_diffusion
-from src.advection import calculate_advection
-from analysis.analysis import calculate_usflx, calculate_dm, calculate_polar_field
-from analysis.visualize import plot_bfly
-from analysis.visualize import plot_mag
+from .analysis.analysis import calculate_dm, calculate_polar_field, calculate_usflx
+from .src.constants import R_SUN_M
+from .src.grid import create_grid, total_flux
+from .src.initial_conditions import initialize_field
+from .src.stepper import evolve
+from .src.transport_profiles import differential_rotation, meridional_flow
 
 
-# Import packages from the SFT model (For package installation)
-# from sft2d import create_grid, initialize_field, meridional_flow, differential_rotation, calculate_time_step, calculate_diffusion, calculate_advection
+def main(n_lat=91, n_lon=180, num_days=365, eta=2.5e8, v0=15.0):
+    grid = create_grid(n_lat, n_lon)
+    mf = meridional_flow(grid, peak_speed=v0)
+    dr = differential_rotation(grid, rotation="solar", frame="carrington")
+    field = initialize_field(grid, "dipole") * 3.0
 
-# Define and initialize some essential model input parameters.
+    lat = np.rad2deg(0.5 * np.pi - grid["colatitude"])
+    print(f"grid {n_lat}x{n_lon}: latitude {lat.min():+.1f} .. {lat.max():+.1f} deg, "
+          f"dtheta = {np.rad2deg(grid['dtheta']):.2f} deg")
+    print(f"sphere area / 4*pi*R^2 = "
+          f"{float(np.sum(grid['area'])) * n_lon / (4 * np.pi * R_SUN_M**2):.15f}")
 
-## Grid creation (180x360) Uniform in latitude-longitude
-grid_sft = create_grid(180,360)
-## Meridional flow profile
-mf_ = meridional_flow(grid_sft.copy())
-## Differential rotation profile
-dr_ = differential_rotation(grid_sft.copy())
-## Initial magnetic field (dipole)
-## There is a choice between Dipole or HMI CR map for initial condition
-## For HMI map, set 'read' in place of 'dipole'.
-field = initialize_field(grid_sft.copy(), 'dipole')
-## Magnetic diffusivity
-diffusivity = 2.5 * 10**8 # cm^2/s
-## Time step calculation
-ts, ndt = calculate_time_step(grid_sft.copy(), diffusivity)
+    bfly, days = [], []
 
-## Create basic grid for visualization
-colatitude = grid_sft['colatitude']
-longitude = grid_sft['longitude']
-delta_theta = grid_sft['dtheta']
-delta_phi = grid_sft['dphi']
-solar_radius = 6.955 * 10**8  # Solar radius in meters
+    class Recorder:
+        def record(self, day, B):
+            if day % 5 == 0:
+                days.append(day)
+                bfly.append(B.mean(axis=1).copy())
 
-## Visualize the flow profiles (set 1 to show the plot)
-if 0:
-    plt.figure(figsize=[9,3])
-    ax1 = plt.subplot(121)
-    ax1.plot(np.rad2deg(grid_sft['colatitude']-np.pi/2),mf_[:,180],color='k',label='Meridional flow',lw=2)
-    ax1.set_xlabel('Latitude [deg]')
-    ax1.set_ylabel('Velocity [m/s]')
-    ax1.set_title('Meridional flow')
-    ax1.set_xlim([-90,90])
-    ax1.set_xticks(np.arange(-90,91,30))
+    f0 = total_flux(field, grid)
+    u0 = calculate_usflx(field, grid)
+    t0 = time.time()
+    B, stats = evolve(field, grid, mf, dr, eta, num_days,
+                      recorder=Recorder(), return_stats=True)
+    elapsed = time.time() - t0
 
-    ax2 = plt.subplot(122)
-    ax2.plot(np.rad2deg(grid_sft['colatitude']-np.pi/2),dr_[:,180]*np.sin(grid_sft['colatitude'])*solar_radius,c='k',label='Differential rotation',lw=2)
-    ax2.set_xlabel('Latitude [deg]')
-    ax2.set_ylabel('Velocity [m/s]')
-    ax2.set_title('Differential rotation')
-    ax2.set_xlim([-90,90])
-    ax2.set_xticks(np.arange(-90,91,30))
+    print(f"\n{num_days} days in {elapsed:.1f}s ({elapsed / num_days * 365:.1f} s/yr)")
+    print(f"  RKL2 stages/step          {stats['rkl2_stages']}"
+          f"   (vs {stats['explicit_diffusion_steps_avoided']:.0f} explicit diffusion steps)")
+    print(f"  advection subcycles/half  {stats['advection_subcycles_per_half_step']}")
 
-    plt.subplots_adjust(wspace=0.3)
-    plt.show()
+    f1 = total_flux(B, grid)
+    print(f"\n  net flux drift    {abs(f1 - f0) / max(abs(u0), 1e-30):.3e}  (relative to unsigned)")
+    # A pure dipole has no polarity inversion line away from the equator, so
+    # diffusion has almost no opposite-sign flux to cancel and the unsigned
+    # total barely moves; it is the signed total that must not move at all.
+    print(f"  unsigned flux     {u0:.4e} -> {calculate_usflx(B, grid):.4e} Mx")
+    pn, ps = calculate_polar_field(B, grid)
+    print(f"  polar field       N {pn:+.3f} G   S {ps:+.3f} G")
+    print(f"  axial dipole      {calculate_dm(B, grid):+.4f} G")
 
-## Run the SFT evolution.
+    return np.array(bfly), np.array(days), grid, B
 
-## Total number of days to run the simulation
-## Time-step is rounded off to fit exactly into one day
-num_days = 15*365  # Example total time [days]
 
-## Grid properties
-num_theta = grid_sft['colatitude'].size
-num_phi = grid_sft['longitude'].size
-
-## Initialize arrays to store the data
-bfly_data = np.zeros((num_days+1,num_theta))
-all_br_data = np.zeros((num_days+1,num_theta,num_phi))
-all_br_data[0,:,:] = field.copy()
-bfly_data[0,:] = np.mean(field,axis=1)
-
-## Define temporary arrays for updating the field
-B_temp = field.copy()
-B_temp_update = np.zeros_like(field)
-
-# Time loop for evolution
-for t in tqdm(range(1,num_days+1),desc='Simulation days: '):
-    delta_t = ts
-    for steps in range(ndt):
-        # Calculate the diffusion term
-        B_temp_diff = calculate_diffusion(B_temp, diffusivity, grid_sft.copy())
-        # Calculate the advection term
-        B_temp_adv = calculate_advection(B_temp, dr_, mf_, grid_sft.copy())
-        
-        # Update magnetic field using all terms
-        B_temp_update = B_temp + delta_t * (1.0*B_temp_diff - 1.0*B_temp_adv)
-
-        # Apply periodic boundary conditions in the phi direction
-        B_temp_update[:, 0] = B_temp_update[:, -2]  # First column matches second-to-last column
-        B_temp_update[:, -1] = B_temp_update[:, 1]  # Last column matches second column
-
-        # Apply open boundary conditions in the theta direction
-        B_temp_update[0, :] = B_temp_update[1, :]    # Northern boundary (pole)
-        B_temp_update[-1, :] = B_temp_update[-2, :]  # Southern boundary (pole)
-        B_temp = B_temp_update.copy()
-    # Save the butterfly diagram
-    bfly_data[t,:] = np.mean(B_temp,axis=1)
-    all_br_data[t,:,:] = B_temp.copy()
-
-## Visualize the butterfly diagram (set 1 to run the following script)
-if 0:
-    plt.figure(figsize=[7,3])
-    ax1 = plt.subplot(111)
-    bmax = 5
-    pm1 = ax1.pcolormesh(np.arange(num_days+1),np.rad2deg(grid_sft['colatitude']-np.pi/2),bfly_data.T,cmap='bwr',vmax=bmax,vmin=-bmax)
-    ax1.set_xlabel('Time [days]')
-    ax1.set_ylabel('Latitude [deg]')
-    plt.colorbar(pm1)
-    plt.show()
-
-## Calculate the total unsigned flux from the magnetic field
-def calc_usflx(all_br_data):
-    temp_bsinth = np.zeros_like(all_br_data[0,:,:])
-    usflx = np.zeros(num_days+1)
-    for i in range(num_days+1):
-        for i1 in range(longitude.shape[0]):
-            temp_bsinth[:,i1] = np.abs(all_br_data[i,:,i1]) * np.sin(colatitude)
-        usf_1d = np.sum(temp_bsinth) * delta_theta * delta_phi * (solar_radius*1e2)**2
-        usflx[i] = usf_1d
-    return usflx
-
-## Calculate the total unsigned flux
-usflx_diff = calc_usflx(all_br_data)
-
-## Plot the USFLUX variation (set 1 to run the following script)
-if 0:
-    plt.plot(np.arange(num_days+1),usflx_diff)
-    plt.xlabel('Time [days]')
-    plt.ylabel('Total unsigned flux [Mx]')
-    plt.title('Total unsigned flux')
-    plt.show()
-
+if __name__ == "__main__":
+    main()
