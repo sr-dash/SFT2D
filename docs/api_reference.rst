@@ -27,11 +27,13 @@ Top-level functions and classes exposed by ``sft2d/__init__.py``:
    sft2d.differential_rotation
 
    sft2d.make_bmr
+   sft2d.make_bmr_yeates
    sft2d.insert_bmr
    sft2d.balance_flux
    sft2d.joys_law_tilt
    sft2d.hale_leading_sign
    sft2d.ARSource
+   sft2d.SHARPSource
    sft2d.solar_cycle_number
 
    sft2d.calculate_usflx

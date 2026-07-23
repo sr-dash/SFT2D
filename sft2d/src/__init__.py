@@ -33,7 +33,15 @@ from .constants import DAY_S, R_SUN_CM, R_SUN_M
 from .grid import create_grid, polar_average, total_flux
 from .initial_conditions import correct_flux_multiplicative, initialize_field
 from .operators import Advection, Diffusion, limited_slope
-from .source import balance_flux, hale_leading_sign, insert_bmr, joys_law_tilt, make_bmr
+from .sharp_driver import SHARPSource
+from .source import (
+    balance_flux,
+    hale_leading_sign,
+    insert_bmr,
+    joys_law_tilt,
+    make_bmr,
+    make_bmr_yeates,
+)
 from .stepper import advect, evolve, ssprk33_step
 from .sts import rkl2_num_stages, rkl2_step
 from .transport_profiles import (
@@ -69,10 +77,12 @@ __all__ = [
     "differential_rotation",
     # emergence sources
     "make_bmr",
+    "make_bmr_yeates",
     "insert_bmr",
     "balance_flux",
     "joys_law_tilt",
     "hale_leading_sign",
     "ARSource",
+    "SHARPSource",
     "solar_cycle_number",
 ]

@@ -120,6 +120,25 @@ python examples/validate_against_hmi.py 15       # cycle-24 reversal vs HMI
 The notebook `docs/notebooks/example-run.ipynb` walks through the same material
 interactively.
 
+#### Driving datasets and BMR shapes
+
+The model can be driven by emerging bipolar magnetic regions from more than one
+source, and with more than one idealized-BMR shape:
+
+| driver | dataset | BMR shape | tilt / polarity |
+|---|---|---|---|
+| `ARSource` | bundled **RGO** sunspot record (1901–2025) | two-Gaussian `make_bmr` | Joy's-law tilt + Hale polarity (assumed); flux from spot area, so `flux_scale ≫ 1` |
+| `SHARPSource` | **SHARPS/HMI** catalogue (2010–present, external) | Yeates bipole `make_bmr_yeates` | *fitted* tilt + observed flux; no Hale/Joy assumption, `flux_scale ≈ 1` |
+
+The Yeates bipole (`make_bmr_yeates`) is a single smooth antisymmetric region
+with a continuous polarity-inversion line — the form used in A. Yeates's
+[`sharps-bmrs`](https://github.com/antyeates1983/sharps-bmrs) catalogue —
+implemented independently of that GPL code. `SHARPSource` reads that catalogue's
+`bmrsharps_evol.txt` format; the catalogue itself is not bundled (GPL, separate
+project — see `examples/README.md` for how to obtain it). `examples/bmr_shapes.py`
+shows the two shapes side by side and `examples/run_sharps_cycle.py` drives a run
+from a catalogue.
+
 #### Cycle-24 validation
 
 Driving the model from the bundled RGO record over cycle 24 reproduces the
