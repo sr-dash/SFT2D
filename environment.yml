@@ -1,11 +1,19 @@
-    name: sft2d  # Name for conda environment
-    channels:
-        - conda-forge  # Optional: Use conda-forge channel for wider package selection
-    dependencies:
-        - python>=3.8  # Specify Python version
-        - numpy
-        - astropy
-        - matplotlib
-        - scipy
-        - tqdm
-        - versioneer  # Optional: For version control
+name: sft2d
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.9
+  # --- core runtime ---
+  - numpy>=1.22
+  - scipy>=1.8
+  - astropy>=5.0
+  - pandas>=1.4
+  - matplotlib>=3.5
+  # --- tests + notebooks ---
+  - pytest>=7.0
+  - jupyter
+  - ipykernel
+  # Install the package itself (editable) into the environment:
+  - pip
+  - pip:
+      - -e .

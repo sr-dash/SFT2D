@@ -9,7 +9,8 @@ For a sun-like star where spherical geometry suits best to study the global surf
 we can design a two dimensional SFT model with prescriptions of large-scale flow profiles and magnetic diffusivity for mimicing the
 surface flux dynamics.
 
-In this python-package, we develop a SFT model in 2D on a uniform latitude-longitude grid.
+In this python-package, we develop a SFT model in 2D on a spherical
+finite-volume mesh (uniform in latitude and longitude).
 
 #### Numerics
 
@@ -43,84 +44,109 @@ An example file is shared with the repository to test the model with basic param
 
 Feel free to modify and change the simulation parameters according to your requirements.
 
-#### Installation instruction
+#### Meridional-flow sign convention (read this once)
 
-The module is packaged to be installed with `pip`. It is recomended to create a `conda` enviornment specific to this module for testing.
+The solver advects the field with the **colatitude** velocity `u_theta`, and
+`meridional_flow(grid, peak_speed)` returns exactly that. **Positive
+`peak_speed` is poleward** — the physical case. In `u_theta` a poleward flow is
+*negative in the north and positive in the south* (because `+theta` points
+southward everywhere), which looks upside-down only because it is the
+colatitude component. To plot the flow the intuitive way (northward-positive,
+so poleward is `+` in the north and `−` in the south) use
+`meridional_flow_latitude`.
 
-1. Download a local copy (recomended for further testing/developing). If you are a collaborator you should have access to this repository.
-   If you want to join us for development do let us know.
+A **negative** `peak_speed` is equatorward and will *prevent* polar reversal —
+do not flip the sign expecting to fix a reversal problem; that is a
+flux-amplitude / tilt question. See `examples/validate_against_hmi.py`, which
+reverses the cycle-24 north pole with `+v0` and fails to with `−v0`.
 
-   ```
-   git clone https://github.com/sr-dash/SFT2D.git
-   ```
+#### Installation
 
-2. Create a new `conda` enviornment specific for `sft2d` package with
+The package builds from `pyproject.toml` (PEP 621) with a static version — no
+git checkout is required to install.
 
-   ```
-   conda env create -f environment.yml
-   conda activate sft2d
-   ```
+Conda (recommended — creates the env and installs the package editable):
 
-3. Install the package with the following command.
+```bash
+conda env create -f environment.yml
+conda activate sft2d
+```
 
-   ```
-   pip install git+https://github.com/sr-dash/SFT2D.git sft2d
-   ```
+or plain pip from a local checkout:
 
-   Since this is a private repository, you will need to access it with a personalized github token. You can create your own personalized token in your account developper settings.
-   Let us know if you need help in this step.
+```bash
+pip install -e .            # runtime only
+pip install -e ".[dev]"     # + pytest, build, ruff, jupyter
+```
 
-After this you should be able to import sft2d module in any python enviornment or notebook.
+Reference data (the processed RGO active-region record, an HMI synoptic map, and
+HMI polar-field / butterfly references) ships **inside** the package at
+`sft2d/data/`, so examples and the HMI comparison work from an installed copy:
+
+```python
+from sft2d.data import RGO_CSV, load_hmi_polar_field, load_hmi_butterfly
+```
 
 #### Testing your installation
 
-An example script is provided within the `sft2d/` directory:
+A one-command smoke test that prints grid extent, area closure, RKL2 stage /
+advection sub-cycle counts and the conservation + polar-field diagnostics:
 
-```
+```bash
 python -m sft2d.example_run
 ```
 
-It reports the grid extent, area closure, the chosen RKL2 stage / advection
-sub-cycle counts, and the conservation and polar-field diagnostics. The
-notebook `docs/notebooks/example-run.ipynb` walks through the same material
+The numerical test suite (mesh closure, flux conservation, operator symmetry,
+analytic decay rates, TVD monotonicity, second-order convergence of the
+polar-cap diagnostics, plus the meridional-flow convention and RGO-driver
+end-to-end checks):
+
+```bash
+pytest                    # all tests
+pytest -m "not slow"      # skip the multi-year driven-run tests (fast)
+```
+
+#### Examples
+
+Runnable scripts in `examples/` (each uses the bundled data and writes a PNG):
+
+```bash
+python examples/numerical_diffusion_test.py     # limiter peak-retention
+python examples/bmr_demo.py                      # flux-normalised Joy/Hale BMRs
+python examples/run_driven_cycle.py 2010 2020 30 # RGO-driven butterfly + polar field
+python examples/validate_against_hmi.py 15       # cycle-24 reversal vs HMI
+```
+
+The notebook `docs/notebooks/example-run.ipynb` walks through the same material
 interactively.
 
-To run the numerical test suite (mesh closure, flux conservation, operator
-symmetry, analytic decay rates, TVD monotonicity, second-order convergence of
-the polar-cap diagnostics):
+#### Cycle-24 validation
 
-```
-pytest tests/
-```
+Driving the model from the bundled RGO record over cycle 24 reproduces the
+observed HMI north-cap polar-field reversal in both **sign and timing** (run
+`python examples/validate_against_hmi.py 15`). Two things have to be right for
+the pole to reverse to the observed sign:
 
-### We are currently developing the model and in the process of packaging it as a software.
-
-For now you can just download the whole repository and run the example.py file to test the simulation.
+* the meridional flow must be **poleward** (`peak_speed > 0`); and
+* the **Hale polarity** must match the real cycle (odd cycles: N leading `+`;
+  even cycles: N leading `-`). The absolute Hale parity is now anchored to the
+  observed cycles rather than left arbitrary — with it inverted, the pole
+  reversed to the *wrong* sign even though the transport was correct.
 
 ### To-Do List
 
-1. **Add BMR Modelling**
-
-   - Implement the BMR (Bipolar Magnetic Region) modeling functionality.
-   - Integrate BMR modeling into the Surface Flux Transport (SFT) model.
-   - Provide users with an option to enable or disable BMR modeling.
-
-2. **BMR Data Processing**
-   - Process BMR properties from various sources (RGO/HMI).
-   - Create standardized tables for BMR modeling input.
-   - Ensure compatibility of data formats across different sources.
-3. **Data assimilation**
-   - Develop routines for magnetogram data assimilation with interpolation.
-   - Cases for different sources HMI or any other Stellar processed data.
-   - Calibrate fluxes and add as a source term to the model.
-   - The `assimilate=` hook in `evolve` is already in place; what is missing is
-     the callable that inserts observed B_r in a low-latitude window each
-     Carrington rotation with flux balancing.
-4. **Performance**
-   - The operators are pure NumPy and cache their geometry, giving ~5 s per
-     simulated year at 91×180 and ~45 s/yr at 181×360 on a laptop. A parameter
-     scan is embarrassingly parallel across evaluations; run them in separate
-     processes rather than threading the solver.
+1. **Calibration harness** — a parameter scan over (`flux_scale`, `eta`, `v0`)
+   minimising the polar-cap-flux misfit against the HMI reference. The forward
+   model, the diagnostics and the HMI reference data are all in place (see
+   `examples/validate_against_hmi.py` and `sft2d.data`); what remains is the
+   objective + scan driver.
+2. **Data assimilation** — the `assimilate=` hook in `evolve` is already in
+   place; what is missing is the callable that inserts observed B_r in a
+   low-latitude window each Carrington rotation with flux balancing.
+3. **Performance** — the operators are pure NumPy and cache their geometry,
+   giving ~5 s per simulated year at 91×180 and ~45 s/yr at 181×360 on a laptop.
+   A parameter scan is embarrassingly parallel across evaluations; run them in
+   separate processes rather than threading the solver.
 
 ### RGO Sunspot property processing.
 

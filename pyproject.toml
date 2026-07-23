@@ -1,67 +1,101 @@
 [build-system]
-requires = [
-  "setuptools>=61",
-  "wheel",
-  "setuptools_scm[toml]>=8"
-]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "sft2d"
-description = "2D Surface Flux Transport (SFT) simulation and analysis package."
+version = "0.1.0"
+description = "2D Surface Flux Transport (SFT) on a conservative pole-to-pole finite-volume sphere."
 readme = "README.md"
-authors = [
-  { name = "Soumyaranjan Dash", email = "dash.soumya922@gmail.com" }
-]
-license = { file = "LICENSE" }
 requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Soumyaranjan Dash", email = "sdash@nso.edu" },
+]
+keywords = [
+  "solar physics",
+  "surface flux transport",
+  "magnetic field",
+  "finite volume",
+  "solar cycle",
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Astronomy",
+  "Operating System :: OS Independent",
+]
+
+# Core runtime dependencies.  Every one is exercised by the default feature set:
+#   numpy      - operators, mesh, everything
+#   scipy      - synoptic-map interpolation (initialize_field 'read')
+#   astropy    - reading FITS synoptic maps
+#   pandas     - RGO active-region driver (ARSource)
+#   matplotlib - the plotting helpers and example scripts
 dependencies = [
   "numpy>=1.22",
   "scipy>=1.8",
-  "matplotlib>=3.7",
-  "h5py>=3.8",
+  "astropy>=5.0",
+  "pandas>=1.4",
+  "matplotlib>=3.5",
 ]
-# SCM handles version automatically
-dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=7.0",
+]
+notebook = [
+  "jupyter",
+  "ipykernel",
+]
+dev = [
+  "pytest>=7.0",
+  "build",
+  "twine",
+  "ruff",
+  "jupyter",
+  "ipykernel",
+]
 
 [project.urls]
 Homepage = "https://github.com/sr-dash/SFT2D"
 Repository = "https://github.com/sr-dash/SFT2D"
 Issues = "https://github.com/sr-dash/SFT2D/issues"
 
-[project.optional-dependencies]
-dev = [
-  "pytest>=7.0",
-  "build",
-  "twine",
-  "black",
-  "isort",
-  "ruff",
+# --- package discovery ------------------------------------------------------
+# Discover from the project root and pick up sft2d and its subpackages.  (The
+# previous config used where=["sft2d"], which told setuptools to look *inside*
+# the package and would have installed `src` and `analysis` as top-level
+# packages instead of `sft2d.src` / `sft2d.analysis`.)
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sft2d*"]
+
+# Ship the small reference data bundled inside the package so examples and the
+# HMI comparison work from an installed copy, not just from a checkout.
+[tool.setuptools.package-data]
+"sft2d.data" = ["*.p", "*.fits", "*.csv"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+  "slow: multi-year forward integrations (deselect with -m 'not slow')",
 ]
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools_scm]
-# Write the version to a file inside your package
-write_to = "sft2d/_version.py"
-version_scheme = "post-release"
-local_scheme = "no-local-version"
-fallback_version = "0.0.1"
-
-[tool.setuptools.packages.find]
-where = ["sft2d"]
-
-[tool.black]
-line-length = 88
-target-version = ["py39"]
-
-[tool.isort]
-profile = "black"
-
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py39"
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "W"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# Examples set the matplotlib backend before importing pyplot (needs the import
+# after a statement) and are read top-to-bottom, so allow module imports mid-file.
+"examples/*" = ["E402", "E701", "E702"]
+# Tests use compact multi-statement setup lines and single-letter math indices
+# (e.g. the spherical-harmonic degree `l`), which are clearer here than renamed.
+"tests/*" = ["E402", "E701", "E702", "E741"]

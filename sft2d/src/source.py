@@ -55,13 +55,23 @@ def joys_law_tilt(lat_deg, coeff=0.5, form="linear"):
 
 
 def hale_leading_sign(lat_deg, cycle_number):
-    """Sign (+/-1) of the leading polarity following Hale's law.
+    """Sign (+/-1) of the leading (equatorward) polarity following Hale's law.
 
-    Northern-hemisphere leading polarity is positive for even cycle numbers and
-    negative for odd ones; the south is opposite.  (The absolute convention is
-    arbitrary; only the hemisphere/cycle flips matter physically.)
+    This sets the *absolute* polarity, so it is anchored to the observed cycles,
+    not left arbitrary: in **odd** cycles the northern-hemisphere leading
+    polarity is **positive**, in **even** cycles it is **negative** (the south is
+    opposite).  Cycle 23 (odd) -> N leading +; cycle 24 (even) -> N leading -.
+
+    Getting this backwards inverts which polarity the meridional flow carries to
+    the poles, so the modelled polar field reverses to the *wrong sign* relative
+    to observations even though the transport is correct.  (The earlier version
+    had the parity flipped and treated the absolute sign as arbitrary; with real
+    RGO input driving a comparison against HMI it is not arbitrary.)
+
+    The following (poleward) polarity, which actually sets the reversed polar
+    field, is the opposite sign.
     """
-    north = +1 if (cycle_number % 2 == 0) else -1
+    north = +1 if (cycle_number % 2 == 1) else -1
     return north if lat_deg >= 0 else -north
 
 

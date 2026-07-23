@@ -234,7 +234,6 @@ class Advection:
 
     def __call__(self, B):
         lim = self.limiter
-        npm = self._npm
 
         # ---- theta: MUSCL reconstruction, upwinded on the face velocity ----
         dm = np.zeros_like(B)

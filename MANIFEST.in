@@ -1,3 +1,11 @@
 include README.md
 include LICENSE
+include environment.yml
+include requirements.txt
 recursive-include sft2d *.py
+recursive-include sft2d/data *.csv *.fits *.p
+recursive-include tests *.py
+recursive-include examples *.py
+recursive-include docs *.ipynb
+global-exclude *.pyc
+global-exclude __pycache__/*

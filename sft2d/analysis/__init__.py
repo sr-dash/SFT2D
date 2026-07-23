@@ -12,9 +12,9 @@ from .analysis import (
     calculate_polar_field,
     calculate_polar_flux,
     calculate_usflx,
+    cap_areas,
 )
 from .visualize import plot_bfly, plot_mag
-
 
 __all__ = [
     # Analysis modules
@@ -23,6 +23,7 @@ __all__ = [
     "calculate_dm",
     "calculate_polar_field",
     "calculate_polar_flux",
+    "cap_areas",
     # Visualization modules
     "plot_bfly",
     "plot_mag"

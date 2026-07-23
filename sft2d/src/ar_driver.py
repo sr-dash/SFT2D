@@ -30,12 +30,9 @@ Calibration knobs
 
 from __future__ import annotations
 
-import datetime as _dt
-import numpy as np
 import pandas as pd
 
-from .source import insert_bmr, joys_law_tilt, hale_leading_sign
-
+from .source import insert_bmr, joys_law_tilt
 
 # Approximate solar-cycle start dates (minima) used only to set Hale polarity.
 _CYCLE_MINIMA = {

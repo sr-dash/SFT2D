@@ -11,15 +11,15 @@ Functions:
 def plot_bfly(bfly_sft, grid, bmax = 10, save_path=None, show_plot=True):
     """
     Plots the butterfly diagram of the surface magnetic field.
-    
+
     Parameters:
         bfly_sft (np.ndarray): 2D array containing the surface magnetic field data [time, latitude].
         grid (dict): Dictionary containing grid information ('theta', 'phi', and their spacings).
         save_path (str, optional): Path to save the plot. If None, the plot is displayed interactively.
         show_plot (bool, optional): If True, the plot is displayed interactively.
     """
-    import numpy as np
     import matplotlib.pyplot as plt
+    import numpy as np
 
     # Read the grid information
     colatitude = grid['colatitude']
@@ -34,12 +34,12 @@ def plot_bfly(bfly_sft, grid, bmax = 10, save_path=None, show_plot=True):
     ax1.set_ylabel('Latitude [deg]')
     ax1.set_title('Butterfly diagram of B$_r$')
     plt.colorbar(pm1,ax=ax1,label='B$_r$ [G]')
-    
+
     # Save the plot if a save path is provided
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight', transparent=False)
         print(f"Plot saved to {save_path}")
-    
+
     # Show the plot if requested
     if show_plot:
         plt.show()
@@ -49,7 +49,7 @@ def plot_bfly(bfly_sft, grid, bmax = 10, save_path=None, show_plot=True):
 def plot_mag(b_data, grid, bmax = 30, save_path=None, show_plot=True):
     """
     Plots the magnetic field strength at the solar surface.
-    
+
     Parameters:
         b_data (np.ndarray): 2D array containing the surface magnetic field strength data [latitude, longitude].
         grid (dict): Dictionary containing grid information ('theta', 'phi', and their spacings).
@@ -57,8 +57,8 @@ def plot_mag(b_data, grid, bmax = 30, save_path=None, show_plot=True):
         save_path (str, optional): Path to save the plot. If None, the plot is displayed interactively.
         show_plot (bool, optional): If True, the plot is displayed interactively.
     """
-    import numpy as np
     import matplotlib.pyplot as plt
+    import numpy as np
 
     # Read the grid information
     colatitude = grid['colatitude']
@@ -72,12 +72,12 @@ def plot_mag(b_data, grid, bmax = 30, save_path=None, show_plot=True):
     ax1.set_ylabel('Latitude [deg]')
     ax1.set_title('Magnetic field strength at the solar surface')
     plt.colorbar(pm1,ax=ax1,label='B [G]')
-    
+
     # Save the plot if a save path is provided
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight', transparent=False)
         print(f"Plot saved to {save_path}")
-    
+
     # Show the plot if requested
     if show_plot:
         plt.show()

@@ -40,7 +40,7 @@ Link to the GitHub repository: `https://sr-dash.github.io/SFT2D/ <https://sr-das
 
    quickstart.md
    notebooks/example-run.ipynb
-   examples/test_package_sft2d
+   notebooks/rgo_driven_and_hmi.ipynb
    sft2d-theory.md
    api_reference
 

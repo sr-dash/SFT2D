@@ -28,15 +28,19 @@ Removed in the finite-volume rewrite
                                handles exactly.
 """
 
+from .ar_driver import ARSource, solar_cycle_number
 from .constants import DAY_S, R_SUN_CM, R_SUN_M
 from .grid import create_grid, polar_average, total_flux
-from .operators import Advection, Diffusion, limited_slope
-from .sts import rkl2_num_stages, rkl2_step
-from .stepper import advect, evolve, ssprk33_step
 from .initial_conditions import correct_flux_multiplicative, initialize_field
-from .transport_profiles import differential_rotation, meridional_flow
+from .operators import Advection, Diffusion, limited_slope
 from .source import balance_flux, hale_leading_sign, insert_bmr, joys_law_tilt, make_bmr
-from .ar_driver import ARSource, solar_cycle_number
+from .stepper import advect, evolve, ssprk33_step
+from .sts import rkl2_num_stages, rkl2_step
+from .transport_profiles import (
+    differential_rotation,
+    meridional_flow,
+    meridional_flow_latitude,
+)
 
 __all__ = [
     # constants
@@ -61,6 +65,7 @@ __all__ = [
     "initialize_field",
     "correct_flux_multiplicative",
     "meridional_flow",
+    "meridional_flow_latitude",
     "differential_rotation",
     # emergence sources
     "make_bmr",
