@@ -1,50 +1,133 @@
-# Quick Start
+# Quick start
 
-This document describes a working prototype of the Surface Flux
-Transport model (SFT). The SFT was developed to provide a computationaly
-inexpensive solver to explore the parameter space to better understand
-the evolution of solar/stellar surface magnetic field evolution in response to
-the changes in source functions and transport parameters. The model assumes no 
-back-reaction on the transport profiles from the magnetic field distribution.
-In its current form the SFT is numerically stable and provides a user-friendly test-bed
-to understand how the properties of sun/star spots, advection profiles and
-diffusivity impact the global solar/stellar surface magnetic field evolution.
+`sft2d` is a two-dimensional **surface flux transport (SFT)** model: it evolves
+the radial magnetic field {math}`B_r(\theta,\phi,t)` on the solar (or stellar)
+surface under large-scale flows, supergranular diffusion, and the emergence of
+new active-region flux. SFT models have been the workhorse for understanding the
+long-term evolution of the Sun's global field and the polar-field reversals that
+seed the polar magnetic flux of each cycle
+([Leighton 1964](https://doi.org/10.1086/148058);
+[Wang, Nash & Sheeley 1989](https://doi.org/10.1126/science.245.4919.712);
+[Sheeley 2005](https://doi.org/10.12942/lrsp-2005-5);
+[Mackay & Yeates 2012](https://doi.org/10.12942/lrsp-2012-6);
+[Jiang et al. 2014](https://doi.org/10.1007/s11214-014-0083-1)).
 
-The core package of the SFT model is written in Python. In the solar context the spatial resolution, 
-diffusivity values and flow parameters, the code does not demand extreeme computational resources.  
-Parallelization of teh computations within the script is planned for future releases. 
-The model can be run in a Jupyter-Notebook and the magnetic field maps can be exported to any format as per the user.
+This package is a spherical, finite-volume 2-D generalisation of the 1-D solver
+of [Yeates (2020)](https://doi.org/10.1007/s11207-020-01688-y). It assumes no
+back-reaction of the field on the prescribed flows, so it is inexpensive enough
+to scan the transport parameter space while still resolving the full
+{math}`(\theta,\phi)` surface. The mathematical formulation and the numerical
+scheme are described in the {doc}`theory manual <sft2d-theory>`; this page gets
+you running.
 
-## Acknowledgments
+## Installation
 
-Original code for SFT model in one dimension was developed by [Yeates (2020)](https://doi.org/10.1007/s11207-020-01688-y) in Python. This distribution is a two dimensional version of the Surface Flux Transport model on a spherical polar coordinate system.
+The package builds from `pyproject.toml` (PEP 621) with a static version, so no
+git checkout is required to install.
 
-## System Requirements
+Conda (creates the environment and installs the package editable):
 
-In order to install and run the SFT 2D the following minimum system
-requirements apply.
+```bash
+conda env create -f environment.yml
+conda activate sft2d
+```
 
-- The package requires a working Python enviornment under any operating system.
+or plain pip from a local checkout:
 
-- Certain python packages are required for running and visualization of results.
-  The requirements file contains the list of packages.
+```bash
+pip install -e .            # runtime only
+pip install -e ".[dev]"     # + pytest, build, ruff, jupyter
+```
 
-The code solves radial component of the magnetic induction equation in spherical polar coordinates.
-It can run on a single processor with a nominal RAM memory with reasonable spatial resolution.
+Reference data — the processed RGO active-region record, an HMI synoptic map,
+and HMI polar-field / butterfly references — ship **inside** the package at
+`sft2d/data/`, so the examples and the observational comparisons work from an
+installed copy with no extra downloads:
 
-In addition to the above requirements, the SFT output is typically
-visualized using Python. Other visualization packages may also be used,
-but the output file formats should be suported by those visualization
-softwares.
+```python
+from sft2d.data import RGO_CSV, HMI_SYNOPTIC_FITS, load_hmi_polar_field
+```
 
-## A Brief Description of the SFT 2D code
+## A minimal run
 
-The distribution in the form of the compressed tar image includes the
-SFT source code. The top level directory contains the following
-subdirectories:
+```python
+import sft2d as sft
 
-- `docs` - the documentation directory
+grid = sft.create_grid(91, 180)                 # 91 colatitude x 180 longitude cells
+mf   = sft.meridional_flow(grid, peak_speed=15.0)   # u_theta [m/s], poleward
+dr   = sft.differential_rotation(grid)              # Omega(theta) [rad/s]
+B0   = sft.initialize_field(grid, "dipole") * 3.0   # initial B_r [G]
 
-- `src` - all the python routines for running the code
+B = sft.evolve(B0, grid, mf, dr, eta=2.5e8, num_days=365)   # eta in m^2/s
 
-- `data` - some example HMI data
+print("axial dipole :", sft.calculate_dm(B, grid), "G")
+print("polar field  :", sft.calculate_polar_field(B, grid, pol_cap_extent_deg=20))
+```
+
+`evolve` handles the time integration internally (operator splitting, an adaptive
+advective sub-cycle, and super-time-stepped diffusion — see the
+{doc}`theory manual <sft2d-theory>`). Sources and data assimilation enter through
+the `source=` and `assimilate=` callbacks; diagnostics through a `recorder=`
+object.
+
+## What is in the package
+
+| module | purpose |
+|---|---|
+| `sft2d.src.grid` | pole-to-pole finite-volume mesh; area/flux helpers |
+| `sft2d.src.operators` | conservative diffusion + TVD advection operators |
+| `sft2d.src.sts` | RKL2 super-time-stepping for diffusion |
+| `sft2d.src.stepper` | `evolve` — Strang-split time integration |
+| `sft2d.src.transport_profiles` | meridional flow + differential rotation |
+| `sft2d.src.initial_conditions` | analytic dipole / observed synoptic-map start |
+| `sft2d.src.source` | analytic BMR source terms (`make_bmr`, `make_bmr_yeates`) |
+| `sft2d.src.ar_driver` | `ARSource` — drive from the RGO sunspot record |
+| `sft2d.src.sharp_driver` | `SHARPSource` — drive from an HMI/SHARPS BMR catalogue |
+| `sft2d.analysis.analysis` | unsigned flux, axial dipole, polar field / flux |
+
+## Verifying it works
+
+A one-command smoke test prints the grid extent, area closure, the chosen
+super-time-stepping stage count, and the conservation and polar-field
+diagnostics:
+
+```bash
+python -m sft2d.example_run
+```
+
+The numerical test suite checks the properties the whole model rests on — flux
+conservation, operator symmetry, analytic decay rates, TVD monotonicity, and
+second-order convergence of the polar-cap diagnostics:
+
+```bash
+pytest                    # full suite
+pytest -m "not slow"      # skip the multi-year driven-run tests (fast)
+```
+
+See the {doc}`theory manual <sft2d-theory>` for exactly which result each test
+verifies.
+
+## Worked examples and notebooks
+
+Runnable scripts in `examples/` (each writes a figure):
+
+```bash
+python examples/numerical_diffusion_test.py      # limiter peak-retention
+python examples/bmr_demo.py                       # flux-normalised Joy/Hale BMRs
+python examples/bmr_shapes.py                     # two-Gaussian vs Yeates bipole
+python examples/run_driven_cycle.py 2010 2020 30  # RGO-driven butterfly + polar field
+python examples/validate_against_hmi.py 15        # cycle-24 reversal vs HMI
+python examples/calibrate_sharps_vs_hmi.py <catalogue>   # SHARPS calibration check
+python examples/scan_sharps_calibration.py <catalogue>   # (eta, v0, tau) scan vs HMI
+```
+
+Jupyter notebooks in `docs/notebooks/` walk through the physics interactively:
+
+- `example-run.ipynb` — the core tour (grid, flows, integration, diagnostics);
+- `rgo_driven_and_hmi.ipynb` — RGO-driven cycle vs the HMI polar field / butterfly;
+- `sharps_driven_analysis.ipynb` — the data-driven SHARPS pipeline end to end;
+- `polar_dispersal_experiment.ipynb` — a controlled comparison of polar
+  flux-dispersal recipes.
+
+The SHARPS catalogue used by the data-driven examples is **not** bundled (it is a
+separate, GPL project); see `examples/README.md` for how to obtain it.
