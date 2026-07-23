@@ -10,3 +10,14 @@ docs/**/.ipynb_checkpoints/
 test_package_sft2d.ipynb
 .ipynb_checkpoints
 sft2d/src/.ipynb_checkpoints
+
+# Generated surface-field snapshots from sharps_driven_analysis.ipynb
+sharps_surface_fields.npz
+docs/notebooks/sharps_surface_fields.npz
+
+# Generated calibration-scan outputs
+scan_sharps.png
+scan_results.csv
+
+# Generated snapshot figure (regenerable from the notebook)
+docs/notebooks/sharps_driven_synoptic_snapshots.png

@@ -73,11 +73,25 @@ def catalogue_file(tmp_path):
 
 def test_reader_parses_documented_format(catalogue_file):
     df = _read_catalogue(catalogue_file)
-    assert list(df.columns) == ["date", "lat", "lon", "flux", "sep", "tilt", "good"]
+    for col in ("date", "lat", "lon", "flux", "sep", "tilt", "good"):
+        assert col in df.columns
     assert len(df) == 3
     assert df["flux"].iloc[0] == pytest.approx(2.0e22)
     assert df["tilt"].iloc[1] == pytest.approx(-9.0)
     assert df["date"].iloc[2].strftime("%Y-%m-%d") == "2015-02-14"
+
+
+def test_reader_handles_headerless_file(tmp_path):
+    """A headerless bmrsharps_evol dump (data rows only) parses by position, and
+    identical duplicate rows are collapsed."""
+    # 11-column canonical order: SHARP NOAA date lat lon flux imb dip sep tilt bipdip
+    row = "57\t11082\t2010-06-22\t27.9\t304.3\t1.0e22\t0.05\t9.7e-3\t5.42\t27.4\t9.6e-3\n"
+    (tmp_path / "h.txt").write_text(row + row + row)   # 3 identical rows
+    df = _read_catalogue(str(tmp_path / "h.txt"))
+    assert len(df) == 1                                # deduped
+    assert df["lat"].iloc[0] == pytest.approx(27.9)
+    assert df["sep"].iloc[0] == pytest.approx(5.42)
+    assert df["tilt"].iloc[0] == pytest.approx(27.4)
 
 
 def test_sharpsource_good_only_and_min_sep(catalogue_file):

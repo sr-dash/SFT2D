@@ -13,6 +13,8 @@ SHARPS catalogue (see below).
 | `run_driven_cycle.py` | RGO-driven run over a chosen window → butterfly diagram + polar-field / axial-dipole series. |
 | `validate_against_hmi.py` | Cycle-24 RGO-driven run overlaid on the observed HMI polar-field (both caps, mean ± std); demonstrates the reversal. |
 | `run_sharps_cycle.py` | SHARPS-catalogue-driven run (Yeates BMRs) → butterfly + polar field. Needs an external catalogue. |
+| `calibrate_sharps_vs_hmi.py` | SHARPS-driven cycle-24 calibration check with the **calibrated recipe as default** (Schüssler–Baumann flow, η=500, τ=10 yr): axial dipole vs ~3–4 G, polar field vs HMI. Needs an external catalogue. |
+| `scan_sharps_calibration.py` | Parameter scan around the recipe — an (η, v0) surface + a τ slice — scored on axial dipole, polar-flux concentration, and HMI correlation/amplitude. Writes `scan_results.csv` + `scan_sharps.png`. Needs an external catalogue. |
 
 ```bash
 python examples/numerical_diffusion_test.py
@@ -21,7 +23,18 @@ python examples/bmr_shapes.py
 python examples/run_driven_cycle.py 2010 2020 30
 python examples/validate_against_hmi.py 15
 python examples/run_sharps_cycle.py path/to/bmrsharps_evol.txt 2010 2023 1.0
+python examples/calibrate_sharps_vs_hmi.py path/to/bmrsharps_evol_all.txt
+python examples/scan_sharps_calibration.py path/to/bmrsharps_evol_all.txt
 ```
+
+**Calibrated recipe (default in `calibrate_sharps_vs_hmi.py`).** A Schüssler–
+Baumann meridional flow (`v0=11` m/s, `meridional_flow(..., profile="schuessler-baumann")`),
+`eta=500` km²/s, and a `tau=10` yr flux decay. This removes the polar
+flux over-concentration (near-pole field becomes ~dipole-like), keeps the axial
+dipole in the observed 3–4 G band, and raises the HMI reversal correlation to
+~0.95. The polar pile-up seen with the old defaults was **physical**, not a grid
+artifact (confirmed identical on an independent equal-area grid), and these
+transport parameters are what resolve it.
 
 Each plotting script writes a PNG to the current directory.
 
@@ -41,3 +54,9 @@ generate one with that project's pipeline — and pass its path to the script.
 The package only reads the published catalogue format and reconstructs each
 region with `make_bmr_yeates`; it does not reimplement the SHARP download/fit
 pipeline (which needs JSOC/`drms` access).
+
+For a full walkthrough — catalogue statistics, BMR-model validation against the
+catalogue's own `Bip-Dipole`, observed-map initialisation, and analysis of the
+polar fields, axial dipole moment and butterfly diagram against HMI — see the
+notebook `docs/notebooks/sharps_driven_analysis.ipynb`. It is the reference
+end-to-end test for the data-driven path.

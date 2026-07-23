@@ -41,6 +41,8 @@ Link to the GitHub repository: `https://sr-dash.github.io/SFT2D/ <https://sr-das
    quickstart.md
    notebooks/example-run.ipynb
    notebooks/rgo_driven_and_hmi.ipynb
+   notebooks/sharps_driven_analysis.ipynb
+   notebooks/polar_dispersal_experiment.ipynb
    sft2d-theory.md
    api_reference
 

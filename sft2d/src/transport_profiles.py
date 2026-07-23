@@ -37,7 +37,7 @@ flux-amplitude / tilt question, not a flow-direction one.
 import numpy as np
 
 
-def meridional_flow(grid, peak_speed=15.0):
+def meridional_flow(grid, peak_speed=15.0, profile="yeates2020"):
     """Poleward meridional-circulation profile as the colatitude velocity ``u_theta``.
 
     Parameters
@@ -46,7 +46,11 @@ def meridional_flow(grid, peak_speed=15.0):
         Grid from :func:`sft2d.src.grid.create_grid`.
     peak_speed : float
         Peak poleward speed [m/s].  **Positive = poleward** (the physical case).
-        The profile peaks near +/-45 deg and vanishes at the equator and poles.
+    profile : {'yeates2020', 'schuessler-baumann'}
+        ``'yeates2020'`` (default): ``vs`` profile, peaks near +/-45 deg.
+        ``'schuessler-baumann'``: ``-sin(2 lat) exp(pi(1 - 2|lat|/pi))``, the
+        profile used in Yeates's ``sft_data``; peaks nearer +/-35 deg and falls
+        off faster toward the poles (typical peak speed ~11 m/s).
 
     Returns
     -------
@@ -57,11 +61,19 @@ def meridional_flow(grid, peak_speed=15.0):
     """
     theta = grid["colatitude"]
     n_phi = grid["longitude"].shape[0]
+    lat = 0.5 * np.pi - theta
 
-    # vs() is defined on latitude; the latitude here is (pi/2 - theta).  The
-    # extra sign makes the result the *colatitude* velocity u_theta (poleward
-    # for positive peak_speed), which is what the advection operator expects.
-    v_theta_1d = vs(theta - np.pi / 2, v0=peak_speed)
+    if profile in ("yeates2020", "default"):
+        # vs() is defined on latitude; the latitude here is (pi/2 - theta).  The
+        # extra sign makes the result the *colatitude* velocity u_theta (poleward
+        # for positive peak_speed), which is what the advection operator expects.
+        v_theta_1d = vs(theta - np.pi / 2, v0=peak_speed)
+    elif profile in ("schuessler-baumann", "sb", "schussler-baumann"):
+        f = -np.sin(2.0 * lat) * np.exp(np.pi * (1.0 - 2.0 * np.abs(lat) / np.pi))
+        v_theta_1d = peak_speed * f / np.max(np.abs(f))
+    else:
+        raise ValueError("profile must be 'yeates2020' or 'schuessler-baumann'")
+
     return np.tile(v_theta_1d, (n_phi, 1)).T
 
 
