@@ -6,7 +6,10 @@ Drive the SFT model from a SHARPS-derived BMR catalogue (Yeates ``sharps-bmrs``
 butterfly diagram + polar-field series.
 
     python examples/run_sharps_cycle.py path/to/bmrsharps_evol.txt
-    python examples/run_sharps_cycle.py path/to/bmrsharps_evol.txt 2010 2023 1.0
+    python examples/run_sharps_cycle.py [catalogue.txt] [start end flux_scale]
+
+The catalogue path is optional: it defaults to the current SHARPS database
+(override with the SFT2D_SHARPS_CATALOGUE environment variable).
 
 The catalogue is NOT bundled (it is GPL and lives in a separate project).  Get
 it from https://github.com/antyeates1983/sharps-bmrs (file ``bmrsharps_evol.txt``,
@@ -38,8 +41,17 @@ from sft2d.src.transport_profiles import differential_rotation, meridional_flow
 
 np.seterr(all="ignore")
 
+# Default SHARPS catalogue (the current cycle-24/25 database).  Override with the
+# SFT2D_SHARPS_CATALOGUE environment variable or a command-line path argument.
+import os
 
-def main(catalogue, start_year=2010, end_year=2023, flux_scale=1.0,
+DEFAULT_CATALOGUE = os.environ.get(
+    "SFT2D_SHARPS_CATALOGUE",
+    "/Users/sdash/NSO/Work/GIT-Projects/sharps-bmrs-db/sharps-bmrs-db/bmrsharps_evol.txt",
+)
+
+
+def main(catalogue, start_year=2010, end_year=2026, flux_scale=1.0,
          v0=15.0, eta=2.5e8, seed_dipole=-2.0, n_lat=91, n_lon=180):
     start, end = f"{start_year}-05-01", f"{end_year}-01-01"
     grid = create_grid(n_lat, n_lon)
@@ -91,13 +103,15 @@ def main(catalogue, start_year=2010, end_year=2023, flux_scale=1.0,
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    a = [x for x in sys.argv[1:] if not x.startswith("-")]
+    catalogue = a[0] if (a and not a[0].isdigit()) else DEFAULT_CATALOGUE
+    rest = a[1:] if (a and not a[0].isdigit()) else a
+    if not os.path.exists(catalogue):
         print(__doc__)
-        print("ERROR: provide the path to a bmrsharps_evol.txt catalogue.")
-        raise SystemExit(1)
-    a = sys.argv[1:]
+        raise SystemExit(f"ERROR: catalogue not found: {catalogue}\n"
+                         "Pass a path or set SFT2D_SHARPS_CATALOGUE.")
     kw = {}
-    if len(a) >= 2: kw["start_year"] = int(a[1])
-    if len(a) >= 3: kw["end_year"] = int(a[2])
-    if len(a) >= 4: kw["flux_scale"] = float(a[3])
-    main(a[0], **kw)
+    if len(rest) >= 1: kw["start_year"] = int(rest[0])
+    if len(rest) >= 2: kw["end_year"] = int(rest[1])
+    if len(rest) >= 3: kw["flux_scale"] = float(rest[2])
+    main(catalogue, **kw)

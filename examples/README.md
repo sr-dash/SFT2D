@@ -12,9 +12,10 @@ SHARPS catalogue (see below).
 | `bmr_shapes.py` | Side-by-side of the two BMR shapes — two-Gaussian (`make_bmr`) vs the Yeates bipole (`make_bmr_yeates`) — at equal flux. |
 | `run_driven_cycle.py` | RGO-driven run over a chosen window → butterfly diagram + polar-field / axial-dipole series. |
 | `validate_against_hmi.py` | Cycle-24 RGO-driven run overlaid on the observed HMI polar-field (both caps, mean ± std); demonstrates the reversal. |
-| `run_sharps_cycle.py` | SHARPS-catalogue-driven run (Yeates BMRs) → butterfly + polar field. Needs an external catalogue. |
-| `calibrate_sharps_vs_hmi.py` | SHARPS-driven cycle-24 calibration check with the **calibrated recipe as default** (Schüssler–Baumann flow, η=500, τ=10 yr): axial dipole vs ~3–4 G, polar field vs HMI. Needs an external catalogue. |
-| `scan_sharps_calibration.py` | Parameter scan around the recipe — an (η, v0) surface + a τ slice — scored on axial dipole, polar-flux concentration, and HMI correlation/amplitude. Writes `scan_results.csv` + `scan_sharps.png`. Needs an external catalogue. |
+| `run_sharps_cycle.py` | SHARPS-catalogue-driven run (Yeates BMRs) → butterfly + polar field. |
+| `calibrate_sharps_vs_hmi.py` | SHARPS-driven cycle-24/25 calibration check with the **calibrated recipe as default** (Schüssler–Baumann flow, η=500, τ=10 yr): axial dipole vs ~3–4 G, polar field vs HMI. |
+| `scan_sharps_calibration.py` | Parameter scan around the recipe — an (η, v0) surface + a τ slice — scored on axial dipole, polar-flux concentration, and HMI correlation/amplitude. Writes `scan_results.csv` + `scan_sharps.png`. |
+| `update_hmi_polarfield.py` | Refresh the bundled HMI polar-field reference to the current date from JSOC (needs `drms`; `pip install -e ".[data]"`). |
 
 ```bash
 python examples/numerical_diffusion_test.py
@@ -22,10 +23,17 @@ python examples/bmr_demo.py
 python examples/bmr_shapes.py
 python examples/run_driven_cycle.py 2010 2020 30
 python examples/validate_against_hmi.py 15
-python examples/run_sharps_cycle.py path/to/bmrsharps_evol.txt 2010 2023 1.0
-python examples/calibrate_sharps_vs_hmi.py path/to/bmrsharps_evol_all.txt
-python examples/scan_sharps_calibration.py path/to/bmrsharps_evol_all.txt
+python examples/run_sharps_cycle.py          # SHARPS runs default to the current DB
+python examples/calibrate_sharps_vs_hmi.py
+python examples/scan_sharps_calibration.py
+python examples/update_hmi_polarfield.py     # refresh HMI reference (drms)
 ```
+
+**SHARPS catalogue.** The `run_sharps_cycle`, `calibrate_sharps_vs_hmi` and
+`scan_sharps_calibration` scripts default to the current SHARPS database and
+accept an optional path argument; override the default with the
+`SFT2D_SHARPS_CATALOGUE` environment variable. The catalogue itself is not
+bundled (GPL; separate project — see below for how to obtain/build it).
 
 **Calibrated recipe (default in `calibrate_sharps_vs_hmi.py`).** A Schüssler–
 Baumann meridional flow (`v0=11` m/s, `meridional_flow(..., profile="schuessler-baumann")`),

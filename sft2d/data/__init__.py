@@ -63,15 +63,24 @@ def load_hmi_polar_field():
     ``time``        datetimes, matches the Series index  (ndarray)
     ==============  ===============================================
 
-    All Series share one 12-hourly ``DatetimeIndex`` (2010-05 .. 2023-09).  For
-    a clean model/observation overlay use ``mean_north`` +/- ``std_north`` (the
-    convention used in the SFT-1D comparison plots).
+    All Series share one 12-hourly ``DatetimeIndex``.  ``north``/``south`` are the
+    ``CAPN2``/``CAPS2`` mean radial field over each polar cap (poleward of
+    ~60 deg) from the JSOC series ``hmi.meanpf_720s``; ``mean_*``/``std_*`` are a
+    30-day centred rolling mean and standard deviation.  For a clean
+    model/observation overlay use ``mean_north`` +/- ``std_north``.
+
+    The bundle can be refreshed to the current date with
+    ``examples/update_hmi_polarfield.py`` (requires ``drms`` + JSOC access).
     """
     keys = ("north", "south", "mean_north", "mean_south",
             "std_north", "std_south", "time")
-    out = {}
     with open(HMI_POLAR_FIELD, "rb") as fh:
-        for k in keys:
+        first = pickle.load(fh)
+        if isinstance(first, dict):          # current format: one pickled dict
+            return first
+        # legacy format: seven sequentially-pickled objects
+        out = {keys[0]: first}
+        for k in keys[1:]:
             out[k] = pickle.load(fh)
     return out
 

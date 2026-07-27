@@ -5,7 +5,10 @@ Parameter scan around the calibrated "Yeates" recipe (Schuessler-Baumann
 meridional flow + eta=500 km^2/s + tau=10 yr flux decay), driving the model from
 a SHARPS catalogue and scoring each run against the observed HMI polar field.
 
-    python examples/scan_sharps_calibration.py path/to/bmrsharps_evol_all.txt
+    python examples/scan_sharps_calibration.py [catalogue.txt]
+
+The catalogue path is optional: it defaults to the current SHARPS database
+(override with the SFT2D_SHARPS_CATALOGUE environment variable).
 
 It runs two slices that share the recipe centre (~13 forward runs, a few minutes
 each -- budget ~15-20 min total at 91x180):
@@ -50,6 +53,15 @@ from sft2d.src.transport_profiles import differential_rotation, meridional_flow
 
 np.seterr(all="ignore")
 YEAR = 365.25 * 86400.0
+
+# Default SHARPS catalogue (the current cycle-24/25 database).  Override with the
+# SFT2D_SHARPS_CATALOGUE environment variable or a command-line path argument.
+import os
+
+DEFAULT_CATALOGUE = os.environ.get(
+    "SFT2D_SHARPS_CATALOGUE",
+    "/Users/sdash/NSO/Work/GIT-Projects/sharps-bmrs-db/sharps-bmrs-db/bmrsharps_evol.txt",
+)
 
 # --- scan ranges (edit here) ---------------------------------------------
 ETAS = [4.0e8, 5.0e8, 6.0e8]        # m^2/s  (400, 500, 600 km^2/s)
@@ -107,7 +119,7 @@ def main(catalogue):
     grid = create_grid(91, 180)
     dr = differential_rotation(grid)
     field0 = initialize_field(grid, "read", path=str(HMI_SYNOPTIC_FITS))
-    src = SHARPSource(catalogue, start_date="2010-05-01", end_date="2023-09-01", flux_scale=1.0)
+    src = SHARPSource(catalogue, start_date="2010-05-01", end_date="2026-06-30", flux_scale=1.0)
     print(src.summary())
     h = load_hmi_polar_field(); idx = h["mean_north"].index
     hmi = (idx.year + (idx.dayofyear - 1) / 365.25, h["mean_north"].values, h["mean_south"].values)
@@ -200,6 +212,9 @@ def _figure(rows, hmi):
 
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
-    if not args:
-        print(__doc__); raise SystemExit("ERROR: provide a bmrsharps_evol catalogue path.")
-    main(args[0])
+    catalogue = args[0] if args else DEFAULT_CATALOGUE
+    if not os.path.exists(catalogue):
+        print(__doc__)
+        raise SystemExit(f"ERROR: catalogue not found: {catalogue}\n"
+                         "Pass a path or set SFT2D_SHARPS_CATALOGUE.")
+    main(catalogue)

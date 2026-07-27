@@ -49,6 +49,9 @@ notebook = [
   "jupyter",
   "ipykernel",
 ]
+data = [
+  "drms>=0.6",          # refresh the HMI polar-field reference from JSOC
+]
 dev = [
   "pytest>=7.0",
   "build",
@@ -56,6 +59,7 @@ dev = [
   "ruff",
   "jupyter",
   "ipykernel",
+  "drms>=0.6",
 ]
 
 [project.urls]

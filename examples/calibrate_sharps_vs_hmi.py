@@ -5,7 +5,10 @@ Check SFT calibration performance against the observed HMI data, driving the
 model directly from a SHARPS-derived BMR catalogue (Yeates ``bmrsharps_evol``
 format, with or without a header row).
 
-    python examples/calibrate_sharps_vs_hmi.py path/to/bmrsharps_evol_all.txt
+    python examples/calibrate_sharps_vs_hmi.py [catalogue.txt]
+
+The catalogue path is optional: it defaults to the current SHARPS database
+(override with the SFT2D_SHARPS_CATALOGUE environment variable).
 
 What it reports
 ---------------
@@ -64,6 +67,15 @@ from sft2d.src.transport_profiles import differential_rotation, meridional_flow
 
 np.seterr(all="ignore")
 
+# Default SHARPS catalogue (the current cycle-24/25 database).  Override with the
+# SFT2D_SHARPS_CATALOGUE environment variable or a command-line path argument.
+import os
+
+DEFAULT_CATALOGUE = os.environ.get(
+    "SFT2D_SHARPS_CATALOGUE",
+    "/Users/sdash/NSO/Work/GIT-Projects/sharps-bmrs-db/sharps-bmrs-db/bmrsharps_evol.txt",
+)
+
 
 # Calibrated default recipe (Yeates sft_data style): a weaker, lower-latitude
 # Schuessler-Baumann meridional flow, 2x the diffusivity, and a modest flux
@@ -78,7 +90,7 @@ TAU_YEARS = 10.0     # flux-decay e-folding time
 _YEAR = 365.25 * 86400.0
 
 
-def main(catalogue, start="2010-05-01", end="2023-09-01", flux_scale=1.0,
+def main(catalogue, start="2010-05-01", end="2026-06-30", flux_scale=1.0,
          v0=V0, eta=ETA, tau_years=TAU_YEARS, flow_profile=FLOW_PROFILE,
          cap_deg=30.0, use_observed_map=True, n_lat=91, n_lon=180):
     grid = create_grid(n_lat, n_lon)
@@ -164,7 +176,9 @@ def main(catalogue, start="2010-05-01", end="2023-09-01", flux_scale=1.0,
 
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
-    if not args:
+    catalogue = args[0] if args else DEFAULT_CATALOGUE
+    if not os.path.exists(catalogue):
         print(__doc__)
-        raise SystemExit("ERROR: provide the path to a bmrsharps_evol catalogue.")
-    main(args[0], use_observed_map=("--dipole" not in sys.argv))
+        raise SystemExit(f"ERROR: catalogue not found: {catalogue}\n"
+                         "Pass a path or set SFT2D_SHARPS_CATALOGUE.")
+    main(catalogue, use_observed_map=("--dipole" not in sys.argv))
