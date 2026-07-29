@@ -43,6 +43,7 @@ Link to the GitHub repository: `https://sr-dash.github.io/SFT2D/ <https://sr-das
    notebooks/rgo_driven_and_hmi.ipynb
    notebooks/sharps_driven_analysis.ipynb
    notebooks/polar_dispersal_experiment.ipynb
+   notebooks/bmr_vs_patch_insertion.ipynb
    sft2d-theory.md
    api_reference
 

@@ -34,6 +34,7 @@ from .src import (
     Advection,
     ARSource,
     Diffusion,
+    SHARPPatchSource,
     SHARPSource,
     advect,
     balance_flux,
@@ -87,6 +88,7 @@ __all__ = [
     "hale_leading_sign",
     "ARSource",
     "SHARPSource",
+    "SHARPPatchSource",
     "solar_cycle_number",
     # analysis
     "calculate_usflx",

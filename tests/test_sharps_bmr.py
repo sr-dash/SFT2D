@@ -131,3 +131,54 @@ def test_flux_scale_multiplies_injected_flux(catalogue_file):
     src2 = SHARPSource(catalogue_file, start_date="2015-01-01", good_only=False,
                        flux_scale=3.0)
     assert src2.events[9][0]["flux"] == pytest.approx(3.0 * src1.events[9][0]["flux"])
+
+
+# ------------------------------------------------- SHARPPatchSource ----------
+def _write_nc(path, ns=180, nph=360):
+    """A synthetic SHARP .nc: a localised dipole patch on the sin-lat grid."""
+    from scipy.io import netcdf_file
+    ds = 2.0 / ns
+    s = np.linspace(-1 + 0.5 * ds, 1 - 0.5 * ds, ns)
+    dph = 2 * np.pi / nph
+    ph = np.linspace(0.5 * dph, 2 * np.pi - 0.5 * dph, nph)
+    S, P = np.meshgrid(s, ph, indexing="ij")
+    lat0, lon0 = np.deg2rad(20.0), np.deg2rad(180.0)
+    r2 = (np.arcsin(S) - lat0) ** 2 + (P - lon0) ** 2
+    br = (P - lon0) * np.exp(-r2 / (2 * 0.05 ** 2))     # antisymmetric bipole-ish
+    br[r2 > 0.3] = 0.0
+    fh = netcdf_file(str(path), "w")
+    fh.createDimension("sdim", ns); fh.createDimension("pdim", nph)
+    v = fh.createVariable("br", "d", ("sdim", "pdim")); v[:] = br
+    fh.close()
+    return br
+
+
+def test_patchsource_interpolates_and_preserves_flux(tmp_path):
+    import pandas as pd
+
+    from sft2d.src.sharp_patch_driver import SHARPPatchSource
+    nc_dir = tmp_path
+    _write_nc(nc_dir / "sharp00042.nc")
+    cat = pd.DataFrame({"date": [pd.Timestamp("2015-01-10")], "lat": [20.0],
+                        "lon": [180.0], "flux": [2.0e22], "sep": [8.0],
+                        "tilt": [10.0], "sharp": [42], "good": [1]})
+    src = SHARPPatchSource(cat, nc_dir=nc_dir, start_date="2015-01-01")
+    g = create_grid(91, 180)
+    patch = src.patch_on_grid(42, g, 2.0e22)
+    assert patch is not None
+    # flux preserved to the requested value, and balanced (net ~ 0)
+    assert calculate_usflx(patch, g) == pytest.approx(2.0e22, rel=1e-6)
+    assert abs(total_flux(patch, g)) < 1e-6 * calculate_usflx(patch, g)
+    assert (patch > 0).any() and (patch < 0).any()      # genuinely bipolar
+
+
+def test_patchsource_missing_nc_returns_none(tmp_path):
+    import pandas as pd
+
+    from sft2d.src.sharp_patch_driver import SHARPPatchSource
+    cat = pd.DataFrame({"date": [pd.Timestamp("2015-01-10")], "lat": [20.0],
+                        "lon": [180.0], "flux": [1e22], "sep": [8.0],
+                        "tilt": [10.0], "sharp": [999], "good": [1]})
+    src = SHARPPatchSource(cat, nc_dir=tmp_path, start_date="2015-01-01")
+    g = create_grid(46, 90)
+    assert src.patch_on_grid(999, g, 1e22) is None      # no .nc -> None, no crash

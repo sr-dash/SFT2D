@@ -34,6 +34,7 @@ from .grid import create_grid, polar_average, total_flux
 from .initial_conditions import correct_flux_multiplicative, initialize_field
 from .operators import Advection, Diffusion, limited_slope
 from .sharp_driver import SHARPSource
+from .sharp_patch_driver import SHARPPatchSource
 from .source import (
     balance_flux,
     hale_leading_sign,
@@ -84,5 +85,6 @@ __all__ = [
     "hale_leading_sign",
     "ARSource",
     "SHARPSource",
+    "SHARPPatchSource",
     "solar_cycle_number",
 ]

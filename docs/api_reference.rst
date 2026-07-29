@@ -34,6 +34,7 @@ Top-level functions and classes exposed by ``sft2d/__init__.py``:
    sft2d.hale_leading_sign
    sft2d.ARSource
    sft2d.SHARPSource
+   sft2d.SHARPPatchSource
    sft2d.solar_cycle_number
 
    sft2d.calculate_usflx

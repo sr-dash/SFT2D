@@ -21,3 +21,16 @@ scan_results.csv
 
 # Generated snapshot figure (regenerable from the notebook)
 docs/notebooks/sharps_driven_synoptic_snapshots.png
+
+# Large-scale cluster sweep driver: staged manually onto the compute node, not
+# tracked here (it is machine-specific and imports the tracked ensemble module).
+examples/sweep_cluster_exhaustive.py
+
+# Generated surface-field snapshots from the driven-run notebooks (tens of MB each)
+docs/notebooks/*_surface_fields*.npz
+docs/notebooks/exec_bmrpatch.log
+
+# Parameter-ensemble / sweep output trees (snapshots, checkpoints, tables, figures)
+ensemble_polarfield_out/
+ensemble3_out*/
+sweep_out*/
