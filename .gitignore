@@ -34,3 +34,6 @@ docs/notebooks/exec_bmrpatch.log
 ensemble_polarfield_out/
 ensemble3_out*/
 sweep_out*/
+
+# Cluster sweep companion (staged manually alongside sweep_cluster_exhaustive.py)
+examples/sweep_alpine.sbatch

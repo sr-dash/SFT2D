@@ -182,3 +182,59 @@ def test_patchsource_missing_nc_returns_none(tmp_path):
     src = SHARPPatchSource(cat, nc_dir=tmp_path, start_date="2015-01-01")
     g = create_grid(46, 90)
     assert src.patch_on_grid(999, g, 1e22) is None      # no .nc -> None, no crash
+
+
+def test_cached_patch_source_matches_uncached(tmp_path):
+    """The precomputed cache must reproduce the .nc-reading driver exactly.
+
+    The sweep drivers use the cache to avoid re-reading every region's map per
+    member; if it ever stopped matching, every cached run would be subtly wrong
+    with nothing to indicate it.
+    """
+    import pandas as pd
+
+    from sft2d.src.sharp_patch_driver import (CachedPatchSource, SHARPPatchSource,
+                                              build_patch_cache)
+    _write_nc(tmp_path / "sharp00042.nc")
+    _write_nc(tmp_path / "sharp00043.nc")
+    cat = pd.DataFrame({
+        "date": [pd.Timestamp("2015-01-10"), pd.Timestamp("2015-01-20")],
+        "lat": [20.0, -15.0], "lon": [180.0, 90.0], "flux": [2.0e22, 3.0e22],
+        "sep": [8.0, 6.0], "tilt": [10.0, -8.0], "sharp": [42, 43], "good": [1, 1]})
+    cat_file = tmp_path / "cat.pkl"
+    cat.to_pickle(cat_file)
+
+    g = create_grid(91, 180)
+    cache = tmp_path / "cache.npz"
+    build_patch_cache(cat, str(tmp_path), g, str(cache), "2015-01-01", "2015-02-01",
+                      verbose=False)
+
+    raw = SHARPPatchSource(cat, nc_dir=tmp_path, start_date="2015-01-01",
+                           end_date="2015-02-01")
+    cch = CachedPatchSource(str(cache), cat, start_date="2015-01-01",
+                            end_date="2015-02-01")
+    a = np.zeros((g["n_theta"], g["n_phi"])); b = a.copy()
+    for d in sorted(raw.events):
+        a = raw(d, a, g)
+    for d in sorted(cch.events):
+        b = cch(d, b, g)
+    assert np.abs(a).max() > 0
+    assert np.abs(a - b).max() <= 1e-12 * np.abs(a).max()
+
+
+def test_cached_patch_source_rejects_wrong_grid(tmp_path):
+    """A cache built for one grid must not be silently usable on another."""
+    import pandas as pd
+
+    from sft2d.src.sharp_patch_driver import CachedPatchSource, build_patch_cache
+    _write_nc(tmp_path / "sharp00042.nc")
+    cat = pd.DataFrame({"date": [pd.Timestamp("2015-01-10")], "lat": [20.0],
+                        "lon": [180.0], "flux": [2.0e22], "sep": [8.0],
+                        "tilt": [10.0], "sharp": [42], "good": [1]})
+    cache = tmp_path / "cache.npz"
+    build_patch_cache(cat, str(tmp_path), create_grid(91, 180), str(cache),
+                      "2015-01-01", "2015-02-01", verbose=False)
+    src = CachedPatchSource(str(cache), cat, start_date="2015-01-01",
+                            end_date="2015-02-01")
+    with pytest.raises(ValueError, match="cache was built for"):
+        src.patch_on_grid(42, create_grid(46, 90), 1e22)

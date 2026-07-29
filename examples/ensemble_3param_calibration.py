@@ -193,7 +193,7 @@ def run_member3(cfg):
     from sft2d.data import HMI_SYNOPTIC_FITS
     from sft2d.src.grid import create_grid
     from sft2d.src.initial_conditions import initialize_field
-    from sft2d.src.sharp_patch_driver import SHARPPatchSource
+    from sft2d.src.sharp_patch_driver import CachedPatchSource, SHARPPatchSource
     from sft2d.src.stepper import evolve
     from sft2d.src.transport_profiles import differential_rotation, meridional_flow
 
@@ -205,8 +205,15 @@ def run_member3(cfg):
     mf = meridional_flow(grid, peak_speed=du, profile=profile)
     dr = differential_rotation(grid)
     field = initialize_field(grid, "read", path=str(HMI_SYNOPTIC_FITS))
-    src = SHARPPatchSource(cfg["catalogue"], nc_dir=cfg["nc_dir"],
-                           start_date=START, end_date=END, flux_scale=flux_scale)
+    # A precomputed cache gives bit-identical insertion without re-reading ~3 GB
+    # of .nc maps per member -- essential when many members run concurrently off
+    # a shared filesystem.
+    if cfg.get("cache"):
+        src = CachedPatchSource(cfg["cache"], cfg["catalogue"], start_date=START,
+                                end_date=END, flux_scale=flux_scale)
+    else:
+        src = SHARPPatchSource(cfg["catalogue"], nc_dir=cfg["nc_dir"],
+                               start_date=START, end_date=END, flux_scale=flux_scale)
 
     yr, pn, ps, dip, usf, fn, fs, bfly = [], [], [], [], [], [], [], []
     snap_br, snap_day = [], []

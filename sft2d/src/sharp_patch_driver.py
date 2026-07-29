@@ -163,3 +163,141 @@ class SHARPPatchSource:
     def summary(self):
         return (f"SHARPPatchSource: {self.n_regions} regions ({self.var}), "
                 f"{self.start.date()} -> {self.end.date()} ({self.num_days} days)")
+
+
+# --------------------------------------------------------------- patch cache --
+def build_patch_cache(catalogue, nc_dir, grid, out_path, start_date, end_date=None,
+                      good_only=True, dedupe_max_flux=True, var="br", n_jobs=1,
+                      verbose=True):
+    """Precompute every AR patch on ``grid`` and save a compact sparse cache.
+
+    Each region's map is interpolated, flux-balanced and normalised to **unit**
+    unsigned flux, so the cache is independent of ``flux_scale``: insertion just
+    multiplies by that region's target flux.
+
+    A parameter sweep runs the same regions on the same grid for every member, so
+    without a cache each member re-opens all ``sharpNNNNN.nc`` files and repeats
+    identical interpolation -- ~3 GB across ~3000 file opens per member.  On a
+    shared cluster filesystem with tens of concurrent workers that redundant I/O
+    can dominate the run.  Build this once, then drive every member from it with
+    :class:`CachedPatchSource`.
+
+    Returns the path written.
+    """
+    src = SHARPPatchSource(catalogue, nc_dir=nc_dir, start_date=start_date,
+                           end_date=end_date, flux_scale=1.0, good_only=good_only,
+                           dedupe_max_flux=dedupe_max_flux, var=var)
+    ids = sorted({sid for evs in src.events.values() for sid, _ in evs})
+
+    def unit_patch(sharp_id):
+        """Patch normalised to unit unsigned flux, as (indices, values) or None."""
+        p = src.patch_on_grid(sharp_id, grid, 1.0)      # target 1 -> unit usflx
+        if p is None:
+            return None
+        nz = np.flatnonzero(p)                          # balance_flux rescales,
+        return nz.astype(np.int32), p.flat[nz]          # so zeros stay zero
+
+    if n_jobs and n_jobs > 1:
+        from joblib import Parallel, delayed
+        out = Parallel(n_jobs=n_jobs, verbose=5 if verbose else 0)(
+            delayed(unit_patch)(s) for s in ids)
+    else:
+        out = [unit_patch(s) for s in ids]
+
+    kept, idx_parts, val_parts, offsets = [], [], [], [0]
+    missing = 0
+    for sid, res in zip(ids, out):
+        if res is None:
+            missing += 1
+            continue
+        i, v = res
+        kept.append(sid); idx_parts.append(i); val_parts.append(v)
+        offsets.append(offsets[-1] + i.size)
+
+    idx = (np.concatenate(idx_parts) if idx_parts
+           else np.zeros(0, dtype=np.int32))
+    val = (np.concatenate(val_parts) if val_parts
+           else np.zeros(0, dtype=float))
+    np.savez_compressed(
+        out_path,
+        ids=np.asarray(kept, dtype=np.int64), offsets=np.asarray(offsets, dtype=np.int64),
+        idx=idx, val=val,
+        shape=np.asarray([grid["n_theta"], grid["n_phi"]], dtype=np.int64),
+        var=str(var),
+    )
+    if verbose:
+        from pathlib import Path as _P
+        print(f"patch cache: {len(kept)} regions ({missing} missing .nc), "
+              f"{idx.size} nonzero cells, {_P(out_path).stat().st_size/1e6:.1f} MB "
+              f"-> {out_path}")
+    return out_path
+
+
+class CachedPatchSource(SHARPPatchSource):
+    """:class:`SHARPPatchSource` driven from a precomputed cache.
+
+    Produces the same inserted field as the uncached driver, without touching the
+    ``.nc`` files at run time.  The cache is grid-specific: a mismatch between the
+    cache and the model grid raises immediately rather than silently inserting
+    the wrong thing.
+    """
+
+    def __init__(self, cache_path, catalogue, start_date, end_date=None,
+                 flux_scale=1.0, good_only=True, dedupe_max_flux=True,
+                 rebalance=False):
+        super().__init__(catalogue, nc_dir=Path(cache_path).parent,
+                         start_date=start_date, end_date=end_date,
+                         flux_scale=flux_scale, good_only=good_only,
+                         dedupe_max_flux=dedupe_max_flux, rebalance=rebalance)
+        z = np.load(cache_path)
+        self.cache_path = str(cache_path)
+        self.cache_shape = tuple(int(v) for v in z["shape"])
+        self._pos = {int(s): i for i, s in enumerate(z["ids"])}
+        self._off = np.asarray(z["offsets"])
+        self._idx = np.asarray(z["idx"])
+        self._val = np.asarray(z["val"])
+        self.n_cached = len(self._pos)
+        self.n_uncached = sum(1 for evs in self.events.values()
+                              for sid, _ in evs if sid not in self._pos)
+
+    def _check_grid(self, grid):
+        got = (grid["n_theta"], grid["n_phi"])
+        if got != self.cache_shape:
+            raise ValueError(
+                f"patch cache was built for a {self.cache_shape[0]}x{self.cache_shape[1]} "
+                f"grid but this run uses {got[0]}x{got[1]}; rebuild the cache "
+                f"(build_patch_cache) for this grid")
+
+    def patch_on_grid(self, sharp_id, grid, target_flux):
+        self._check_grid(grid)
+        i = self._pos.get(int(sharp_id))
+        if i is None:
+            return None
+        a, b = self._off[i], self._off[i + 1]
+        patch = np.zeros(self.cache_shape, dtype=float)
+        patch.flat[self._idx[a:b]] = self._val[a:b] * target_flux
+        return patch
+
+    def __call__(self, day, field, grid):
+        evs = self.events.get(day)
+        if not evs:
+            return field
+        self._check_grid(grid)
+        flat = field.reshape(-1)
+        for sharp_id, flux in evs:
+            i = self._pos.get(int(sharp_id))
+            if i is None:
+                continue
+            a, b = self._off[i], self._off[i + 1]
+            # cache indices are unique within a region, so plain fancy-index
+            # accumulation is correct (no np.add.at needed) and much faster
+            flat[self._idx[a:b]] += self._val[a:b] * flux
+        if self.rebalance:
+            field[:] = balance_flux(field, grid)
+        return field
+
+    def summary(self):
+        return (f"CachedPatchSource: {self.n_regions} regions "
+                f"({self.n_cached} cached, {self.n_uncached} without a cached patch), "
+                f"{self.cache_shape[0]}x{self.cache_shape[1]}, "
+                f"{self.start.date()} -> {self.end.date()} ({self.num_days} days)")
