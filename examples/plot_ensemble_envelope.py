@@ -78,7 +78,7 @@ def main(argv=None):
     vals = sorted(d[cby].unique())
     # Sequential single hue for a numeric parameter; two well-separated steps of
     # the same ramp when the "parameter" is really a pair of categories.
-    ramp = plt.get_cmap("Blues")
+    ramp = plt.get_cmap("tab10")
     steps = (np.linspace(0.25, 1.0, len(vals)) if len(vals) > 2
              else np.array([0.45, 0.9]))
     cmap_colors = {v: ramp(s) for v, s in zip(vals, steps)}

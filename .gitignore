@@ -37,3 +37,6 @@ sweep_out*/
 
 # Cluster sweep companion (staged manually alongside sweep_cluster_exhaustive.py)
 examples/sweep_alpine.sbatch
+
+# Generated patch cache (rebuild with examples/build_patch_cache.py)
+patch_cache_*.npz
