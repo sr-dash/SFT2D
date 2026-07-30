@@ -1,12 +1,20 @@
 name: Sphinx Documentation
 
 on:
+  # Manual trigger. Without this the docs can only be rebuilt by pushing a change
+  # that matches the paths filter below -- and a filter never matches the push
+  # that *creates* a branch, so a freshly cloned/recreated repository would never
+  # build its docs and gh-pages would never come into existence.
+  workflow_dispatch:
   push:
+    branches:
+      - main
     paths:
       - 'docs/**'
       - 'sft2d/**'
       - 'setup.py'
       - 'requirements.txt'
+      - '.github/workflows/documentation.yml'
 
 permissions:
   contents: write
