@@ -1,0 +1,23 @@
+﻿sft2d.Advection
+===============
+
+.. currentmodule:: sft2d
+
+.. autoclass:: Advection
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Advection.__init__
+      ~Advection.dt_cfl
+   
+   
+
+   
+   
+   

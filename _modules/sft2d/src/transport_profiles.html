@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.src.transport_profiles &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.src.transport_profiles</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.src.transport_profiles</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">transport_profiles.py</span>
+
+<span class="sd">Surface-flow profiles for the SFT model: meridional circulation and</span>
+<span class="sd">differential rotation.</span>
+
+<span class="sd">Sign convention (read this before worrying about a "wrong" sign)</span>
+<span class="sd">----------------------------------------------------------------</span>
+<span class="sd">Colatitude ``theta`` runs 0 at the north pole to ``pi`` at the south pole, so</span>
+<span class="sd">the ``+theta`` direction points *southward everywhere*.  The solver advects</span>
+<span class="sd">the radial field with the **colatitude component of the velocity**,</span>
+<span class="sd">``u_theta`` -- that is what :class:`sft2d.src.operators.Advection` consumes and</span>
+<span class="sd">what :func:`meridional_flow` returns.</span>
+
+<span class="sd">For a normal solar **poleward** meridional flow (positive ``peak_speed``):</span>
+
+<span class="sd">    * northern hemisphere: poleward = toward theta=0  =&gt; u_theta &lt; 0</span>
+<span class="sd">    * southern hemisphere: poleward = toward theta=pi =&gt; u_theta &gt; 0</span>
+
+<span class="sd">So ``meridional_flow`` is **negative in the north and positive in the south**</span>
+<span class="sd">for a poleward flow.  That looks upside-down only because it is the</span>
+<span class="sd">*colatitude* velocity.  Expressed as the more intuitive **latitude velocity**</span>
+<span class="sd">``v_lat`` (northward positive, ``v_lat = -u_theta``) the same poleward flow is</span>
+<span class="sd">positive in the north and negative in the south -- which is what you expect</span>
+<span class="sd">from meridional-flow figures in the literature.  Use</span>
+<span class="sd">:func:`meridional_flow_latitude` when you want to *plot* the flow; use</span>
+<span class="sd">:func:`meridional_flow` to *drive the model*.</span>
+
+<span class="sd">Verified: a flux blob advected with ``meridional_flow(grid, +15)`` migrates</span>
+<span class="sd">toward the nearest pole in both hemispheres (poleward).  A **negative**</span>
+<span class="sd">``peak_speed`` reverses this into an unphysical equatorward flow, which will</span>
+<span class="sd">prevent trailing-polarity flux from ever reaching the poles -- do not use a</span>
+<span class="sd">negative ``peak_speed`` expecting to "fix" a polar-reversal problem; that is a</span>
+<span class="sd">flux-amplitude / tilt question, not a flow-direction one.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">R_SUN_M</span>
+
+
+<div class="viewcode-block" id="meridional_flow">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.meridional_flow.html#sft2d.meridional_flow">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">meridional_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">peak_speed</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">profile</span><span class="o">=</span><span class="s2">"yeates2020"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Poleward meridional-circulation profile as the colatitude velocity ``u_theta``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid : dict</span>
+<span class="sd">        Grid from :func:`sft2d.src.grid.create_grid`.</span>
+<span class="sd">    peak_speed : float</span>
+<span class="sd">        Peak poleward speed [m/s].  **Positive = poleward** (the physical case).</span>
+<span class="sd">    profile : {'yeates2020', 'schuessler-baumann'}</span>
+<span class="sd">        ``'yeates2020'`` (default): ``vs`` profile, peaks near +/-45 deg.</span>
+<span class="sd">        ``'schuessler-baumann'``: ``-sin(2 lat) exp(pi(1 - 2|lat|/pi))``, the</span>
+<span class="sd">        profile used in Yeates's ``sft_data``; peaks nearer +/-35 deg and falls</span>
+<span class="sd">        off faster toward the poles (typical peak speed ~11 m/s).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray, shape (n_theta, n_phi)</span>
+<span class="sd">        ``u_theta`` [m/s]: negative in the north, positive in the south for a</span>
+<span class="sd">        poleward flow.  Feed this straight into</span>
+<span class="sd">        :class:`sft2d.src.operators.Advection` / :func:`sft2d.src.stepper.evolve`.</span>
+<span class="sd">    """</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"colatitude"</span><span class="p">]</span>
+    <span class="n">n_phi</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"longitude"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">theta</span>
+
+    <span class="k">if</span> <span class="n">profile</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"yeates2020"</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">):</span>
+        <span class="c1"># vs() is defined on latitude; the latitude here is (pi/2 - theta).  The</span>
+        <span class="c1"># extra sign makes the result the *colatitude* velocity u_theta (poleward</span>
+        <span class="c1"># for positive peak_speed), which is what the advection operator expects.</span>
+        <span class="n">v_theta_1d</span> <span class="o">=</span> <span class="n">vs</span><span class="p">(</span><span class="n">theta</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">v0</span><span class="o">=</span><span class="n">peak_speed</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">profile</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"schuessler-baumann"</span><span class="p">,</span> <span class="s2">"sb"</span><span class="p">,</span> <span class="s2">"schussler-baumann"</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">lat</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+        <span class="n">v_theta_1d</span> <span class="o">=</span> <span class="n">peak_speed</span> <span class="o">*</span> <span class="n">f</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"profile must be 'yeates2020' or 'schuessler-baumann'"</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">v_theta_1d</span><span class="p">,</span> <span class="p">(</span><span class="n">n_phi</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span></div>
+
+
+
+<div class="viewcode-block" id="meridional_flow_latitude">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.meridional_flow_latitude.html#sft2d.meridional_flow_latitude">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">meridional_flow_latitude</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">peak_speed</span><span class="o">=</span><span class="mf">15.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Same flow as :func:`meridional_flow`, but as the **latitude velocity** ``v_lat``.</span>
+
+<span class="sd">    ``v_lat = -u_theta`` is northward-positive, so a poleward flow is positive</span>
+<span class="sd">    in the north and negative in the south -- the convention used in most</span>
+<span class="sd">    meridional-flow figures.  This is a *plotting / inspection* helper; the</span>
+<span class="sd">    solver is driven with :func:`meridional_flow`.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">meridional_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">peak_speed</span><span class="o">=</span><span class="n">peak_speed</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="differential_rotation">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.differential_rotation.html#sft2d.differential_rotation">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">differential_rotation</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s2">"solar"</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="s2">"carrington"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Differential-rotation angular velocity ``Omega(theta)`` [rad/s].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid : dict</span>
+<span class="sd">        Grid from :func:`sft2d.src.grid.create_grid`.</span>
+<span class="sd">    rotation : {'solar', 'rigid'}</span>
+<span class="sd">        ``'solar'`` uses the Snodgrass-type profile; ``'rigid'`` a 2-day</span>
+<span class="sd">        solid-body rotation (a test case).</span>
+<span class="sd">    frame : {'carrington', 'synodic'}</span>
+<span class="sd">        Reference frame for the solar profile.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray, shape (n_theta, n_phi)</span>
+<span class="sd">        ``Omega`` [rad/s].</span>
+<span class="sd">    """</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"colatitude"</span><span class="p">]</span>
+    <span class="n">n_phi</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"longitude"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">Colatitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="p">(</span><span class="n">n_phi</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># degrees/day -&gt; radians/second</span>
+    <span class="n">rotation_rate_fact</span> <span class="o">=</span> <span class="mf">2.0201e-7</span>
+
+    <span class="k">if</span> <span class="n">rotation</span> <span class="o">==</span> <span class="s2">"solar"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">frame</span> <span class="o">==</span> <span class="s2">"carrington"</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="mf">13.38</span> <span class="o">-</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="mf">27.2753</span>
+        <span class="k">elif</span> <span class="n">frame</span> <span class="o">==</span> <span class="s2">"synodic"</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="mf">13.38</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"For solar rotation, frame must be 'carrington' or 'synodic'."</span><span class="p">)</span>
+        <span class="n">omega_diff</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">base</span>
+            <span class="o">-</span> <span class="mf">2.30</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">Colatitude</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="o">-</span> <span class="mf">1.62</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">Colatitude</span><span class="p">)</span> <span class="o">**</span> <span class="mi">4</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">rotation_rate_fact</span>
+    <span class="k">elif</span> <span class="n">rotation</span> <span class="o">==</span> <span class="s2">"rigid"</span><span class="p">:</span>
+        <span class="n">rotation_period_days</span> <span class="o">=</span> <span class="mf">2.0</span>
+        <span class="n">omega_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">Colatitude</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="n">rotation_period_days</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"rotation must be 'solar' or 'rigid'."</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">omega_diff</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">vs</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">v0</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">2.33</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Yeates (2020, Sol. Phys.) meridional-flow shape as a function of latitude.</span>
+
+<span class="sd">    ``v(lat) = Du * sin(lat) * cos(lat)^p`` with ``Du`` chosen so the peak speed</span>
+<span class="sd">    equals ``v0``.  Positive ``v0`` gives a poleward (northward in the north)</span>
+<span class="sd">    latitude velocity; :func:`meridional_flow` converts it to ``u_theta``.</span>
+<span class="sd">    """</span>
+    <span class="n">Du</span> <span class="o">=</span> <span class="n">v0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">p</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span> <span class="o">/</span> <span class="n">p</span> <span class="o">**</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Du</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span> <span class="o">**</span> <span class="n">p</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">active_region_inflow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">smooth_deg</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
+                         <span class="n">max_speed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Converging flow toward active latitudes, as a colatitude velocity ``u_theta``.</span>
+
+<span class="sd">    Observed surface flows converge on activity belts by a few m/s, and the</span>
+<span class="sd">    convergence scales with how much flux is present.  In an SFT model this acts</span>
+<span class="sd">    as a brake: flux that would otherwise be carried poleward is held back near</span>
+<span class="sd">    the activity latitudes, and the brake is strongest in the strongest cycles.</span>
+
+<span class="sd">    That behaviour cannot be produced by any static flow, which is why it matters</span>
+<span class="sd">    here.  Re-scoring a 686-member sweep over flow profile, ``du``, ``eta`` and</span>
+<span class="sd">    ``tau`` showed the model over-responds in cycle 25 relative to cycle 24 for</span>
+<span class="sd">    *every* combination (523/523, median 2.7x): a parameter that is constant in</span>
+<span class="sd">    time cannot behave differently in two cycles.</span>
+
+<span class="sd">    The flow is taken proportional to the latitudinal gradient of the smoothed,</span>
+<span class="sd">    longitude-averaged unsigned field, converging on concentrations::</span>
+
+<span class="sd">        v_lat = +amplitude * d&lt;|B|&gt;/dlambda</span>
+
+<span class="sd">    so it vanishes when the surface is quiet and grows with activity by itself,</span>
+<span class="sd">    with no explicit cycle dependence.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid : dict</span>
+<span class="sd">        Grid from :func:`sft2d.src.grid.create_grid`.</span>
+<span class="sd">    field : ndarray</span>
+<span class="sd">        Current radial field ``(n_theta, n_phi)``.</span>
+<span class="sd">    amplitude : float</span>
+<span class="sd">        Scale factor in m/s per (G/radian).  0 disables the term.  Calibrated on</span>
+<span class="sd">        a real model state -- the busiest epoch of a SHARPS-driven run, zonal-mean</span>
+<span class="sd">        |B| peaking at 64 G near 16 deg -- ``amplitude = 0.057`` gives a 3 m/s peak</span>
+<span class="sd">        inflow and ``0.076`` gives 4 m/s, the observed range.  The value depends</span>
+<span class="sd">        on ``smooth_deg``, since both enter through the same gradient, so the two</span>
+<span class="sd">        must be quoted together.</span>
+<span class="sd">    smooth_deg : float</span>
+<span class="sd">        Gaussian smoothing applied to the zonal-mean profile before</span>
+<span class="sd">        differentiating, in degrees.  Without it the gradient is dominated by</span>
+<span class="sd">        individual regions rather than by the belt.  It must stay well below the</span>
+<span class="sd">        separation of the two activity belts: at 15 deg the northern and southern</span>
+<span class="sd">        belts (about 30 deg apart) merge into a single hump centred on the</span>
+<span class="sd">        equator, the gradient stops changing sign at the belt latitude, and the</span>
+<span class="sd">        flow diverges from the belts instead of converging on them.  6 deg keeps</span>
+<span class="sd">        them resolved.</span>
+<span class="sd">    max_speed : float, optional</span>
+<span class="sd">        Clip the inflow to this speed [m/s].  A safety rail: an unclipped</span>
+<span class="sd">        gradient term can spike where a large region has just emerged, and the</span>
+<span class="sd">        advective time step then collapses.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray</span>
+<span class="sd">        ``u_theta`` perturbation [m/s], same shape as ``field``, to be **added**</span>
+<span class="sd">        to the background meridional flow.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">amplitude</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"colatitude"</span><span class="p">]</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">theta</span>
+    <span class="n">prof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">field</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>          <span class="c1"># zonal-mean unsigned field</span>
+
+    <span class="c1"># Gaussian smoothing in latitude, on the model's own (non-uniform) mesh.</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">smooth_deg</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">lat</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="n">sig</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">/=</span> <span class="n">w</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">w</span> <span class="o">@</span> <span class="n">prof</span>
+
+    <span class="c1"># Converging on maxima means moving UP the gradient: below the belt the flow</span>
+    <span class="c1"># is poleward (d|B|/dlat &gt; 0), above it equatorward (d|B|/dlat &lt; 0), so the</span>
+    <span class="c1"># sign is positive. Getting this backwards produces a flow that DIVERGES from</span>
+    <span class="c1"># the activity belts and accelerates flux poleward -- the opposite of the</span>
+    <span class="c1"># intended brake, and it would have made the polar over-build worse.</span>
+    <span class="n">v_lat</span> <span class="o">=</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">max_speed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">v_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">v_lat</span><span class="p">,</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">))</span>
+
+    <span class="c1"># u_theta = -v_lat (see the sign note at the top of this module)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="o">-</span><span class="n">v_lat</span><span class="p">,</span> <span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="s2">"longitude"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">active_region_inflow_2d</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mf">0.027</span><span class="p">,</span> <span class="n">smooth_deg</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
+                            <span class="n">max_speed</span><span class="o">=</span><span class="mf">8.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Local converging flow around each active region, as ``(u_theta, d_omega)``.</span>
+
+<span class="sd">    The zonal-mean version, :func:`active_region_inflow`, spreads the brake over a</span>
+<span class="sd">    whole latitude band.  Real inflows are local: they appear around an individual</span>
+<span class="sd">    region when it emerges, weaken as it decays, and travel with it.  Representing</span>
+<span class="sd">    that faithfully sounds like it needs the regions tracked individually, with a</span>
+<span class="sd">    flow parcel attached to each centroid.</span>
+
+<span class="sd">    It does not, because the field already carries that information.  Taking the</span>
+<span class="sd">    gradient of the *2-D* smoothed unsigned field gives a flow that converges on</span>
+<span class="sd">    every local concentration wherever it happens to be, strengthens when a large</span>
+<span class="sd">    region emerges, follows it as differential rotation and meridional flow carry</span>
+<span class="sd">    it, and fades as diffusion erases it -- with no region list, no centroids and</span>
+<span class="sd">    no matching between one day and the next.  The tracking is implicit in the</span>
+<span class="sd">    field.</span>
+
+<span class="sd">    Both components are returned, because a local feature converges from all</span>
+<span class="sd">    directions, not just in latitude:</span>
+
+<span class="sd">    * ``u_theta``  [m/s], to be added to the meridional flow;</span>
+<span class="sd">    * ``d_omega``  [rad/s], to be added to the differential rotation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    amplitude : float</span>
+<span class="sd">        m/s per (G/radian).  The 2-D gradient around a single region is much</span>
+<span class="sd">        steeper than the zonal-mean one, so this is NOT the same number as for</span>
+<span class="sd">        :func:`active_region_inflow`: 0.027 here gives a ~4 m/s peak beside a</span>
+<span class="sd">        strong (70 G) region, where the zonal-mean form needs 0.076.</span>
+<span class="sd">    smooth_deg : float</span>
+<span class="sd">        Gaussian width in degrees, applied in both latitude and longitude.  It</span>
+<span class="sd">        sets the size of the inflow cell around a region.</span>
+<span class="sd">    max_speed : float, optional</span>
+<span class="sd">        Clip on each component [m/s].  A freshly emerged region has a very steep</span>
+<span class="sd">        gradient, and an unclipped inflow there would dominate the advective time</span>
+<span class="sd">        step.</span>
+
+<span class="sd">    Overlapping and neighbouring regions</span>
+<span class="sd">    ------------------------------------</span>
+<span class="sd">    Because the flow is a gradient of the *total* smoothed field rather than a</span>
+<span class="sd">    parcel attached to each region, nearby regions combine on their own:</span>
+
+<span class="sd">    * beyond about 30 deg apart (roughly 5x ``smooth_deg``) each keeps its own</span>
+<span class="sd">      inflow cell at single-region strength;</span>
+<span class="sd">    * inside about 12 deg they merge into one cell centred on the complex, with a</span>
+<span class="sd">      strength set by the combined flux;</span>
+<span class="sd">    * exactly co-located, two regions give precisely the inflow of one region of</span>
+<span class="sd">      their summed strength -- the response is linear in |B|, so a complex twice</span>
+<span class="sd">      as strong drives twice the inflow.</span>
+
+<span class="sd">    Between two separated regions the flow reverses through a stagnation point.</span>
+<span class="sd">    That is a saddle, not an artefact: any flow converging on two centres must</span>
+<span class="sd">    have one between them, and the speed there goes to zero (~0.01 m/s against</span>
+<span class="sd">    ~2.7 m/s at the region edges).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">amplitude</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">z</span>
+
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"colatitude"</span><span class="p">]</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"longitude"</span><span class="p">]</span>
+    <span class="n">nt</span><span class="p">,</span> <span class="n">npm</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">smooth_deg</span><span class="p">)</span>
+
+    <span class="c1"># Separable Gaussian smoothing: a dense matrix in colatitude (the mesh is not</span>
+    <span class="c1"># uniform) and a circular convolution in longitude (which is).</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">theta</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">theta</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">wt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span> <span class="o">/</span> <span class="n">sig</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">wt</span> <span class="o">/=</span> <span class="n">wt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">wt</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+
+    <span class="n">dphi</span> <span class="o">=</span> <span class="n">phi</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">phi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># The kernel must have lag zero at index 0 for a circular convolution, or the</span>
+    <span class="c1"># result is rotated: a centred-then-rolled kernel shifted the whole field by</span>
+    <span class="c1"># a quarter turn, which put every inflow cell 90 deg away from its region.</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npm</span><span class="p">)</span>
+    <span class="n">lag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">npm</span> <span class="o">-</span> <span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">dphi</span>
+    <span class="n">wp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">lag</span> <span class="o">/</span> <span class="n">sig</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">wp</span> <span class="o">/=</span> <span class="n">wp</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># Converge on maxima: move up the gradient (see active_region_inflow).</span>
+    <span class="c1"># u_theta = -v_lat and d/dlat = -d/dtheta, so u_theta = +a * d(sm)/dtheta.</span>
+    <span class="n">u_theta</span> <span class="o">=</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Longitudinal component, per unit arc: (1/sin theta) d(sm)/dphi.</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">v_phi</span> <span class="o">=</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">max_speed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">u_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">u_theta</span><span class="p">,</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">))</span>
+        <span class="n">v_phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">v_phi</span><span class="p">,</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">))</span>
+
+    <span class="c1"># omega = v_phi / (R sin theta)</span>
+    <span class="n">d_omega</span> <span class="o">=</span> <span class="n">v_phi</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">R_SUN_M</span> <span class="o">*</span> <span class="n">st</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u_theta</span><span class="p">,</span> <span class="n">d_omega</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

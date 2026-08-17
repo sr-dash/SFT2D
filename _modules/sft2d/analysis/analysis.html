@@ -1,0 +1,261 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.analysis.analysis &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.analysis.analysis</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.analysis.analysis</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">analysis.py</span>
+
+<span class="sd">Derived quantities (unsigned flux, axial dipole moment, polar field and polar</span>
+<span class="sd">flux) from SFT2D output.</span>
+
+<span class="sd">Every integral here is now a plain area-weighted sum against ``grid['area']``,</span>
+<span class="sd">the exact finite-volume cell area.  The previous versions had three separate</span>
+<span class="sd">problems:</span>
+
+<span class="sd">* they used ``dA = R^2 sin(theta) dtheta dphi``, the small-angle approximation</span>
+<span class="sd">  to the cell area, which is wrong for the polar caps;</span>
+<span class="sd">* they summed over a duplicated ``phi = 2*pi`` column that the old grid carried,</span>
+<span class="sd">  double-counting one meridian (~0.55% at n_phi=180);</span>
+<span class="sd">* ``calculate_polar_field`` took an unweighted ``np.mean`` over the cap, which</span>
+<span class="sd">  weights a 0.5-deg-wide polar ring the same as an 80-deg one.</span>
+
+<span class="sd">They also disagreed on the solar radius (6.98e10 cm here against 6.955e10 cm in</span>
+<span class="sd">``source.py``), a further 0.7% in every flux.  All of them now take it from</span>
+<span class="sd">``sft2d.src.constants``.</span>
+
+<span class="sd">All functions accept either a single 2-D map ``(n_theta, n_phi)`` or a stack</span>
+<span class="sd">``(n_time, n_theta, n_phi)``, and return a scalar or an array to match.  The old</span>
+<span class="sd">``time_duration`` tuple argument is gone -- slice the array yourself.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_stack</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return (stack, was_2d) with stack shaped (n_time, n_theta, n_phi)."""</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">b</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">b</span><span class="p">,</span> <span class="kc">False</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"field must be 2-D (map) or 3-D (time, theta, phi)"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_reduce</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">was_2d</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">was_2d</span> <span class="k">else</span> <span class="n">values</span>
+
+
+<div class="viewcode-block" id="calculate_usflx">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.calculate_usflx.html#sft2d.calculate_usflx">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_usflx</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Total unsigned flux [Mx]."""</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">was_2d</span> <span class="o">=</span> <span class="n">_as_stack</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"area_cm2"</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">_reduce</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">was_2d</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_net_flux">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.calculate_net_flux.html#sft2d.calculate_net_flux">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_net_flux</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Net (signed) flux [Mx].</span>
+
+<span class="sd">    Should stay at zero to round-off for a conservative run with balanced</span>
+<span class="sd">    sources; useful as a running check that nothing is leaking.</span>
+<span class="sd">    """</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">was_2d</span> <span class="o">=</span> <span class="n">_as_stack</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"area_cm2"</span><span class="p">][</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">_reduce</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">was_2d</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_dm">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.calculate_dm.html#sft2d.calculate_dm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_dm</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Axial dipole moment [G].</span>
+
+<span class="sd">    ``(3/4pi) * integral of B_r cos(theta) dOmega``, the standard normalisation</span>
+<span class="sd">    in which a field ``B_r = D cos(theta)`` returns ``D``.</span>
+<span class="sd">    """</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">was_2d</span> <span class="o">=</span> <span class="n">_as_stack</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"area"</span><span class="p">]</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"cos_theta"</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">sphere_area</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="s2">"area"</span><span class="p">]))</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"n_phi"</span><span class="p">]</span>   <span class="c1"># = 4*pi*R^2</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">sphere_area</span>
+    <span class="k">return</span> <span class="n">_reduce</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">was_2d</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_polar_field">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.calculate_polar_field.html#sft2d.calculate_polar_field">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_polar_field</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="o">=</span><span class="mf">20.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Area-weighted mean radial field in each polar cap [G].</span>
+
+<span class="sd">    ``pol_cap_extent_deg`` is the cap's angular radius measured from the pole,</span>
+<span class="sd">    so 20 means latitudes poleward of +/-70 deg.</span>
+<span class="sd">    """</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">was_2d</span> <span class="o">=</span> <span class="n">_as_stack</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">)</span>
+    <span class="n">an</span><span class="p">,</span> <span class="n">as_</span> <span class="o">=</span> <span class="n">cap_areas</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="p">)</span>
+    <span class="n">bn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">an</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">an</span><span class="p">))</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"n_phi"</span><span class="p">])</span>
+    <span class="n">bs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">as_</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">as_</span><span class="p">))</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"n_phi"</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">_reduce</span><span class="p">(</span><span class="n">bn</span><span class="p">,</span> <span class="n">was_2d</span><span class="p">),</span> <span class="n">_reduce</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="n">was_2d</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_polar_flux">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.calculate_polar_flux.html#sft2d.calculate_polar_flux">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_polar_flux</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="o">=</span><span class="mf">20.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Signed magnetic flux in each polar cap [Mx].</span>
+
+<span class="sd">    ``pol_cap_extent_deg`` is the cap's angular radius from the pole (20 means</span>
+<span class="sd">    poleward of +/-70 deg latitude).</span>
+<span class="sd">    """</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">was_2d</span> <span class="o">=</span> <span class="n">_as_stack</span><span class="p">(</span><span class="n">all_br_data</span><span class="p">)</span>
+    <span class="n">an</span><span class="p">,</span> <span class="n">as_</span> <span class="o">=</span> <span class="n">cap_areas</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="p">,</span> <span class="n">cm</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">an</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">as_</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">_reduce</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">was_2d</span><span class="p">),</span> <span class="n">_reduce</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">was_2d</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="cap_areas">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.cap_areas.html#sft2d.cap_areas">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cap_areas</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="p">,</span> <span class="n">cm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Per-cell areas of the north and south polar caps, as ``(n_theta, 1)``.</span>
+
+<span class="sd">    Cells straddling the cap edge contribute only the part of themselves that</span>
+<span class="sd">    lies inside it.  Selecting whole cells with a boolean mask instead -- what</span>
+<span class="sd">    this module used to do -- makes the cap boundary snap to the nearest cell</span>
+<span class="sd">    edge, so the integration region moves with resolution: a 20-deg cap on a</span>
+<span class="sd">    4-deg mesh can come out 20% too large or too small, and a "polar flux"</span>
+<span class="sd">    calibration target computed that way is not comparable between grids.</span>
+
+<span class="sd">    Partial-cell weighting is exact for the spherical cap, so the result</span>
+<span class="sd">    converges at O(dtheta^2) and is stable across resolutions.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..src.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">R_SUN_M</span>
+
+    <span class="n">th</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"theta_face"</span><span class="p">]</span>
+    <span class="n">edge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">pol_cap_extent_deg</span><span class="p">)</span>
+    <span class="n">r2</span> <span class="o">=</span> <span class="n">R_SUN_M</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0e4</span> <span class="k">if</span> <span class="n">cm</span> <span class="k">else</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="c1"># North: overlap of [th_j, th_{j+1}] with [0, edge].</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">th</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">edge</span><span class="p">)</span>
+    <span class="n">lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">th</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">edge</span><span class="p">)</span>
+    <span class="n">north</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"dphi"</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">hi</span><span class="p">))</span>
+
+    <span class="c1"># South: overlap with [pi - edge, pi].</span>
+    <span class="n">lo_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">th</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">edge</span><span class="p">)</span>
+    <span class="n">hi_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">th</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">edge</span><span class="p">)</span>
+    <span class="n">south</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"dphi"</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lo_s</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">hi_s</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">north</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">south</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

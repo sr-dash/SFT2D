@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.src.grid &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.src.grid</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.src.grid</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">grid.py</span>
+
+<span class="sd">Pole-to-pole finite-volume mesh in spherical coordinates.</span>
+
+<span class="sd">The previous version clipped ``leave_out=4`` coarse cells off each pole, so the</span>
+<span class="sd">domain reached only +/-82 deg at 90x180 and +/-86 deg at 180x360.  Because the</span>
+<span class="sd">clip is a fixed number of *cells*, the missing polar cap shrank with resolution:</span>
+<span class="sd">16% of the area of the &gt;70 deg polar cap was outside the domain at 90x180</span>
+<span class="sd">against 4% at 180x360.  Any quantity integrated over the polar cap -- which is</span>
+<span class="sd">exactly the calibration target -- therefore depended on the grid, and parameters</span>
+<span class="sd">fitted at one resolution did not transfer to another.</span>
+
+<span class="sd">This version carries the poles as genuine cells, so no flux leaves the domain.</span>
+
+<span class="sd">Layout</span>
+<span class="sd">------</span>
+<span class="sd">Colatitude is a **cell-centred** mesh whose first and last points sit exactly on</span>
+<span class="sd">the poles::</span>
+
+<span class="sd">    t[0] = 0            north pole  (a spherical cap, not a ring)</span>
+<span class="sd">    t[j] = j * dtheta</span>
+<span class="sd">    t[nt-1] = pi        south pole</span>
+
+<span class="sd">The cell faces (the "half mesh") lie midway between centres, with the two polar</span>
+<span class="sd">cells being caps of angular radius ``dtheta/2``::</span>
+
+<span class="sd">    th[0]   = 0</span>
+<span class="sd">    th[j]   = t[j] - dtheta/2      j = 1 .. nt-1</span>
+<span class="sd">    th[nt]  = pi</span>
+
+<span class="sd">Longitude holds ``np_`` **unique** cells with no duplicated endpoint::</span>
+
+<span class="sd">    p[k] = k * dphi,   dphi = 2*pi/np_</span>
+
+<span class="sd">Fields are ``(nt, np_)`` arrays.  The old convention carried a duplicated</span>
+<span class="sd">``phi = 2*pi`` column that every diagnostic silently summed twice (a 1/np_ ~</span>
+<span class="sd">0.55% error at np_=180) and that the roll-based operators had to work around.</span>
+<span class="sd">Periodicity is now handled entirely by ``np.roll``.</span>
+
+<span class="sd">The two polar rows are physically single cells, so every longitude entry in row</span>
+<span class="sd">0 (and row nt-1) must hold the same value.  ``polar_average`` enforces that.</span>
+
+<span class="sd">Returned keys</span>
+<span class="sd">-------------</span>
+<span class="sd">``colatitude``, ``longitude``, ``dtheta``, ``dphi``  (as before)</span>
+<span class="sd">``theta_face``      cell faces, length nt+1</span>
+<span class="sd">``sin_theta``, ``cos_theta``, ``sin_theta_face``</span>
+<span class="sd">``area``            (nt, 1) cell area [m^2], broadcasts over longitude</span>
+<span class="sd">``area_cm2``        same in cm^2, for fluxes in Maxwell</span>
+<span class="sd">``n_theta``, ``n_phi``</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">R_SUN_M</span>
+
+
+<div class="viewcode-block" id="create_grid">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.create_grid.html#sft2d.create_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_grid</span><span class="p">(</span><span class="n">n_theta</span><span class="p">,</span> <span class="n">n_phi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Create a pole-to-pole finite-volume mesh.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_theta : int</span>
+<span class="sd">        Number of colatitude cells, *including* the two polar caps.  Must be</span>
+<span class="sd">        at least 3.  Cell centres run 0 .. pi with spacing pi/(n_theta-1).</span>
+<span class="sd">    n_phi : int</span>
+<span class="sd">        Number of unique longitude cells.  Spacing is 2*pi/n_phi.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Grid description; see the module docstring for the keys.</span>
+<span class="sd">    """</span>
+    <span class="n">n_theta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_theta</span><span class="p">)</span>
+    <span class="n">n_phi</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_phi</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_theta</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"n_theta must be &gt;= 3 (two polar caps plus interior)"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_phi</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"n_phi must be &gt;= 4"</span><span class="p">)</span>
+
+    <span class="n">dtheta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_theta</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">dphi</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">n_phi</span>
+
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">dtheta</span>
+    <span class="n">theta</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>                      <span class="c1"># kill round-off at the south pole</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">dphi</span>
+
+    <span class="c1"># Faces: midway between centres, clamped to the poles at the ends.</span>
+    <span class="n">theta_face</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_theta</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">theta_face</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">theta_face</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">theta_face</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">theta</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">theta</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="c1"># Exact cell area from the integral of sin(theta): no small-angle</span>
+    <span class="c1"># approximation, so the areas sum to 4*pi*R^2 to machine precision.</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="p">(</span><span class="n">R_SUN_M</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dphi</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_face</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_face</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"colatitude"</span><span class="p">:</span> <span class="n">theta</span><span class="p">,</span>
+        <span class="s2">"longitude"</span><span class="p">:</span> <span class="n">phi</span><span class="p">,</span>
+        <span class="s2">"dtheta"</span><span class="p">:</span> <span class="n">dtheta</span><span class="p">,</span>
+        <span class="s2">"dphi"</span><span class="p">:</span> <span class="n">dphi</span><span class="p">,</span>
+        <span class="s2">"theta_face"</span><span class="p">:</span> <span class="n">theta_face</span><span class="p">,</span>
+        <span class="s2">"sin_theta"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+        <span class="s2">"cos_theta"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span>
+        <span class="s2">"sin_theta_face"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_face</span><span class="p">),</span>
+        <span class="s2">"area"</span><span class="p">:</span> <span class="n">area</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="s2">"area_cm2"</span><span class="p">:</span> <span class="n">area</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.0e4</span><span class="p">,</span>
+        <span class="s2">"n_theta"</span><span class="p">:</span> <span class="n">n_theta</span><span class="p">,</span>
+        <span class="s2">"n_phi"</span><span class="p">:</span> <span class="n">n_phi</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="polar_average">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.polar_average.html#sft2d.polar_average">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">polar_average</span><span class="p">(</span><span class="n">field</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Force the two polar rows to be longitude-independent, in place.</span>
+
+<span class="sd">    Rows 0 and -1 represent single spherical caps, so they carry one value each.</span>
+<span class="sd">    The operators produce that automatically, but sources, interpolated initial</span>
+<span class="sd">    conditions and assimilated maps do not, so call this after modifying a field</span>
+<span class="sd">    from outside the solver.</span>
+<span class="sd">    """</span>
+    <span class="n">field</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">field</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">field</span></div>
+
+
+
+<div class="viewcode-block" id="total_flux">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.total_flux.html#sft2d.total_flux">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">total_flux</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Area-weighted flux over the whole sphere [Mx].</span>
+
+<span class="sd">    ``signed=False`` gives the total unsigned flux.</span>
+<span class="sd">    """</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">field</span> <span class="k">if</span> <span class="n">signed</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"area_cm2"</span><span class="p">]))</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,420 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theory and numerical method &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="_static/logosft2d.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api_reference.html" />
+    <link rel="prev" title="BMR approximation vs direct HMI active-region insertion" href="notebooks/bmr_vs_patch_insertion.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Theory and numerical method</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-surface-flux-transport-equation">1. The surface flux transport equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transport-ingredients">2. Transport ingredients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-source-term-emerging-flux">3. The source term: emerging flux</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#a-two-gaussian-bipole-make-bmr">3a. Two-Gaussian bipole — <code class="docutils literal notranslate"><span class="pre">make_bmr</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#b-yeates-bipole-make-bmr-yeates">3b. Yeates bipole — <code class="docutils literal notranslate"><span class="pre">make_bmr_yeates</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c-observationally-driven-sources">3c. Observationally driven sources</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#numerical-method">4. Numerical method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#diagnostics">5. Diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#verification">6. Verification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calibration-against-hmi">7. Calibration against HMI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Theory and numerical method</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/sft2d-theory.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="theory-and-numerical-method">
+<h1>Theory and numerical method<a class="headerlink" href="#theory-and-numerical-method" title="Link to this heading"></a></h1>
+<p>This manual sets out the physical problem <code class="docutils literal notranslate"><span class="pre">sft2d</span></code> solves, the numerical scheme
+used to solve it, and — importantly — the tests and example notebooks that
+verify each part. References are collected at the end.</p>
+<section id="the-surface-flux-transport-equation">
+<h2>1. The surface flux transport equation<a class="headerlink" href="#the-surface-flux-transport-equation" title="Link to this heading"></a></h2>
+<p>Surface flux transport (SFT) treats the radial photospheric field
+<span class="math notranslate nohighlight">\(B_r(\theta,\phi,t)\)</span> as a passive scalar advected by prescribed
+axisymmetric surface flows and dispersed by a turbulent (supergranular)
+diffusion, with new flux added by emerging active regions
+(<a class="reference external" href="https://doi.org/10.1086/148058">Leighton 1964</a>;
+DeVore, Boris &amp; Sheeley 1984;
+<a class="reference external" href="https://doi.org/10.1126/science.245.4919.712">Wang, Nash &amp; Sheeley 1989</a>;
+<a class="reference external" href="https://doi.org/10.12942/lrsp-2005-5">Sheeley 2005</a>;
+<a class="reference external" href="https://doi.org/10.12942/lrsp-2012-6">Mackay &amp; Yeates 2012</a>;
+<a class="reference external" href="https://doi.org/10.1007/s11214-014-0083-1">Jiang et al. 2014</a>). In spherical
+coordinates — colatitude <span class="math notranslate nohighlight">\(\theta\)</span>, longitude <span class="math notranslate nohighlight">\(\phi\)</span>, on a sphere of
+radius <span class="math notranslate nohighlight">\(R_\odot\)</span> — it reads</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial B_r}{\partial t}
+= -\frac{1}{R_\odot \sin\theta}
+   \frac{\partial}{\partial \theta}\!\left(\sin\theta\, u_\theta B_r\right)
+  -\Omega(\theta)\frac{\partial B_r}{\partial \phi}
+  +\frac{\eta}{R_\odot^2}\left[
+     \frac{1}{\sin\theta}\frac{\partial}{\partial\theta}\!\left(\sin\theta\,\frac{\partial B_r}{\partial\theta}\right)
+    +\frac{1}{\sin^2\theta}\frac{\partial^2 B_r}{\partial\phi^2}\right]
+  + S - \frac{B_r}{\tau}.\]</div>
+<p>The terms are, in order: <strong>meridional advection</strong> by the poleward flow
+<span class="math notranslate nohighlight">\(u_\theta\)</span>, <strong>differential rotation</strong> <span class="math notranslate nohighlight">\(\Omega(\theta)\)</span>,
+<strong>supergranular diffusion</strong> with diffusivity <span class="math notranslate nohighlight">\(\eta\)</span>, a <strong>source</strong>
+<span class="math notranslate nohighlight">\(S\)</span> for emerging flux, and an optional <strong>linear decay</strong>
+<span class="math notranslate nohighlight">\(-B_r/\tau\)</span> representing unmodelled radial/3-D diffusion
+(<a class="reference external" href="https://doi.org/10.1086/342247">Schrijver et al. 2002</a>; Baumann et al. 2006).
+The model assumes no back-reaction of the field on the flows.</p>
+<p>The two advective terms conserve total signed flux; diffusion conserves it and
+relaxes the field toward a potential (dipole-dominated) polar configuration.</p>
+</section>
+<section id="transport-ingredients">
+<h2>2. Transport ingredients<a class="headerlink" href="#transport-ingredients" title="Link to this heading"></a></h2>
+<p><strong>Meridional flow.</strong> <code class="docutils literal notranslate"><span class="pre">meridional_flow(grid,</span> <span class="pre">peak_speed,</span> <span class="pre">profile=...)</span></code> returns the
+colatitude velocity <span class="math notranslate nohighlight">\(u_\theta\)</span>; a positive <code class="docutils literal notranslate"><span class="pre">peak_speed</span></code> is <strong>poleward</strong>
+(so <span class="math notranslate nohighlight">\(u_\theta&lt;0\)</span> in the north, <span class="math notranslate nohighlight">\(&gt;0\)</span> in the south). Two profiles are
+provided:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;yeates2020&quot;</span></code> (default): <span class="math notranslate nohighlight">\(u_\theta \propto \sin(\lambda)\cos^{p}(\lambda)\)</span>
+with <span class="math notranslate nohighlight">\(p=2.33\)</span>, peaking near <span class="math notranslate nohighlight">\(\pm 45^\circ\)</span>
+(<a class="reference external" href="https://doi.org/10.1007/s11207-020-01688-y">Yeates 2020</a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;schuessler-baumann&quot;</span></code>:
+<span class="math notranslate nohighlight">\(u_\theta \propto -\sin(2\lambda)\,e^{\pi(1-2|\lambda|/\pi)}\)</span>, the profile
+used in Yeates’s data-driven code
+(<a class="reference external" href="https://doi.org/10.1007/s11207-015-0660-9">Yeates et al. 2015</a>;
+cf. Baumann et al. 2004), which
+is weaker at mid-latitudes and falls off faster toward the poles (typical peak
+<span class="math notranslate nohighlight">\(\sim 11\)</span> m/s).</p></li>
+</ul>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="_images/flows.png"><img alt="_images/flows.png" src="_images/flows.png" style="width: 70%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">Meridional-flow profile.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p><strong>Differential rotation.</strong> <code class="docutils literal notranslate"><span class="pre">differential_rotation(grid)</span></code> uses a Snodgrass-type
+profile (<a class="reference external" href="https://doi.org/10.1086/161101">Snodgrass 1983</a>),
+<span class="math notranslate nohighlight">\(\Omega(\theta)=A + B\cos^2\theta + C\cos^4\theta\)</span>, in the Carrington frame
+by default.</p>
+<p><strong>Diffusivity.</strong> <span class="math notranslate nohighlight">\(\eta\)</span> is the effective supergranular diffusivity, of
+order <span class="math notranslate nohighlight">\(250\)</span>–<span class="math notranslate nohighlight">\(600\)</span> km²/s in the literature
+(<a class="reference external" href="https://doi.org/10.1086/305535">van Ballegooijen, Cartledge &amp; Priest 1998</a>;
+<a class="reference external" href="https://doi.org/10.1007/s11214-014-0083-1">Jiang et al. 2014</a>). It is passed to
+<code class="docutils literal notranslate"><span class="pre">evolve</span></code> in SI units (m²/s); a scalar, a latitude profile, or a full map are all
+accepted.</p>
+</section>
+<section id="the-source-term-emerging-flux">
+<h2>3. The source term: emerging flux<a class="headerlink" href="#the-source-term-emerging-flux" title="Link to this heading"></a></h2>
+<p>New flux enters as idealized <strong>bipolar magnetic regions (BMRs)</strong>. Two analytic
+shapes are available, both flux-normalised to a requested total unsigned flux
+<span class="math notranslate nohighlight">\(\Phi\)</span> against the true finite-volume cell areas.</p>
+<section id="a-two-gaussian-bipole-make-bmr">
+<h3>3a. Two-Gaussian bipole — <code class="docutils literal notranslate"><span class="pre">make_bmr</span></code><a class="headerlink" href="#a-two-gaussian-bipole-make-bmr" title="Link to this heading"></a></h3>
+<p>A pair of opposite-polarity Gaussians is placed on the sphere, separated by an
+angular distance <span class="math notranslate nohighlight">\(\Delta\)</span>, tilted by <span class="math notranslate nohighlight">\(\alpha\)</span> from the local
+east–west direction (<strong>Joy’s law</strong>) with polarity signs from <strong>Hale’s law</strong>. The
+centres are built with a 3-D tangent-basis rotation and the Gaussian is evaluated
+with the true great-circle angle <span class="math notranslate nohighlight">\(\beta\)</span> to each centre (so the spots are
+undistorted at high latitude):</p>
+<div class="math notranslate nohighlight">
+\[B_r(\theta,\phi)=\frac{\Phi}{\sum |B_\mathrm{unit}|\,dA}
+\left[\,s_\mathrm{lead}\,e^{-\beta_\mathrm{lead}^2/2\sigma^2}
+       +s_\mathrm{foll}\,e^{-\beta_\mathrm{foll}^2/2\sigma^2}\right],\]</div>
+<p>with <span class="math notranslate nohighlight">\(\sigma\)</span> the polarity width and <span class="math notranslate nohighlight">\(s=\pm1\)</span> the Hale signs. The
+signed tilt (positive in the north, negative in the south) places the leading
+polarity equatorward in both hemispheres.</p>
+<figure class="align-center" id="id2">
+<a class="reference internal image-reference" href="_images/example_bmr.png"><img alt="_images/example_bmr.png" src="_images/example_bmr.png" style="width: 70%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">An idealized flux-normalised BMR.</span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="b-yeates-bipole-make-bmr-yeates">
+<h3>3b. Yeates bipole — <code class="docutils literal notranslate"><span class="pre">make_bmr_yeates</span></code><a class="headerlink" href="#b-yeates-bipole-make-bmr-yeates" title="Link to this heading"></a></h3>
+<p>An <em>alternative</em> single smooth antisymmetric bipole with a continuous
+polarity-inversion line, following the form used in the <code class="docutils literal notranslate"><span class="pre">sharps-bmrs</span></code> catalogue
+(<a class="reference external" href="https://doi.org/10.1086/522694">Yeates et al. 2007</a>; Yeates 2020). In a frame
+rotated so the bipole lies on the equator, untilted,</p>
+<div class="math notranslate nohighlight">
+\[B_r = -B_0\,\frac{\phi_b}{w}\,\exp(-\xi),
+\qquad \xi=\frac{\phi_b^2 + 2\lambda_b^2}{w^2},\]</div>
+<p>truncated where <span class="math notranslate nohighlight">\(\xi&gt;9\)</span>, with width <span class="math notranslate nohighlight">\(w=0.56\,\Delta\)</span> and
+<span class="math notranslate nohighlight">\((\phi_b,\lambda_b)\)</span> the bipole-frame longitude/latitude. This is the
+natural shape when driving from a catalogue whose separation and tilt are
+<em>fitted</em> from magnetograms — no Joy or Hale assumption is applied, the fitted
+tilt carries the orientation.</p>
+</section>
+<section id="c-observationally-driven-sources">
+<h3>3c. Observationally driven sources<a class="headerlink" href="#c-observationally-driven-sources" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">ARSource</span></code></strong> turns the bundled RGO sunspot record
+(<code class="docutils literal notranslate"><span class="pre">sunspot_data_rgo_1901_2025.csv</span></code>, 1901–2025) into daily flux-normalised
+two-Gaussian BMRs, with Joy’s-law tilt and Hale polarity inferred from the
+cycle.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">SHARPSource</span></code></strong> reads an HMI/SHARPS idealized-BMR catalogue (the
+<code class="docutils literal notranslate"><span class="pre">bmrsharps_evol</span></code> format, HMI era) and inserts Yeates bipoles using the
+region’s <em>measured</em> flux and <em>fitted</em> separation and tilt. It reads both headed
+and headerless dumps and de-duplicates repeat detections by maximum flux.</p></li>
+</ul>
+<p>Both are callables <code class="docutils literal notranslate"><span class="pre">source(day,</span> <span class="pre">field,</span> <span class="pre">grid)</span></code> compatible with <code class="docutils literal notranslate"><span class="pre">evolve</span></code>, so free,
+BMR-driven, and (via the <code class="docutils literal notranslate"><span class="pre">assimilate=</span></code> hook) data-assimilative runs share one
+driver.</p>
+</section>
+</section>
+<section id="numerical-method">
+<h2>4. Numerical method<a class="headerlink" href="#numerical-method" title="Link to this heading"></a></h2>
+<p>The solver is a <strong>conservative finite-volume</strong> scheme designed so that the
+area-weighted total flux is conserved to machine precision and the calibration
+does not depend on resolution.</p>
+<p><strong>Mesh</strong> (<code class="docutils literal notranslate"><span class="pre">grid.py</span></code>). A cell-centred colatitude mesh whose first and last cells
+are genuine spherical <strong>polar caps</strong> (there is no clipped/​excluded polar
+region), and <code class="docutils literal notranslate"><span class="pre">n_phi</span></code> unique longitude cells with periodicity handled by
+<code class="docutils literal notranslate"><span class="pre">numpy.roll</span></code>. Cell areas are the exact integral of <span class="math notranslate nohighlight">\(\sin\theta\)</span>, so they
+sum to <span class="math notranslate nohighlight">\(4\pi R_\odot^2\)</span>.</p>
+<p><strong>Spatial operators</strong> (<code class="docutils literal notranslate"><span class="pre">operators.py</span></code>), both in flux form on the cell areas:</p>
+<ul class="simple">
+<li><p><strong>Diffusion</strong> — a conservative 5-point Laplacian, symmetric negative
+semi-definite. The polar caps exchange flux with the adjacent ring through
+their single face, so no flux leaves the domain and no polar boundary condition
+is required.</p></li>
+<li><p><strong>Advection</strong> — a conservative MUSCL / TVD scheme with a selectable slope
+limiter (<code class="docutils literal notranslate"><span class="pre">vanleer</span></code> default; also <code class="docutils literal notranslate"><span class="pre">minmod</span></code>, <code class="docutils literal notranslate"><span class="pre">mc</span></code>, <code class="docutils literal notranslate"><span class="pre">superbee</span></code>, <code class="docutils literal notranslate"><span class="pre">upwind1</span></code>), which
+keeps the solution monotone across polarity inversion lines while adding far
+less numerical diffusion than first-order upwind
+(<a class="reference external" href="https://doi.org/10.1016/0021-9991(79)90145-1">van Leer 1979</a>).</p></li>
+</ul>
+<p><strong>Time integration</strong> (<code class="docutils literal notranslate"><span class="pre">stepper.py</span></code>, <code class="docutils literal notranslate"><span class="pre">sts.py</span></code>), a <strong>Strang splitting</strong>
+(<a class="reference external" href="https://doi.org/10.1137/0705041">Strang 1968</a>) in an advection–diffusion–advection
+sequence, so each operator uses the step it actually needs:</p>
+<ul class="simple">
+<li><p>advection with <strong>SSP-RK(3,3)</strong>
+(<a class="reference external" href="https://doi.org/10.1137/S003614450036757X">Gottlieb, Shu &amp; Tadmor 2001</a>),
+sub-cycled at its (mild) CFL limit;</p></li>
+<li><p>diffusion with <strong>RKL2 super-time-stepping</strong>
+(<a class="reference external" href="https://doi.org/10.1016/j.jcp.2013.08.021">Meyer, Balsara &amp; Aslam 2014</a>),
+which absorbs the stiff near-pole longitudinal-diffusion limit
+<span class="math notranslate nohighlight">\(\Delta t &lt; (R_\odot\,\Delta\phi\,\sin\theta)^2/\eta\)</span> in
+<span class="math notranslate nohighlight">\(\mathcal{O}(\sqrt{\cdot})\)</span> stages instead of <span class="math notranslate nohighlight">\(\mathcal{O}(n)\)</span>
+explicit steps.</p></li>
+</ul>
+<p>Because RKL2 removes the polar diffusive stiffness exactly, <strong>no near-pole
+Fourier filtering is needed</strong> — the discretisation stays faithful to the
+continuum equation. This mirrors the numerical philosophy of the OFT/HipFT code
+(<a class="reference external" href="https://github.com/predsci/oft">Predictive Science, github.com/predsci/oft</a>),
+which uses the same RKL/Strang-splitting family.</p>
+</section>
+<section id="diagnostics">
+<h2>5. Diagnostics<a class="headerlink" href="#diagnostics" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">sft2d.analysis.analysis</span></code> provides the standard observables, each an
+area-weighted integral on the cell areas (<code class="docutils literal notranslate"><span class="pre">calculate_usflx</span></code> — total unsigned
+flux; <code class="docutils literal notranslate"><span class="pre">calculate_net_flux</span></code>; <code class="docutils literal notranslate"><span class="pre">calculate_dm</span></code> — axial dipole moment
+<span class="math notranslate nohighlight">\(\tfrac{3}{4\pi}\!\int B_r\cos\theta\,d\Omega\)</span>; <code class="docutils literal notranslate"><span class="pre">calculate_polar_field</span></code> /
+<code class="docutils literal notranslate"><span class="pre">calculate_polar_flux</span></code> over a polar cap, with <code class="docutils literal notranslate"><span class="pre">cap_areas</span></code> weighting cells that
+straddle the cap edge by their true overlap). The axial dipole moment is the
+robust, cap-independent amplitude observable; the polar-cap field is compared to
+the Stanford HMI polar-field product (averaged poleward of <span class="math notranslate nohighlight">\(\pm 60^\circ\)</span>).</p>
+</section>
+<section id="verification">
+<h2>6. Verification<a class="headerlink" href="#verification" title="Link to this heading"></a></h2>
+<p>Every property the model rests on is checked in <code class="docutils literal notranslate"><span class="pre">tests/</span></code> (run with <code class="docutils literal notranslate"><span class="pre">pytest</span></code>);
+several are also demonstrated in the notebooks.</p>
+<p><strong>Mesh and conservation</strong> (<code class="docutils literal notranslate"><span class="pre">tests/test_numerics.py</span></code>)</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">test_cell_areas_close_the_sphere</span></code>, <code class="docutils literal notranslate"><span class="pre">test_mesh_spans_sphere</span></code> — the mesh spans
+<span class="math notranslate nohighlight">\(\pm 90^\circ\)</span> and its areas sum to <span class="math notranslate nohighlight">\(4\pi R_\odot^2\)</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_diffusion_conserves_flux</span></code>, <code class="docutils literal notranslate"><span class="pre">test_advection_conserves_flux</span></code>,
+<code class="docutils literal notranslate"><span class="pre">test_full_run_conserves_signed_flux</span></code> — both operators, and a full driven-style
+run, conserve signed flux to <span class="math notranslate nohighlight">\(\sim 10^{-12}\)</span>–<span class="math notranslate nohighlight">\(10^{-15}\)</span>.</p></li>
+</ul>
+<p><strong>Operator correctness</strong> (<code class="docutils literal notranslate"><span class="pre">tests/test_numerics.py</span></code>)</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">test_diffusion_operator_symmetric_negative_definite</span></code> — the diffusion operator
+is symmetric negative semi-definite (so RKL2 is stable on it).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_free_decay_matches_analytic_rate</span></code> — an axisymmetric mode <span class="math notranslate nohighlight">\(P_\ell\)</span>
+decays as <span class="math notranslate nohighlight">\(e^{-\ell(\ell+1)\eta t/R_\odot^2}\)</span>, matched to better than
+<span class="math notranslate nohighlight">\(0.01\%\)</span> for <span class="math notranslate nohighlight">\(\ell=1,2,3\)</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_advection_is_monotone_under_solid_body_rotation</span></code> /
+<code class="docutils literal notranslate"><span class="pre">test_upwind_is_more_diffusive_than_tvd</span></code> — the limiter is monotone and the TVD
+scheme retains far more of a tracer peak than first-order upwind.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_rkl2_stage_count_satisfies_stability_bound</span></code>,
+<code class="docutils literal notranslate"><span class="pre">test_rkl2_matches_many_explicit_steps</span></code> — super-time-stepping is stable and
+reproduces brute-force explicit diffusion.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_cap_areas_are_exact</span></code>, <code class="docutils literal notranslate"><span class="pre">test_polar_flux_converges_second_order</span></code> — the
+polar-cap diagnostic is exact for the cap area and converges at second order,
+so a value fitted at one resolution transfers to another.</p></li>
+</ul>
+<p><strong>Physics and drivers</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tests/test_physics_and_rgo.py</span></code> — the meridional-flow sign convention (positive
+= poleward), BMR flux normalisation, Joy/Hale signs, and an end-to-end RGO
+cycle that reverses the polar field with poleward flow (and <em>fails</em> to with
+equatorward flow).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tests/test_sharps_bmr.py</span></code> — the Yeates-bipole flux normalisation and tilt
+orientation, and the catalogue reader / <code class="docutils literal notranslate"><span class="pre">SHARPSource</span></code> (including headerless and
+duplicated dumps). The Yeates bipole reproduces the catalogue’s own dipole
+moment to <span class="math notranslate nohighlight">\(\sim 0.1\%\)</span>.</p></li>
+</ul>
+<p><strong>Notebooks</strong> (<code class="docutils literal notranslate"><span class="pre">docs/notebooks/</span></code>) reproduce the science results:
+<code class="docutils literal notranslate"><span class="pre">example-run</span></code> (core diagnostics), <code class="docutils literal notranslate"><span class="pre">rgo_driven_and_hmi</span></code> and
+<code class="docutils literal notranslate"><span class="pre">sharps_driven_analysis</span></code> (driven cycles vs the HMI polar field, axial dipole and
+butterfly), and <code class="docutils literal notranslate"><span class="pre">polar_dispersal_experiment</span></code> (the controlled recipe comparison
+of §7).</p>
+</section>
+<section id="calibration-against-hmi">
+<h2>7. Calibration against HMI<a class="headerlink" href="#calibration-against-hmi" title="Link to this heading"></a></h2>
+<p>Driving the model from the HMI/SHARPS catalogue over cycle 24 with the measured
+flux (no amplitude fudge) reproduces the observed polar-field reversal in timing
+and both hemispheres (correlation <span class="math notranslate nohighlight">\(\sim 0.95\)</span>) and the observed axial
+dipole moment (<span class="math notranslate nohighlight">\(\sim 3.5\)</span> G, matching HMI/WSO). Reaching that required one
+physical lesson, established by controlled experiments in the notebooks:</p>
+<ul class="simple">
+<li><p><strong>The near-pole flux over-concentration is physical, not a grid artifact.</strong> It
+is identical on the colatitude mesh and on an independent equal-area
+<span class="math notranslate nohighlight">\(\sin(\text{latitude})\)</span> mesh (concentration ratio <span class="math notranslate nohighlight">\(\approx 2.8\)</span>
+with both, agreeing to three significant figures). The cure is therefore in the
+transport parameters, not the discretisation.</p></li>
+<li><p>A <strong>weaker Schüssler–Baumann meridional flow (<span class="math notranslate nohighlight">\(v_0\approx 11\)</span> m/s) with
+<span class="math notranslate nohighlight">\(\eta\approx 500\)</span> km²/s</strong> flattens the poles to nearly dipole-like
+(concentration <span class="math notranslate nohighlight">\(\to 1.1\)</span>) while preserving the reversal timing; a modest
+<strong><span class="math notranslate nohighlight">\(\tau\approx 10\)</span> yr decay</strong> then holds the axial dipole in the observed
+3–4 G band. These are the defaults in <code class="docutils literal notranslate"><span class="pre">examples/calibrate_sharps_vs_hmi.py</span></code>,
+and the scan behind them is <code class="docutils literal notranslate"><span class="pre">examples/scan_sharps_calibration.py</span></code>.</p></li>
+</ul>
+<p>The calibrated meridional-flow amplitude (<span class="math notranslate nohighlight">\(\sim 11\)</span> m/s) coincides with the
+value used by HipFT’s data-assimilative runs. Where this lighter, BMR-driven code
+uses a single scalar <span class="math notranslate nohighlight">\(\eta\)</span> and a <span class="math notranslate nohighlight">\(\tau\)</span> decay, the heavier
+data-assimilative codes (HipFT; AFT,
+<a class="reference external" href="https://doi.org/10.1088/0004-637X/780/1/5">Upton &amp; Hathaway 2014</a>) instead
+resolve an explicit supergranular convective-flow field and continuously
+assimilate magnetograms — the physical machinery our <span class="math notranslate nohighlight">\(\eta\)</span> and
+<span class="math notranslate nohighlight">\(\tau\)</span> stand in for.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Baumann, I., et al. 2004, A&amp;A, 426, 1075.</p></li>
+<li><p>Baumann, I., Schmitt, D. &amp; Schüssler, M. 2006, A&amp;A, 446, 307.</p></li>
+<li><p>DeVore, C. R., Boris, J. P. &amp; Sheeley, N. R. 1984, Sol. Phys., 92, 1.</p></li>
+<li><p>Gottlieb, S., Shu, C.-W. &amp; Tadmor, E. 2001, SIAM Review, 43, 89.</p></li>
+<li><p>Jiang, J., et al. 2014, Space Sci. Rev., 186, 491.</p></li>
+<li><p>Leighton, R. B. 1964, ApJ, 140, 1547.</p></li>
+<li><p>Mackay, D. H. &amp; Yeates, A. R. 2012, Living Rev. Solar Phys., 9, 6.</p></li>
+<li><p>Meyer, C. D., Balsara, D. S. &amp; Aslam, T. D. 2014, J. Comput. Phys., 257, 594.</p></li>
+<li><p>Schrijver, C. J., et al. 2002, ApJ, 577, 1006.</p></li>
+<li><p>Sheeley, N. R. 2005, Living Rev. Solar Phys., 2, 5.</p></li>
+<li><p>Snodgrass, H. B. 1983, ApJ, 270, 288.</p></li>
+<li><p>Strang, G. 1968, SIAM J. Numer. Anal., 5, 506.</p></li>
+<li><p>Upton, L. &amp; Hathaway, D. H. 2014, ApJ, 780, 5.</p></li>
+<li><p>van Ballegooijen, A. A., Cartledge, N. P. &amp; Priest, E. R. 1998, ApJ, 501, 866.</p></li>
+<li><p>van Leer, B. 1979, J. Comput. Phys., 32, 101.</p></li>
+<li><p>Wang, Y.-M., Nash, A. G. &amp; Sheeley, N. R. 1989, Science, 245, 712.</p></li>
+<li><p>Yeates, A. R., et al. 2007, ApJ, 673, 544.</p></li>
+<li><p>Yeates, A. R., et al. 2015, Sol. Phys., 290, 3189.</p></li>
+<li><p>Yeates, A. R. 2020, Sol. Phys., 295, 119.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="notebooks/bmr_vs_patch_insertion.html" class="btn btn-neutral float-left" title="BMR approximation vs direct HMI active-region insertion" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api_reference.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

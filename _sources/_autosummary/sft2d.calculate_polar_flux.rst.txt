@@ -1,0 +1,6 @@
+﻿sft2d.calculate\_polar\_flux
+============================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: calculate_polar_flux

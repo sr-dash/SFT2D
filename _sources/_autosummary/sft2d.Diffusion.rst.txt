@@ -1,0 +1,28 @@
+﻿sft2d.Diffusion
+===============
+
+.. currentmodule:: sft2d
+
+.. autoclass:: Diffusion
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Diffusion.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Diffusion.dt_explicit
+   
+   

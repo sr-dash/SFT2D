@@ -1,0 +1,213 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.src.initial_conditions &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.src.initial_conditions</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.src.initial_conditions</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">initial_conditions.py</span>
+
+<span class="sd">Initial radial-field maps on the pole-to-pole finite-volume mesh.</span>
+
+<span class="sd">Functions:</span>
+<span class="sd">    - initialize_field: axisymmetric dipole, or an observed synoptic map.</span>
+<span class="sd">    - correct_flux_multiplicative: area-weighted flux balancing.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">polar_average</span>
+
+
+<div class="viewcode-block" id="initialize_field">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.initialize_field.html#sft2d.initialize_field">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">initialize_field</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">field_type</span><span class="o">=</span><span class="s2">"dipole"</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">balance</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Build an initial radial field on ``grid``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid : dict</span>
+<span class="sd">        Grid from :func:`~sft2d.src.grid.create_grid`.</span>
+<span class="sd">    field_type : {'dipole', 'read'}</span>
+<span class="sd">        ``'dipole'`` gives the usual ``sin(lat)|sin(lat)|^7`` axisymmetric</span>
+<span class="sd">        profile (amplitude 1 G; scale it yourself).  ``'read'`` interpolates a</span>
+<span class="sd">        sine-latitude synoptic FITS map onto the grid.</span>
+<span class="sd">    path : str, optional</span>
+<span class="sd">        FITS file for ``field_type='read'``.  Required for that mode; the old</span>
+<span class="sd">        version hard-coded a relative path that only worked from the repo root.</span>
+<span class="sd">    balance : bool</span>
+<span class="sd">        Remove any net flux, area-weighted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (n_theta, n_phi) ndarray</span>
+<span class="sd">    """</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"colatitude"</span><span class="p">]</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"longitude"</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">field_type</span> <span class="o">==</span> <span class="s2">"dipole"</span><span class="p">:</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">theta</span>
+        <span class="n">prof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span> <span class="o">**</span> <span class="mi">7</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>
+        <span class="n">B_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">prof</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">field_type</span> <span class="o">==</span> <span class="s2">"read"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"field_type='read' requires an explicit `path`"</span><span class="p">)</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegularGridInterpolator</span> <span class="k">as</span> <span class="n">rgi</span>
+
+        <span class="n">hmi_br</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fits</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">nsm</span><span class="p">,</span> <span class="n">npm</span> <span class="o">=</span> <span class="n">hmi_br</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">dsm</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="n">nsm</span>
+
+        <span class="c1"># Source map is uniform in sine of latitude; leave a small gap at the</span>
+        <span class="c1"># poles so the interpolator stays inside its domain.</span>
+        <span class="n">scm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dsm</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dsm</span><span class="p">,</span> <span class="n">nsm</span><span class="p">)))</span>
+        <span class="n">pcm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">npm</span><span class="p">)</span>
+
+        <span class="n">bri</span> <span class="o">=</span> <span class="n">rgi</span><span class="p">((</span><span class="n">scm</span><span class="p">,</span> <span class="n">pcm</span><span class="p">),</span> <span class="n">hmi_br</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"linear"</span><span class="p">,</span>
+                  <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">TH</span><span class="p">,</span> <span class="n">PH</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">"ij"</span><span class="p">)</span>
+        <span class="c1"># Vectorised: the old version looped over every cell in Python, which</span>
+        <span class="c1"># cost minutes at production resolution.</span>
+        <span class="n">B_init</span> <span class="o">=</span> <span class="n">bri</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">TH</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">PH</span><span class="o">.</span><span class="n">ravel</span><span class="p">()],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">TH</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"field_type must be 'dipole' or 'read'"</span><span class="p">)</span>
+
+    <span class="n">polar_average</span><span class="p">(</span><span class="n">B_init</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">balance</span><span class="p">:</span>
+        <span class="n">B_init</span> <span class="o">=</span> <span class="n">correct_flux_multiplicative</span><span class="p">(</span><span class="n">B_init</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">B_init</span></div>
+
+
+
+<div class="viewcode-block" id="correct_flux_multiplicative">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.correct_flux_multiplicative.html#sft2d.correct_flux_multiplicative">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">correct_flux_multiplicative</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Rescale each polarity so the map carries zero net flux.</span>
+
+<span class="sd">    Weighted by the true cell areas.  The previous version explicitly assumed</span>
+<span class="sd">    "cells have equal area", which a latitude-longitude mesh does not: it</span>
+<span class="sd">    over-weighted the poles by up to ``1/sin(theta)``, so the correction itself</span>
+<span class="sd">    introduced an imbalance.</span>
+<span class="sd">    """</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="s2">"area_cm2"</span><span class="p">],</span> <span class="n">f</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">ipos</span><span class="p">,</span> <span class="n">ineg</span> <span class="o">=</span> <span class="n">f</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">f</span> <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="n">fluxp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">ipos</span><span class="p">]</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="n">ipos</span><span class="p">]))</span>
+    <span class="n">fluxn</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="n">ineg</span><span class="p">]</span> <span class="o">*</span> <span class="n">w</span><span class="p">[</span><span class="n">ineg</span><span class="p">])))</span>
+    <span class="k">if</span> <span class="n">fluxp</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">fluxn</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span>
+    <span class="n">fluxmn</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">fluxp</span> <span class="o">+</span> <span class="n">fluxn</span><span class="p">)</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">f1</span><span class="p">[</span><span class="n">ipos</span><span class="p">]</span> <span class="o">*=</span> <span class="n">fluxmn</span> <span class="o">/</span> <span class="n">fluxp</span>
+    <span class="n">f1</span><span class="p">[</span><span class="n">ineg</span><span class="p">]</span> <span class="o">*=</span> <span class="n">fluxmn</span> <span class="o">/</span> <span class="n">fluxn</span>
+    <span class="k">return</span> <span class="n">polar_average</span><span class="p">(</span><span class="n">f1</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

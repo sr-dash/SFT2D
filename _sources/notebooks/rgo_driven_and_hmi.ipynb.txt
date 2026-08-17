@@ -1,0 +1,212 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# RGO-driven run and HMI validation\n",
+    "\n",
+    "Drive the model from the bundled RGO active-region record and compare the\n",
+    "modelled polar-field evolution against the observed HMI north-cap field over\n",
+    "cycle 24. This is the end-to-end BMR test: it exercises the Joy/Hale source\n",
+    "(`make_bmr` / `ARSource`), the poleward meridional flow, and the polar-cap\n",
+    "diagnostics together.\n",
+    "\n",
+    "**What decides whether the pole reverses (and to which sign):**\n",
+    "* the meridional flow must be **poleward** (`peak_speed > 0`) to carry\n",
+    "  trailing-polarity flux to the poles \u2014 a negative value is equatorward and the\n",
+    "  pole never reverses;\n",
+    "* the **Hale polarity** must match the real cycle (odd cycles: N leading `+`;\n",
+    "  even cycles: N leading `-`) or the pole reverses to the *wrong* sign;\n",
+    "* `flux_scale` sets the amplitude (RGO |USFLUX| is ~10\u201350\u00d7 too weak in absolute\n",
+    "  terms)."
+   ],
+   "id": "2a45a0002126"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "import sys, pathlib\n",
+    "try:\n",
+    "    import sft2d\n",
+    "except ModuleNotFoundError:\n",
+    "    sys.path.insert(0, str(pathlib.Path.cwd().parents[1]))\n",
+    "\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "from sft2d import (create_grid, initialize_field, evolve, meridional_flow,\n",
+    "                   differential_rotation, calculate_polar_field, calculate_dm)\n",
+    "from sft2d.data import RGO_CSV, load_hmi_polar_field\n",
+    "from sft2d.src.ar_driver import ARSource"
+   ],
+   "id": "92678bd9dc70"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Set up a cycle-24 driven run\n",
+    "\n",
+    "The RGO record is turned into daily flux-normalised BMRs by `ARSource`. We seed\n",
+    "the observed pre-cycle-24 polarity (the HMI north cap is *negative* in 2010, so\n",
+    "the seed dipole is negative in the north)."
+   ],
+   "id": "0b368020229d"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "grid = create_grid(91, 180)\n",
+    "mf = meridional_flow(grid, peak_speed=15.0)      # +15 = poleward\n",
+    "dr = differential_rotation(grid)\n",
+    "\n",
+    "flux_scale = 15.0\n",
+    "src = ARSource(str(RGO_CSV), start_date='2010-05-01', end_date='2023-01-01',\n",
+    "               flux_scale=flux_scale)\n",
+    "print(src.summary())\n",
+    "\n",
+    "field = initialize_field(grid, 'dipole') * (-2.0)   # observed 2010 sign (N negative)"
+   ],
+   "id": "81d65f99b3bc"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Integrate and record the north-cap field"
+   ],
+   "id": "90c1508c74d7"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "y0 = 2010\n",
+    "yr, pnorth, psouth, dip, bfly = [], [], [], [], []\n",
+    "class Rec:\n",
+    "    def record(self, day, B):\n",
+    "        if day % 10 == 0:\n",
+    "            yr.append(y0 + 0.33 + day/365.25)\n",
+    "            n, s = calculate_polar_field(B, grid, pol_cap_extent_deg=20)\n",
+    "            pnorth.append(n); psouth.append(s); dip.append(calculate_dm(B, grid))\n",
+    "            bfly.append(B.mean(axis=1).copy())     # longitude-averaged B_r\n",
+    "\n",
+    "Bf = evolve(field, grid, mf, dr, 2.5e8, src.num_days, source=src, recorder=Rec())\n",
+    "yr = np.array(yr); pnorth = np.array(pnorth); psouth = np.array(psouth)\n",
+    "model_bfly = np.array(bfly).T                       # (n_lat, n_time)\n",
+    "print(f\"model N polar field: {pnorth[0]:+.2f} -> {pnorth[-1]:+.2f} G \"\n",
+    "      f\"({'REVERSED' if np.sign(pnorth[0])!=np.sign(pnorth[-1]) else 'no reversal'})\")"
+   ],
+   "id": "2bb69c131584"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Overlay on the observed HMI north-cap field"
+   ],
+   "id": "459158f15c44"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "hmi = load_hmi_polar_field()          # dict of pandas Series + time (see docstring)\n",
+    "idx = hmi['mean_north'].index\n",
+    "hmi_yr = idx.year + (idx.dayofyear - 1)/365.25\n",
+    "mn, sn = hmi['mean_north'].values, hmi['std_north'].values\n",
+    "ms, ss = hmi['mean_south'].values, hmi['std_south'].values\n",
+    "\n",
+    "fig, ax = plt.subplots(figsize=(10, 4.5))\n",
+    "ax.fill_between(hmi_yr, mn-sn, mn+sn, color='C0', alpha=0.25)\n",
+    "ax.fill_between(hmi_yr, ms-ss, ms+ss, color='C2', alpha=0.25)\n",
+    "ax.plot(hmi_yr, mn, 'C0', lw=1, label='HMI north cap')\n",
+    "ax.plot(hmi_yr, ms, 'C2', lw=1, label='HMI south cap')\n",
+    "ax.plot(yr, pnorth, 'C0--', lw=2.5, label='model N')\n",
+    "ax.plot(yr, psouth, 'C2--', lw=2.5, label='model S')\n",
+    "ax.axhline(0, color='k', lw=0.6)\n",
+    "ax.set_xlabel('year'); ax.set_ylabel('polar field [G]')\n",
+    "ax.set_title('Cycle 24 polar-field reversal: RGO-driven SFT vs HMI')\n",
+    "ax.legend(ncol=2, fontsize=8); fig.tight_layout()"
+   ],
+   "id": "883e8cdcf677"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Notes for calibration\n",
+    "\n",
+    "* Change `flux_scale` to scan the amplitude; `eta` (diffusivity) and `v0`\n",
+    "  (meridional-flow peak) shape the timing and the equator-to-pole transport.\n",
+    "* Flip `peak_speed` to `-15` to confirm the pole then fails to reverse \u2014 flow\n",
+    "  direction, not diffusivity, is what makes reversal possible at all.\n",
+    "* The same machinery scores against the polar-cap flux (`calculate_polar_flux`)\n",
+    "  for a quantitative misfit; that is the objective a parameter scan minimises."
+   ],
+   "id": "b7a74868d54c"
+  },
+  {
+   "cell_type": "markdown",
+   "id": "412c9667d72b",
+   "metadata": {},
+   "source": [
+    "## Butterfly comparison: model vs HMI\n",
+    "\n",
+    "The HMI butterfly pickle holds `(bfly, time_years, sin_lat)` \u2014 its latitude axis\n",
+    "is uniform in **sine of latitude**, so plot it as `rad2deg(arcsin(sin_lat))`.\n",
+    "The model butterfly is uniform in latitude. Both are longitude-averaged $B_r$."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "id": "903026f7fc3b",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "from sft2d.data import load_hmi_butterfly\n",
+    "hmi_bfly, hmi_time, hmi_sinlat = load_hmi_butterfly()\n",
+    "model_lat = np.rad2deg(np.pi/2 - grid['colatitude'])\n",
+    "\n",
+    "fig, ax = plt.subplots(2, 1, figsize=(11, 8), sharex=True)\n",
+    "vmax = 10\n",
+    "pm0 = ax[0].pcolormesh(yr, model_lat, model_bfly, cmap='RdBu_r',\n",
+    "                       vmin=-vmax, vmax=vmax, shading='auto')\n",
+    "ax[0].set_ylabel('latitude [deg]'); ax[0].set_ylim(-90, 90)\n",
+    "ax[0].set_title('model  <B_r>  (RGO-driven)'); fig.colorbar(pm0, ax=ax[0], label='G')\n",
+    "\n",
+    "pm1 = ax[1].pcolormesh(hmi_time, np.rad2deg(np.arcsin(hmi_sinlat)), hmi_bfly,\n",
+    "                       cmap='RdBu_r', vmin=-vmax, vmax=vmax, shading='auto')\n",
+    "ax[1].set_ylabel('latitude [deg]'); ax[1].set_xlabel('year'); ax[1].set_ylim(-90, 90)\n",
+    "ax[1].set_title('HMI  <B_r>'); fig.colorbar(pm1, ax=ax[1], label='G')\n",
+    "ax[1].set_xlim(2010.4, 2023.5)\n",
+    "fig.tight_layout()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python",
+   "version": "3.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick start &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="_static/logosft2d.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SFT2D — core tour" href="notebooks/example-run.html" />
+    <link rel="prev" title="Surface Flux Transport 2D documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-minimal-run">A minimal run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-in-the-package">What is in the package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#verifying-it-works">Verifying it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#worked-examples-and-notebooks">Worked examples and notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quick start</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/quickstart.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quick-start">
+<h1>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">sft2d</span></code> is a two-dimensional <strong>surface flux transport (SFT)</strong> model: it evolves
+the radial magnetic field <span class="math notranslate nohighlight">\(B_r(\theta,\phi,t)\)</span> on the solar (or stellar)
+surface under large-scale flows, supergranular diffusion, and the emergence of
+new active-region flux. SFT models have been the workhorse for understanding the
+long-term evolution of the Sun’s global field and the polar-field reversals that
+seed the polar magnetic flux of each cycle
+(<a class="reference external" href="https://doi.org/10.1086/148058">Leighton 1964</a>;
+<a class="reference external" href="https://doi.org/10.1126/science.245.4919.712">Wang, Nash &amp; Sheeley 1989</a>;
+<a class="reference external" href="https://doi.org/10.12942/lrsp-2005-5">Sheeley 2005</a>;
+<a class="reference external" href="https://doi.org/10.12942/lrsp-2012-6">Mackay &amp; Yeates 2012</a>;
+<a class="reference external" href="https://doi.org/10.1007/s11214-014-0083-1">Jiang et al. 2014</a>).</p>
+<p>This package is a spherical, finite-volume 2-D generalisation of the 1-D solver
+of <a class="reference external" href="https://doi.org/10.1007/s11207-020-01688-y">Yeates (2020)</a>. It assumes no
+back-reaction of the field on the prescribed flows, so it is inexpensive enough
+to scan the transport parameter space while still resolving the full
+<span class="math notranslate nohighlight">\((\theta,\phi)\)</span> surface. The mathematical formulation and the numerical
+scheme are described in the <a class="reference internal" href="sft2d-theory.html"><span class="doc">theory manual</span></a>; this page gets
+you running.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>The package builds from <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> (PEP 621) with a static version, so no
+git checkout is required to install.</p>
+<p>Conda (creates the environment and installs the package editable):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>sft2d
+</pre></div>
+</div>
+<p>or plain pip from a local checkout:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w">            </span><span class="c1"># runtime only</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[dev]"</span><span class="w">     </span><span class="c1"># + pytest, build, ruff, jupyter</span>
+</pre></div>
+</div>
+<p>Reference data — the processed RGO active-region record, an HMI synoptic map,
+and HMI polar-field / butterfly references — ship <strong>inside</strong> the package at
+<code class="docutils literal notranslate"><span class="pre">sft2d/data/</span></code>, so the examples and the observational comparisons work from an
+installed copy with no extra downloads:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">RGO_CSV</span><span class="p">,</span> <span class="n">HMI_SYNOPTIC_FITS</span><span class="p">,</span> <span class="n">load_hmi_polar_field</span>
+</pre></div>
+</div>
+</section>
+<section id="a-minimal-run">
+<h2>A minimal run<a class="headerlink" href="#a-minimal-run" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sft2d</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sft</span>
+
+<span class="n">grid</span> <span class="o">=</span> <span class="n">sft</span><span class="o">.</span><span class="n">create_grid</span><span class="p">(</span><span class="mi">91</span><span class="p">,</span> <span class="mi">180</span><span class="p">)</span>                 <span class="c1"># 91 colatitude x 180 longitude cells</span>
+<span class="n">mf</span>   <span class="o">=</span> <span class="n">sft</span><span class="o">.</span><span class="n">meridional_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">peak_speed</span><span class="o">=</span><span class="mf">15.0</span><span class="p">)</span>   <span class="c1"># u_theta [m/s], poleward</span>
+<span class="n">dr</span>   <span class="o">=</span> <span class="n">sft</span><span class="o">.</span><span class="n">differential_rotation</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>              <span class="c1"># Omega(theta) [rad/s]</span>
+<span class="n">B0</span>   <span class="o">=</span> <span class="n">sft</span><span class="o">.</span><span class="n">initialize_field</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">"dipole"</span><span class="p">)</span> <span class="o">*</span> <span class="mf">3.0</span>   <span class="c1"># initial B_r [G]</span>
+
+<span class="n">B</span> <span class="o">=</span> <span class="n">sft</span><span class="o">.</span><span class="n">evolve</span><span class="p">(</span><span class="n">B0</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">2.5e8</span><span class="p">,</span> <span class="n">num_days</span><span class="o">=</span><span class="mi">365</span><span class="p">)</span>   <span class="c1"># eta in m^2/s</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"axial dipole :"</span><span class="p">,</span> <span class="n">sft</span><span class="o">.</span><span class="n">calculate_dm</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">),</span> <span class="s2">"G"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"polar field  :"</span><span class="p">,</span> <span class="n">sft</span><span class="o">.</span><span class="n">calculate_polar_field</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">evolve</span></code> handles the time integration internally (operator splitting, an adaptive
+advective sub-cycle, and super-time-stepped diffusion — see the
+<a class="reference internal" href="sft2d-theory.html"><span class="doc">theory manual</span></a>). Sources and data assimilation enter through
+the <code class="docutils literal notranslate"><span class="pre">source=</span></code> and <code class="docutils literal notranslate"><span class="pre">assimilate=</span></code> callbacks; diagnostics through a <code class="docutils literal notranslate"><span class="pre">recorder=</span></code>
+object.</p>
+</section>
+<section id="what-is-in-the-package">
+<h2>What is in the package<a class="headerlink" href="#what-is-in-the-package" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>module</p></th>
+<th class="head"><p>purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.grid</span></code></p></td>
+<td><p>pole-to-pole finite-volume mesh; area/flux helpers</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.operators</span></code></p></td>
+<td><p>conservative diffusion + TVD advection operators</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.sts</span></code></p></td>
+<td><p>RKL2 super-time-stepping for diffusion</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.stepper</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">evolve</span></code> — Strang-split time integration</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.transport_profiles</span></code></p></td>
+<td><p>meridional flow + differential rotation</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.initial_conditions</span></code></p></td>
+<td><p>analytic dipole / observed synoptic-map start</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.source</span></code></p></td>
+<td><p>analytic BMR source terms (<code class="docutils literal notranslate"><span class="pre">make_bmr</span></code>, <code class="docutils literal notranslate"><span class="pre">make_bmr_yeates</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.ar_driver</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ARSource</span></code> — drive from the RGO sunspot record</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.src.sharp_driver</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SHARPSource</span></code> — drive from an HMI/SHARPS BMR catalogue</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sft2d.analysis.analysis</span></code></p></td>
+<td><p>unsigned flux, axial dipole, polar field / flux</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="verifying-it-works">
+<h2>Verifying it works<a class="headerlink" href="#verifying-it-works" title="Link to this heading"></a></h2>
+<p>A one-command smoke test prints the grid extent, area closure, the chosen
+super-time-stepping stage count, and the conservation and polar-field
+diagnostics:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sft2d.example_run
+</pre></div>
+</div>
+<p>The numerical test suite checks the properties the whole model rests on — flux
+conservation, operator symmetry, analytic decay rates, TVD monotonicity, and
+second-order convergence of the polar-cap diagnostics:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w">                    </span><span class="c1"># full suite</span>
+pytest<span class="w"> </span>-m<span class="w"> </span><span class="s2">"not slow"</span><span class="w">      </span><span class="c1"># skip the multi-year driven-run tests (fast)</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="sft2d-theory.html"><span class="doc">theory manual</span></a> for exactly which result each test
+verifies.</p>
+</section>
+<section id="worked-examples-and-notebooks">
+<h2>Worked examples and notebooks<a class="headerlink" href="#worked-examples-and-notebooks" title="Link to this heading"></a></h2>
+<p>Runnable scripts in <code class="docutils literal notranslate"><span class="pre">examples/</span></code> (each writes a figure):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/numerical_diffusion_test.py<span class="w">      </span><span class="c1"># limiter peak-retention</span>
+python<span class="w"> </span>examples/bmr_demo.py<span class="w">                       </span><span class="c1"># flux-normalised Joy/Hale BMRs</span>
+python<span class="w"> </span>examples/bmr_shapes.py<span class="w">                     </span><span class="c1"># two-Gaussian vs Yeates bipole</span>
+python<span class="w"> </span>examples/run_driven_cycle.py<span class="w"> </span><span class="m">2010</span><span class="w"> </span><span class="m">2020</span><span class="w"> </span><span class="m">30</span><span class="w">  </span><span class="c1"># RGO-driven butterfly + polar field</span>
+python<span class="w"> </span>examples/validate_against_hmi.py<span class="w"> </span><span class="m">15</span><span class="w">        </span><span class="c1"># cycle-24 reversal vs HMI</span>
+python<span class="w"> </span>examples/calibrate_sharps_vs_hmi.py<span class="w"> </span>&lt;catalogue&gt;<span class="w">   </span><span class="c1"># SHARPS calibration check</span>
+python<span class="w"> </span>examples/scan_sharps_calibration.py<span class="w"> </span>&lt;catalogue&gt;<span class="w">   </span><span class="c1"># (eta, v0, tau) scan vs HMI</span>
+</pre></div>
+</div>
+<p>Jupyter notebooks in <code class="docutils literal notranslate"><span class="pre">docs/notebooks/</span></code> walk through the physics interactively:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">example-run.ipynb</span></code> — the core tour (grid, flows, integration, diagnostics);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rgo_driven_and_hmi.ipynb</span></code> — RGO-driven cycle vs the HMI polar field / butterfly;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sharps_driven_analysis.ipynb</span></code> — the data-driven SHARPS pipeline end to end;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">polar_dispersal_experiment.ipynb</span></code> — a controlled comparison of polar
+flux-dispersal recipes.</p></li>
+</ul>
+<p>The SHARPS catalogue used by the data-driven examples is <strong>not</strong> bundled (it is a
+separate, GPL project); see <code class="docutils literal notranslate"><span class="pre">examples/README.md</span></code> for how to obtain it.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Surface Flux Transport 2D documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="notebooks/example-run.html" class="btn btn-neutral float-right" title="SFT2D — core tour" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

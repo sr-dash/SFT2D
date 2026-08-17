@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.src.sharp_driver &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.src.sharp_driver</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.src.sharp_driver</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">sharp_driver.py</span>
+
+<span class="sd">Drive the SFT model from a SHARPS-derived idealized-BMR catalogue, as an</span>
+<span class="sd">alternative to the RGO sunspot record (:class:`sft2d.src.ar_driver.ARSource`).</span>
+
+<span class="sd">Background</span>
+<span class="sd">----------</span>
+<span class="sd">A. Yeates's ``sharps-bmrs`` project (https://github.com/antyeates1983/sharps-bmrs,</span>
+<span class="sd">GPL-3.0) fits an idealized bipole to each HMI/SHARP active region and tabulates</span>
+<span class="sd">its **observed** parameters -- emergence date, latitude, Carrington longitude,</span>
+<span class="sd">total unsigned flux, and the *fitted* separation and tilt.  Because separation</span>
+<span class="sd">and tilt come from the actual magnetogram, driving from this catalogue needs no</span>
+<span class="sd">Joy's-law tilt estimate and no Hale-law polarity assumption: the signed fitted</span>
+<span class="sd">tilt already carries the orientation.  This makes it a cleaner, HMI-era</span>
+<span class="sd">(2010-present) alternative to the RGO record, whose flux is inferred from spot</span>
+<span class="sd">area and whose tilt/polarity are assumed.</span>
+
+<span class="sd">This module reads that catalogue format and reconstructs each region with the</span>
+<span class="sd">Yeates bipole shape :func:`sft2d.src.source.make_bmr_yeates`.  It does **not**</span>
+<span class="sd">reimplement the SHARP download / fitting pipeline (that needs JSOC/``drms``</span>
+<span class="sd">access and is Yeates's GPL code); it consumes the published catalogue.</span>
+
+<span class="sd">Catalogue format</span>
+<span class="sd">----------------</span>
+<span class="sd">A whitespace/tab-separated ``bmrsharps_evol.txt`` with a multi-line header and</span>
+<span class="sd">columns (only a subset is required)::</span>
+
+<span class="sd">    SHARP  NOAA  CM-time  Latitude  Carr-Longitude  Unsgnd-flux  Imbalance</span>
+<span class="sd">    [Good]  Dipole  Bip-Separation  Bip-Tilt  [Bip-Dipole ...]</span>
+
+<span class="sd">The reader locates the header row by its ``SHARP``/``Latitude`` names, so both</span>
+<span class="sd">the ``allsharps.txt`` (has a ``Good`` column) and ``bmrsharps_evol.txt`` layouts</span>
+<span class="sd">work.  ``CM-time`` is the emergence/central-meridian date; latitude, longitude,</span>
+<span class="sd">separation and tilt are in **degrees**; unsigned flux is in **Maxwell**.</span>
+
+<span class="sd">Usage</span>
+<span class="sd">-----</span>
+<span class="sd">    src = SHARPSource("bmrsharps_evol.txt", start_date="2010-05-01")</span>
+<span class="sd">    evolve(field0, grid, mf, dr, eta, src.num_days, source=src, ...)</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.source</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_bmr_yeates</span>
+
+<span class="c1"># Canonical positional column order of a headerless bmrsharps_evol dump, used</span>
+<span class="c1"># when the file has no column-header row.  The key columns (date, lat, lon,</span>
+<span class="c1"># flux, sep, tilt) sit at these indices in Yeates's 11- and 13-column outputs.</span>
+<span class="n">_POS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"sharp"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"date"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"lat"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"lon"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">"flux"</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">"sep"</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">"tilt"</span><span class="p">:</span> <span class="mi">9</span><span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_catalogue</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">date_col</span><span class="o">=</span><span class="s2">"CM time"</span><span class="p">,</span> <span class="n">lat_col</span><span class="o">=</span><span class="s2">"Latitude"</span><span class="p">,</span>
+                    <span class="n">lon_col</span><span class="o">=</span><span class="s2">"Carr-Longitude"</span><span class="p">,</span> <span class="n">flux_col</span><span class="o">=</span><span class="s2">"Unsgnd flux"</span><span class="p">,</span>
+                    <span class="n">sep_col</span><span class="o">=</span><span class="s2">"Bip-Separation"</span><span class="p">,</span> <span class="n">tilt_col</span><span class="o">=</span><span class="s2">"Bip-Tilt"</span><span class="p">,</span>
+                    <span class="n">good_col</span><span class="o">=</span><span class="s2">"Good"</span><span class="p">,</span> <span class="n">sharp_col</span><span class="o">=</span><span class="s2">"SHARP"</span><span class="p">,</span> <span class="n">dedupe_max_flux</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Parse a Yeates SHARPS catalogue into a tidy DataFrame.</span>
+
+<span class="sd">    Handles both layouts: a file **with** a column-header row (``allsharps.txt``</span>
+<span class="sd">    or a headed ``bmrsharps_evol.txt``), and a **headerless** dump (data rows</span>
+<span class="sd">    only), which is parsed by position in the canonical column order.  Exact</span>
+<span class="sd">    duplicate rows -- some pipelines list a region once per observation frame</span>
+<span class="sd">    with identical fitted values -- are collapsed.</span>
+
+<span class="sd">    Returns columns: date (datetime), lat, lon, flux, sep, tilt, good, sharp.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="n">hdr_idx</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ln</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="n">cells</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ln</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="s2">"SHARP"</span> <span class="ow">in</span> <span class="n">cells</span> <span class="ow">and</span> <span class="s2">"Latitude"</span> <span class="ow">in</span> <span class="n">cells</span><span class="p">:</span>
+            <span class="n">hdr_idx</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">hdr_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="n">hdr_idx</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="n">hdr_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ln</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="n">cells</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">ln</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cells</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cells</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">header</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+            <span class="s2">"date"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">date_col</span><span class="p">]),</span>
+            <span class="s2">"lat"</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">lat_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"lon"</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">lon_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"flux"</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">flux_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">(),</span>
+            <span class="s2">"sep"</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">sep_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"tilt"</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">tilt_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"sharp"</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">sharp_col</span><span class="p">]</span> <span class="k">if</span> <span class="n">sharp_col</span> <span class="ow">in</span> <span class="n">df</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)),</span>
+        <span class="p">})</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">"good"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">good_col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="n">good_col</span> <span class="ow">in</span> <span class="n">df</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Headerless: parse by position in the canonical column order.</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">skip_blank_lines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">raw</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">(</span><span class="n">_POS</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">raw</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns, too few for a headerless "</span>
+                <span class="sa">f</span><span class="s2">"bmrsharps_evol dump (need &gt;= </span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">_POS</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">). "</span>
+                <span class="sa">f</span><span class="s2">"If this file has a header, it was not recognised."</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+            <span class="s2">"date"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="n">_POS</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]]),</span>
+            <span class="s2">"lat"</span><span class="p">:</span> <span class="n">raw</span><span class="p">[</span><span class="n">_POS</span><span class="p">[</span><span class="s2">"lat"</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"lon"</span><span class="p">:</span> <span class="n">raw</span><span class="p">[</span><span class="n">_POS</span><span class="p">[</span><span class="s2">"lon"</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"flux"</span><span class="p">:</span> <span class="n">raw</span><span class="p">[</span><span class="n">_POS</span><span class="p">[</span><span class="s2">"flux"</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">(),</span>
+            <span class="s2">"sep"</span><span class="p">:</span> <span class="n">raw</span><span class="p">[</span><span class="n">_POS</span><span class="p">[</span><span class="s2">"sep"</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"tilt"</span><span class="p">:</span> <span class="n">raw</span><span class="p">[</span><span class="n">_POS</span><span class="p">[</span><span class="s2">"tilt"</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"sharp"</span><span class="p">:</span> <span class="n">raw</span><span class="p">[</span><span class="n">_POS</span><span class="p">[</span><span class="s2">"sharp"</span><span class="p">]],</span>
+        <span class="p">})</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">"good"</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># Collapse identical duplicate rows (same region listed per frame).</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+
+    <span class="c1"># One entry per active region: when a SHARP id appears in several rows</span>
+    <span class="c1"># (different frames / fits), keep the one with the largest observed flux</span>
+    <span class="c1"># (~area).  This mirrors the standard "maximum-area record per region"</span>
+    <span class="c1"># preprocessing; for this catalogue the repeats are usually identical, so it</span>
+    <span class="c1"># mostly just guards against double-counting.</span>
+    <span class="k">if</span> <span class="n">dedupe_max_flux</span> <span class="ow">and</span> <span class="s2">"sharp"</span> <span class="ow">in</span> <span class="n">out</span> <span class="ow">and</span> <span class="n">out</span><span class="p">[</span><span class="s2">"sharp"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"flux"</span><span class="p">)</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s2">"sharp"</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="s2">"last"</span><span class="p">)</span>
+
+    <span class="c1"># Return in chronological order (natural for a time-driven catalogue).</span>
+    <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"date"</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SHARPSource">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.SHARPSource.html#sft2d.SHARPSource">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SHARPSource</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Callable ``source(day, field, grid)`` driven by a SHARPS BMR catalogue.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    catalogue : str or pandas.DataFrame</span>
+<span class="sd">        Path to a ``bmrsharps_evol.txt``-format file, or an already-parsed frame</span>
+<span class="sd">        with columns ``date, lat, lon, flux, sep, tilt`` (and optionally</span>
+<span class="sd">        ``good``).</span>
+<span class="sd">    start_date : str or datetime</span>
+<span class="sd">        Simulation start; day index 0.</span>
+<span class="sd">    end_date : str or datetime, optional</span>
+<span class="sd">        Simulation end (defaults to the last catalogue date).</span>
+<span class="sd">    flux_scale : float</span>
+<span class="sd">        Multiplies each region's unsigned flux (calibration knob; unlike RGO the</span>
+<span class="sd">        SHARPS flux is measured, so this should be near 1).</span>
+<span class="sd">    width_frac : float</span>
+<span class="sd">        Yeates Gaussian scale as a fraction of the fitted separation (0.56).</span>
+<span class="sd">    min_sep_deg : float</span>
+<span class="sd">        Skip regions with a fitted separation below this (unresolved bipoles).</span>
+<span class="sd">    good_only : bool</span>
+<span class="sd">        Use only rows flagged good in the catalogue (if the column is present).</span>
+<span class="sd">    dedupe_max_flux : bool</span>
+<span class="sd">        Keep only the largest-flux entry per SHARP id (the standard</span>
+<span class="sd">        maximum-area-record-per-region preprocessing).</span>
+<span class="sd">    rebalance : bool</span>
+<span class="sd">        Re-zero the whole-map net flux on days that inject flux.</span>
+<span class="sd">    """</span>
+
+<div class="viewcode-block" id="SHARPSource.__init__">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.SHARPSource.html#sft2d.SHARPSource.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">catalogue</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flux_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">width_frac</span><span class="o">=</span><span class="mf">0.56</span><span class="p">,</span> <span class="n">min_sep_deg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">good_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">dedupe_max_flux</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rebalance</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">catalogue</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">_read_catalogue</span><span class="p">(</span><span class="n">catalogue</span><span class="p">,</span> <span class="n">dedupe_max_flux</span><span class="o">=</span><span class="n">dedupe_max_flux</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">catalogue</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">good_only</span> <span class="ow">and</span> <span class="s2">"good"</span> <span class="ow">in</span> <span class="n">df</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">"good"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">"sep"</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">min_sep_deg</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">start_date</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">end_date</span><span class="p">)</span> <span class="k">if</span> <span class="n">end_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">df</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">)]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_days</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">days</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">width_frac</span> <span class="o">=</span> <span class="n">width_frac</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rebalance</span> <span class="o">=</span> <span class="n">rebalance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">n_used</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">flux</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"flux"</span><span class="p">])</span> <span class="o">*</span> <span class="n">flux_scale</span>
+            <span class="k">if</span> <span class="n">flux</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">r</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">days</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="nb">dict</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"lat"</span><span class="p">]),</span> <span class="n">lon</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"lon"</span><span class="p">]),</span> <span class="n">flux</span><span class="o">=</span><span class="n">flux</span><span class="p">,</span>
+                     <span class="n">sep</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"sep"</span><span class="p">]),</span> <span class="n">tilt</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"tilt"</span><span class="p">])))</span>
+            <span class="n">n_used</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_regions</span> <span class="o">=</span> <span class="n">n_used</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">grid</span><span class="p">):</span>
+        <span class="n">evs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">day</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">evs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">field</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">evs</span><span class="p">:</span>
+            <span class="n">field</span> <span class="o">+=</span> <span class="n">make_bmr_yeates</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">e</span><span class="p">[</span><span class="s2">"lat"</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="s2">"lon"</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="s2">"flux"</span><span class="p">],</span>
+                                     <span class="n">sep_deg</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s2">"sep"</span><span class="p">],</span> <span class="n">tilt_deg</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s2">"tilt"</span><span class="p">],</span>
+                                     <span class="n">width_frac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">width_frac</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rebalance</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.source</span><span class="w"> </span><span class="kn">import</span> <span class="n">balance_flux</span>
+            <span class="n">field</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">balance_flux</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">field</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"SHARPSource: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_regions</span><span class="si">}</span><span class="s2"> regions, "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_days</span><span class="si">}</span><span class="s2"> days)"</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.src.operators &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.src.operators</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.src.operators</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">operators.py</span>
+
+<span class="sd">Finite-volume spatial operators for the SFT equation on the pole-to-pole mesh</span>
+<span class="sd">built by :func:`sft2d.src.grid.create_grid`.</span>
+
+<span class="sd">    dB/dt = -div( u B )  +  eta * laplacian(B)</span>
+
+<span class="sd">Both operators are written in **flux form** on the cell areas returned by the</span>
+<span class="sd">grid, so the area-weighted sum of either right-hand side is zero to machine</span>
+<span class="sd">precision: neither can create or destroy flux.  This replaces two earlier</span>
+<span class="sd">routines that could:</span>
+
+<span class="sd">* ``diffusion.py`` discretised the Laplacian in non-conservative form, with an</span>
+<span class="sd">  explicit ``cos/sin`` metric term that leaks flux where the metric is singular;</span>
+<span class="sd">* ``advection_tvd.py`` was conservative in the interior but sat on a</span>
+<span class="sd">  pole-clipped domain whose zero-gradient boundary condition (``B[0]=B[1]`` in</span>
+<span class="sd">  the old ``apply_bcs``) overwrote whatever flux had piled up against the</span>
+<span class="sd">  artificial wall.  Measured on a monopolar blob advected poleward, that created</span>
+<span class="sd">  ~1.7% of spurious signed flux over 600 days, deposited directly in the polar</span>
+<span class="sd">  cap used as the calibration target.</span>
+
+<span class="sd">Both classes cache their geometric coefficients at construction.  That matters:</span>
+<span class="sd">the super-time-stepping scheme in ``sts.py`` calls the diffusion operator tens</span>
+<span class="sd">of times per step, and recomputing trigonometry each call dominated the runtime.</span>
+
+<span class="sd">Polar cells</span>
+<span class="sd">-----------</span>
+<span class="sd">Rows 0 and -1 are single spherical caps of angular radius ``dtheta/2``, stored</span>
+<span class="sd">replicated across all longitudes.  Their update is the net flux through their</span>
+<span class="sd">one face, summed over longitude and divided by the *total* cap area -- the same</span>
+<span class="sd">treatment HipFT uses (``diffusion_operator_cd``).  Longitudinal transport within</span>
+<span class="sd">a cap is meaningless and is forced to zero, so the caps stay single-valued</span>
+<span class="sd">without any filtering.</span>
+
+<span class="sd">Because the poles are real cells there is no polar boundary condition to get</span>
+<span class="sd">wrong, and -- combined with super-time-stepping for diffusion -- no need for the</span>
+<span class="sd">near-pole Fourier filter the previous version required.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">R_SUN_M</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Slope limiters</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_minmod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_maxmod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">limited_slope</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">limiter</span><span class="o">=</span><span class="s2">"vanleer"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Limited cell slope from backward/forward differences ``dm``/``dp``."""</span>
+    <span class="n">limiter</span> <span class="o">=</span> <span class="n">limiter</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">limiter</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"upwind1"</span><span class="p">,</span> <span class="s2">"firstorder"</span><span class="p">,</span> <span class="s2">"zero"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">limiter</span> <span class="o">==</span> <span class="s2">"none"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">dm</span> <span class="o">+</span> <span class="n">dp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">limiter</span> <span class="o">==</span> <span class="s2">"minmod"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_minmod</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">dp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">limiter</span> <span class="o">==</span> <span class="s2">"vanleer"</span><span class="p">:</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="n">dm</span> <span class="o">+</span> <span class="n">dp</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span>
+        <span class="n">good</span> <span class="o">=</span> <span class="p">(</span><span class="n">dm</span> <span class="o">*</span> <span class="n">dp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">good</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">dm</span><span class="p">[</span><span class="n">good</span><span class="p">]</span> <span class="o">*</span> <span class="n">dp</span><span class="p">[</span><span class="n">good</span><span class="p">]</span> <span class="o">/</span> <span class="n">denom</span><span class="p">[</span><span class="n">good</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">out</span>
+    <span class="k">if</span> <span class="n">limiter</span> <span class="o">==</span> <span class="s2">"mc"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_minmod</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">dm</span> <span class="o">+</span> <span class="n">dp</span><span class="p">),</span> <span class="n">_minmod</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">dm</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">dp</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">limiter</span> <span class="o">==</span> <span class="s2">"superbee"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_maxmod</span><span class="p">(</span><span class="n">_minmod</span><span class="p">(</span><span class="n">dp</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">dm</span><span class="p">),</span> <span class="n">_minmod</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">dp</span><span class="p">,</span> <span class="n">dm</span><span class="p">))</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown limiter </span><span class="si">{</span><span class="n">limiter</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Diffusion</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Diffusion">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.Diffusion.html#sft2d.Diffusion">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Diffusion</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Conservative 5-point Laplacian, ``y = eta * lap(B)``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    grid : dict</span>
+<span class="sd">        Grid from :func:`create_grid`.</span>
+<span class="sd">    eta : float or ndarray</span>
+<span class="sd">        Diffusivity [m^2/s].  A scalar, a ``(n_theta,)`` latitude profile, or a</span>
+<span class="sd">        full ``(n_theta, n_phi)`` map.  Face values are arithmetic means of the</span>
+<span class="sd">        two adjacent cells.</span>
+<span class="sd">    """</span>
+
+<div class="viewcode-block" id="Diffusion.__init__">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.Diffusion.html#sft2d.Diffusion.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">eta</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
+        <span class="n">nt</span><span class="p">,</span> <span class="n">npm</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"n_theta"</span><span class="p">],</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"n_phi"</span><span class="p">]</span>
+        <span class="n">dth</span><span class="p">,</span> <span class="n">dph</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"dtheta"</span><span class="p">],</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"dphi"</span><span class="p">]</span>
+        <span class="n">sfc</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"sin_theta_face"</span><span class="p">]</span>                 <span class="c1"># (nt+1,)</span>
+        <span class="n">sct</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"sin_theta"</span><span class="p">]</span>                      <span class="c1"># (nt,)</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"area"</span><span class="p">]</span>                          <span class="c1"># (nt,1)</span>
+
+        <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eta</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">eta</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">eta</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">eta</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">npm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="n">eta</span>
+
+        <span class="c1"># Face diffusivities.</span>
+        <span class="n">eta_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">))</span>                  <span class="c1"># face at th[j]   (north)</span>
+        <span class="n">eta_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">))</span>                  <span class="c1"># face at th[j+1] (south)</span>
+        <span class="n">eta_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">eta</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">eta</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>
+        <span class="n">eta_n</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">eta</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">eta_s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">eta</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">eta</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>
+        <span class="n">eta_s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">eta</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">eta_e</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">eta</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">eta_w</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">eta</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Interior stencil coefficients (rows 1 .. nt-2 are used; the polar rows</span>
+        <span class="c1"># are overwritten below).  Derivation in the module docstring of grid.py:</span>
+        <span class="c1">#   dB_j/dt = eta*dphi*[ sin(th_{j+1})(B_{j+1}-B_j)</span>
+        <span class="c1">#                       - sin(th_j)(B_j-B_{j-1}) ] / (dtheta * A_j)</span>
+        <span class="c1">#           + eta*dtheta*(B_{k+1}+B_{k-1}-2B_k) / (sin(t_j)*dphi*A_j)</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cn</span> <span class="o">=</span> <span class="n">eta_n</span> <span class="o">*</span> <span class="n">dph</span> <span class="o">*</span> <span class="n">sfc</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">dth</span> <span class="o">*</span> <span class="n">area</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cs</span> <span class="o">=</span> <span class="n">eta_s</span> <span class="o">*</span> <span class="n">dph</span> <span class="o">*</span> <span class="n">sfc</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">dth</span> <span class="o">*</span> <span class="n">area</span><span class="p">)</span>
+            <span class="n">inv_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sct</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sct</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sct</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">=</span> <span class="n">eta_e</span> <span class="o">*</span> <span class="n">dth</span> <span class="o">*</span> <span class="n">inv_s</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">dph</span> <span class="o">*</span> <span class="n">area</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cw</span> <span class="o">=</span> <span class="n">eta_w</span> <span class="o">*</span> <span class="n">dth</span> <span class="o">*</span> <span class="n">inv_s</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">dph</span> <span class="o">*</span> <span class="n">area</span><span class="p">)</span>
+
+        <span class="c1"># Polar caps: one cell each, total area n_phi * area[row].</span>
+        <span class="n">cap_n</span> <span class="o">=</span> <span class="n">npm</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">area</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">cap_s</span> <span class="o">=</span> <span class="n">npm</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">area</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pn</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">eta_n</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">*</span> <span class="n">dph</span> <span class="o">*</span> <span class="n">sfc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">dth</span> <span class="o">*</span> <span class="n">cap_n</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ps</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">eta_s</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">*</span> <span class="n">dph</span> <span class="o">*</span> <span class="n">sfc</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">dth</span> <span class="o">*</span> <span class="n">cap_s</span><span class="p">)</span>
+
+        <span class="c1"># No longitudinal transport inside a cap.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cw</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cw</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cn</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cn</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cc</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cn</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ce</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">npm</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">npm</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_npm</span> <span class="o">=</span> <span class="n">npm</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">._kernels</span><span class="w"> </span><span class="kn">import</span> <span class="n">HAVE_NUMBA</span><span class="p">,</span> <span class="n">diffuse</span>
+        <span class="k">if</span> <span class="n">HAVE_NUMBA</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_k_ready"</span><span class="p">):</span>
+                <span class="n">bc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cc</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_k_cn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_cs</span> <span class="o">=</span> <span class="n">bc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cn</span><span class="p">),</span> <span class="n">bc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_k_cw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_ce</span> <span class="o">=</span> <span class="n">bc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cw</span><span class="p">),</span> <span class="n">bc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_k_cc</span> <span class="o">=</span> <span class="n">bc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cc</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_k_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cc</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_k_ready</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="n">diffuse</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">_k_cn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_cs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_cw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_ce</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">_k_cc</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pn</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ps</span><span class="p">),</span>
+                           <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_npm</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_out</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cn</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">B</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="mi">2</span><span class="p">:,</span> <span class="p">:]</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cw</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ce</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cc</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="p">)</span>
+        <span class="c1"># Polar caps: net flux through the single face, over the whole cap.</span>
+        <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pn</span> <span class="o">*</span> <span class="p">(</span><span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_npm</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ps</span> <span class="o">*</span> <span class="p">(</span><span class="n">B</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_npm</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">y</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dt_explicit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Forward-Euler stability limit [s] for this operator.</span>
+
+<span class="sd">        Gershgorin: the spectral radius is bounded by ``2*max|cc|``, and</span>
+<span class="sd">        forward Euler on a symmetric negative operator is stable for</span>
+<span class="sd">        ``dt &lt;= 2/rho``, hence ``dt &lt;= 1/max|cc|``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cc</span><span class="p">)))</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Advection</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="Advection">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.Advection.html#sft2d.Advection">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Advection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Conservative MUSCL/TVD advection, ``y = -div(u B)``.</span>
+
+<span class="sd">    ``meridional_flow`` is u_theta [m/s] and ``differential_rotation`` is</span>
+<span class="sd">    Omega(theta) [rad/s], each either ``(n_theta,)`` or ``(n_theta, n_phi)``</span>
+<span class="sd">    as produced by :mod:`sft2d.src.transport_profiles`.</span>
+<span class="sd">    """</span>
+
+<div class="viewcode-block" id="Advection.__init__">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.Advection.html#sft2d.Advection.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">meridional_flow</span><span class="p">,</span> <span class="n">differential_rotation</span><span class="p">,</span>
+                 <span class="n">limiter</span><span class="o">=</span><span class="s2">"vanleer"</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limiter</span> <span class="o">=</span> <span class="n">limiter</span>
+        <span class="n">nt</span><span class="p">,</span> <span class="n">npm</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"n_theta"</span><span class="p">],</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"n_phi"</span><span class="p">]</span>
+        <span class="n">dph</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"dphi"</span><span class="p">]</span>
+        <span class="n">sfc</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"sin_theta_face"</span><span class="p">]</span>
+        <span class="n">area</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s2">"area"</span><span class="p">]</span>
+
+        <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">meridional_flow</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="n">om</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">differential_rotation</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">npm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">om</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">om</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">om</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">npm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">=</span> <span class="n">om</span>
+
+        <span class="c1"># u_theta interpolated to the interior theta faces (faces 1 .. nt-1).</span>
+        <span class="c1"># Faces 0 and nt are the poles, where sin(theta)=0 carries no flux.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u_face</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:])</span>            <span class="c1"># (nt-1, npm)</span>
+
+        <span class="c1"># Geometric factor: face length / cell area, R*dphi*sin(th) / A.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gface</span> <span class="o">=</span> <span class="n">R_SUN_M</span> <span class="o">*</span> <span class="n">dph</span> <span class="o">*</span> <span class="n">sfc</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>          <span class="c1"># (nt-1, 1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inv_area</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">area</span>                            <span class="c1"># (nt,1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap_inv_area</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">npm</span> <span class="o">*</span> <span class="n">area</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                                      <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">npm</span> <span class="o">*</span> <span class="n">area</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_npm</span> <span class="o">=</span> <span class="n">npm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dph</span> <span class="o">=</span> <span class="n">dph</span>
+
+        <span class="c1"># Contiguous float64 copies for the compiled kernel: it takes full 2-D</span>
+        <span class="c1"># arrays rather than relying on broadcasting, and 1-D inverse areas.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_uface</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u_face</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_gface</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_face</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_invarea</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inv_area</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_capinv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cap_inv_area</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_omega</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omega</span><span class="p">,</span> <span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="c1"># scratch reused every call; see _kernels.advect_vanleer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_sp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_hp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_k_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">))</span>
+
+        <span class="c1"># Cached CFL rates.</span>
+        <span class="n">out_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">npm</span><span class="p">))</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u_face</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gface</span>
+        <span class="n">out_t</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">f</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_area</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">out_t</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">f</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_area</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="c1"># A cap's outflow rate is the sum of |flux| over its whole rim divided by</span>
+        <span class="c1"># the whole cap area, not a single sector's.</span>
+        <span class="n">out_t</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u_face</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gface</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap_inv_area</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">out_t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u_face</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gface</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap_inv_area</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">out_p</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">om</span><span class="p">)</span> <span class="o">/</span> <span class="n">dph</span>
+        <span class="n">out_p</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">out_p</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">out_t</span> <span class="o">+</span> <span class="n">out_p</span><span class="p">))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">dt_cfl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfl</span><span class="o">=</span><span class="mf">0.4</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Largest stable advective time step [s] for the given CFL number."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="k">return</span> <span class="n">cfl</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+        <span class="n">lim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">limiter</span>
+
+        <span class="c1"># Compiled path for the default limiter; every other limiter, and the</span>
+        <span class="c1"># SFT2D_NO_NUMBA escape hatch, fall through to the NumPy reference below.</span>
+        <span class="k">if</span> <span class="n">lim</span> <span class="o">==</span> <span class="s2">"vanleer"</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">._kernels</span><span class="w"> </span><span class="kn">import</span> <span class="n">HAVE_NUMBA</span><span class="p">,</span> <span class="n">advect_vanleer</span>
+            <span class="k">if</span> <span class="n">HAVE_NUMBA</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">advect_vanleer</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_k_uface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_gface</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_invarea</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_k_capinv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_omega</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dph</span><span class="p">),</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_k_st</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_sp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_hp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_k_y</span><span class="p">)</span>
+
+        <span class="c1"># ---- theta: MUSCL reconstruction, upwinded on the face velocity ----</span>
+        <span class="n">dm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+        <span class="n">dp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+        <span class="n">dm</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">B</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">dp</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">B</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="c1"># Caps are single values: no meaningful slope inside them.</span>
+        <span class="n">dm</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">dm</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">dp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">limited_slope</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">lim</span><span class="p">)</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="n">B</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">st</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">st</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">Bf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u_face</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+        <span class="n">Ft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gface</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_face</span> <span class="o">*</span> <span class="n">Bf</span>                    <span class="c1"># (nt-1, npm)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-=</span> <span class="n">Ft</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_area</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>                  <span class="c1"># flux leaving south</span>
+        <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">Ft</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_area</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>                    <span class="c1"># flux entering north</span>
+
+        <span class="c1"># Caps: their one face, summed over longitude, over the whole cap area.</span>
+        <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">Ft</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap_inv_area</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">Ft</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap_inv_area</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># ---- phi: Omega dB/dphi = d(Omega B)/dphi, Omega = Omega(theta) ----</span>
+        <span class="n">dmp</span> <span class="o">=</span> <span class="n">B</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">dpp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">B</span>
+        <span class="n">sp</span> <span class="o">=</span> <span class="n">limited_slope</span><span class="p">(</span><span class="n">dmp</span><span class="p">,</span> <span class="n">dpp</span><span class="p">,</span> <span class="n">lim</span><span class="p">)</span>
+        <span class="n">Bfp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">,</span>
+                       <span class="n">B</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sp</span><span class="p">,</span>
+                       <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">sp</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">Hp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">omega</span> <span class="o">*</span> <span class="n">Bfp</span>
+        <span class="n">y</span> <span class="o">-=</span> <span class="p">(</span><span class="n">Hp</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">Hp</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dph</span>
+
+        <span class="c1"># Longitudinal transport inside a cap is meaningless; drop it so the</span>
+        <span class="c1"># caps stay single-valued without any filtering.</span>
+        <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">y</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

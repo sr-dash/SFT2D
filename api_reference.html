@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="_static/logosft2d.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="sft2d.create_grid" href="_autosummary/sft2d.create_grid.html" />
+    <link rel="prev" title="Theory and numerical method" href="sft2d-theory.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.create_grid.html">sft2d.create_grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.polar_average.html">sft2d.polar_average</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.total_flux.html">sft2d.total_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.Advection.html">sft2d.Advection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.Diffusion.html">sft2d.Diffusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.evolve.html">sft2d.evolve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.advect.html">sft2d.advect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.rkl2_step.html">sft2d.rkl2_step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.initialize_field.html">sft2d.initialize_field</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.correct_flux_multiplicative.html">sft2d.correct_flux_multiplicative</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.meridional_flow.html">sft2d.meridional_flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.meridional_flow_latitude.html">sft2d.meridional_flow_latitude</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.differential_rotation.html">sft2d.differential_rotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.make_bmr.html">sft2d.make_bmr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.make_bmr_yeates.html">sft2d.make_bmr_yeates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.insert_bmr.html">sft2d.insert_bmr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.balance_flux.html">sft2d.balance_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.joys_law_tilt.html">sft2d.joys_law_tilt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.hale_leading_sign.html">sft2d.hale_leading_sign</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.ARSource.html">sft2d.ARSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.SHARPSource.html">sft2d.SHARPSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.SHARPPatchSource.html">sft2d.SHARPPatchSource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.solar_cycle_number.html">sft2d.solar_cycle_number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_usflx.html">sft2d.calculate_usflx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_net_flux.html">sft2d.calculate_net_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_dm.html">sft2d.calculate_dm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_polar_field.html">sft2d.calculate_polar_field</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.calculate_polar_flux.html">sft2d.calculate_polar_flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.cap_areas.html">sft2d.cap_areas</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.plot_bfly.html">sft2d.plot_bfly</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/sft2d.plot_mag.html">sft2d.plot_mag</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_reference.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This section documents the main API of the <code class="docutils literal notranslate"><span class="pre">sft2d</span></code> package.</p>
+</div>
+<p>Top-level functions and classes exposed by <code class="docutils literal notranslate"><span class="pre">sft2d/__init__.py</span></code>:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.create_grid.html#sft2d.create_grid" title="sft2d.create_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.create_grid</span></code></a>(n_theta, n_phi)</p></td>
+<td><p>Create a pole-to-pole finite-volume mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.polar_average.html#sft2d.polar_average" title="sft2d.polar_average"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.polar_average</span></code></a>(field)</p></td>
+<td><p>Force the two polar rows to be longitude-independent, in place.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.total_flux.html#sft2d.total_flux" title="sft2d.total_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.total_flux</span></code></a>(field, grid[, signed])</p></td>
+<td><p>Area-weighted flux over the whole sphere [Mx].</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.Advection.html#sft2d.Advection" title="sft2d.Advection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.Advection</span></code></a>(grid, meridional_flow, ...)</p></td>
+<td><p>Conservative MUSCL/TVD advection, <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">-div(u</span> <span class="pre">B)</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.Diffusion.html#sft2d.Diffusion" title="sft2d.Diffusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.Diffusion</span></code></a>(grid, eta)</p></td>
+<td><p>Conservative 5-point Laplacian, <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">eta</span> <span class="pre">*</span> <span class="pre">lap(B)</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.evolve.html#sft2d.evolve" title="sft2d.evolve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.evolve</span></code></a>(field0, grid, mf, dr, eta, num_days)</p></td>
+<td><p>Integrate the SFT equation for <code class="docutils literal notranslate"><span class="pre">num_days</span></code> days.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.advect.html#sft2d.advect" title="sft2d.advect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.advect</span></code></a>(u, operator, dt[, cfl])</p></td>
+<td><p>Advance <code class="docutils literal notranslate"><span class="pre">u</span></code> by <code class="docutils literal notranslate"><span class="pre">dt</span></code> under advection, sub-cycling at the CFL limit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.rkl2_step.html#sft2d.rkl2_step" title="sft2d.rkl2_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.rkl2_step</span></code></a>(u0, operator, dt[, s, ...])</p></td>
+<td><p>Advance <code class="docutils literal notranslate"><span class="pre">u0</span></code> by <code class="docutils literal notranslate"><span class="pre">dt</span></code> under <code class="docutils literal notranslate"><span class="pre">du/dt</span> <span class="pre">=</span> <span class="pre">operator(u)</span></code> using RKL2.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.initialize_field.html#sft2d.initialize_field" title="sft2d.initialize_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.initialize_field</span></code></a>(grid[, field_type, ...])</p></td>
+<td><p>Build an initial radial field on <code class="docutils literal notranslate"><span class="pre">grid</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.correct_flux_multiplicative.html#sft2d.correct_flux_multiplicative" title="sft2d.correct_flux_multiplicative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.correct_flux_multiplicative</span></code></a>(f, grid)</p></td>
+<td><p>Rescale each polarity so the map carries zero net flux.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.meridional_flow.html#sft2d.meridional_flow" title="sft2d.meridional_flow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.meridional_flow</span></code></a>(grid[, peak_speed, ...])</p></td>
+<td><p>Poleward meridional-circulation profile as the colatitude velocity <code class="docutils literal notranslate"><span class="pre">u_theta</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.meridional_flow_latitude.html#sft2d.meridional_flow_latitude" title="sft2d.meridional_flow_latitude"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.meridional_flow_latitude</span></code></a>(grid[, ...])</p></td>
+<td><p>Same flow as <code class="xref py py-func docutils literal notranslate"><span class="pre">meridional_flow()</span></code>, but as the <strong>latitude velocity</strong> <code class="docutils literal notranslate"><span class="pre">v_lat</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.differential_rotation.html#sft2d.differential_rotation" title="sft2d.differential_rotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.differential_rotation</span></code></a>(grid[, ...])</p></td>
+<td><p>Differential-rotation angular velocity <code class="docutils literal notranslate"><span class="pre">Omega(theta)</span></code> [rad/s].</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.make_bmr.html#sft2d.make_bmr" title="sft2d.make_bmr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.make_bmr</span></code></a>(grid, lat_deg, lon_deg, flux_mx)</p></td>
+<td><p>Return the 2-D radial-field increment [G] of one flux-normalised BMR.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.make_bmr_yeates.html#sft2d.make_bmr_yeates" title="sft2d.make_bmr_yeates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.make_bmr_yeates</span></code></a>(grid, lat_deg, ...[, ...])</p></td>
+<td><p>Return the 2-D radial-field increment [G] of one Yeates-style bipole.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.insert_bmr.html#sft2d.insert_bmr" title="sft2d.insert_bmr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.insert_bmr</span></code></a>(field, grid, lat_deg, ...)</p></td>
+<td><p>Add one BMR to <code class="docutils literal notranslate"><span class="pre">field</span></code> in place and return it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.balance_flux.html#sft2d.balance_flux" title="sft2d.balance_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.balance_flux</span></code></a>(f, grid)</p></td>
+<td><p>Rescale each polarity so the map carries zero net flux.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.joys_law_tilt.html#sft2d.joys_law_tilt" title="sft2d.joys_law_tilt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.joys_law_tilt</span></code></a>(lat_deg[, coeff, form])</p></td>
+<td><p>Joy's law tilt angle [deg] for a BMR at latitude <code class="docutils literal notranslate"><span class="pre">lat_deg</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.hale_leading_sign.html#sft2d.hale_leading_sign" title="sft2d.hale_leading_sign"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.hale_leading_sign</span></code></a>(lat_deg, cycle_number)</p></td>
+<td><p>Sign (+/-1) of the leading (equatorward) polarity following Hale's law.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.ARSource.html#sft2d.ARSource" title="sft2d.ARSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.ARSource</span></code></a>(table, start_date[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.SHARPSource.html#sft2d.SHARPSource" title="sft2d.SHARPSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.SHARPSource</span></code></a>(catalogue, start_date[, ...])</p></td>
+<td><p>Callable <code class="docutils literal notranslate"><span class="pre">source(day,</span> <span class="pre">field,</span> <span class="pre">grid)</span></code> driven by a SHARPS BMR catalogue.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.SHARPPatchSource.html#sft2d.SHARPPatchSource" title="sft2d.SHARPPatchSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.SHARPPatchSource</span></code></a>(catalogue, nc_dir, ...)</p></td>
+<td><p>Callable <code class="docutils literal notranslate"><span class="pre">source(day,</span> <span class="pre">field,</span> <span class="pre">grid)</span></code> that inserts observed AR patches.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.solar_cycle_number.html#sft2d.solar_cycle_number" title="sft2d.solar_cycle_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.solar_cycle_number</span></code></a>(date)</p></td>
+<td><p>Return the solar cycle number active on <code class="docutils literal notranslate"><span class="pre">date</span></code> (a datetime/Timestamp).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.calculate_usflx.html#sft2d.calculate_usflx" title="sft2d.calculate_usflx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.calculate_usflx</span></code></a>(all_br_data, grid)</p></td>
+<td><p>Total unsigned flux [Mx].</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.calculate_net_flux.html#sft2d.calculate_net_flux" title="sft2d.calculate_net_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.calculate_net_flux</span></code></a>(all_br_data, grid)</p></td>
+<td><p>Net (signed) flux [Mx].</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.calculate_dm.html#sft2d.calculate_dm" title="sft2d.calculate_dm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.calculate_dm</span></code></a>(all_br_data, grid)</p></td>
+<td><p>Axial dipole moment [G].</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.calculate_polar_field.html#sft2d.calculate_polar_field" title="sft2d.calculate_polar_field"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.calculate_polar_field</span></code></a>(all_br_data, grid)</p></td>
+<td><p>Area-weighted mean radial field in each polar cap [G].</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.calculate_polar_flux.html#sft2d.calculate_polar_flux" title="sft2d.calculate_polar_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.calculate_polar_flux</span></code></a>(all_br_data, grid)</p></td>
+<td><p>Signed magnetic flux in each polar cap [Mx].</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.cap_areas.html#sft2d.cap_areas" title="sft2d.cap_areas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.cap_areas</span></code></a>(grid, pol_cap_extent_deg[, cm])</p></td>
+<td><p>Per-cell areas of the north and south polar caps, as <code class="docutils literal notranslate"><span class="pre">(n_theta,</span> <span class="pre">1)</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/sft2d.plot_bfly.html#sft2d.plot_bfly" title="sft2d.plot_bfly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.plot_bfly</span></code></a>(bfly_sft, grid[, bmax, ...])</p></td>
+<td><p>Plots the butterfly diagram of the surface magnetic field.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/sft2d.plot_mag.html#sft2d.plot_mag" title="sft2d.plot_mag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sft2d.plot_mag</span></code></a>(b_data, grid[, bmax, ...])</p></td>
+<td><p>Plots the magnetic field strength at the solar surface.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sft2d-theory.html" class="btn btn-neutral float-left" title="Theory and numerical method" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="_autosummary/sft2d.create_grid.html" class="btn btn-neutral float-right" title="sft2d.create_grid" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sft2d.src.stepper &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logosft2d.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../../../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notebooks/bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">sft2d.src.stepper</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sft2d.src.stepper</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">stepper.py</span>
+
+<span class="sd">Time integration for the 2-D SFT model, using Strang operator splitting.</span>
+
+<span class="sd">Each step is advanced as a symmetric A-D-A sequence</span>
+
+<span class="sd">    advection(dt/2) -&gt; diffusion(dt) -&gt; advection(dt/2)</span>
+
+<span class="sd">which keeps the splitting second-order in time and, more importantly, lets the</span>
+<span class="sd">two operators use the time step each one actually needs:</span>
+
+<span class="sd">* **advection** with SSPRK(3,3) on the conservative MUSCL/TVD operator,</span>
+<span class="sd">  sub-cycled at its own CFL (a mild restriction: the meridional limit is</span>
+<span class="sd">  ``R dtheta / u_theta`` and the differential-rotation limit is ``dphi/Omega``,</span>
+<span class="sd">  neither of which is singular at the poles);</span>
+<span class="sd">* **diffusion** with RKL2 super-time-stepping, which absorbs the stiff near-pole</span>
+<span class="sd">  longitudinal limit in ``O(sqrt)`` stages instead of ``O(n)`` explicit steps.</span>
+
+<span class="sd">The previous version evaluated one combined right-hand side, so the whole run</span>
+<span class="sd">was hostage to the diffusive polar CFL, and bought the step back with a</span>
+<span class="sd">near-pole Fourier filter that altered the physics.  Splitting plus STS removes</span>
+<span class="sd">both the restriction and the filter.</span>
+
+<span class="sd">There is no ``apply_bcs`` any more.  The mesh is pole-to-pole and periodic in</span>
+<span class="sd">longitude, so the only "boundary" is the pair of polar caps, which the operators</span>
+<span class="sd">handle as ordinary finite-volume cells.  The old zero-gradient pole condition</span>
+<span class="sd">(``B[0] = B[1]``) was itself a source of spurious flux.</span>
+
+<span class="sd">Hooks</span>
+<span class="sd">-----</span>
+<span class="sd">``source(day, field, grid)``      BMR emergence, applied once per day.</span>
+<span class="sd">``assimilate(day, field, grid)``  magnetogram insertion, once per day after the</span>
+<span class="sd">                                  source.</span>
+<span class="sd">``recorder.record(day, field)``   diagnostics.</span>
+
+<span class="sd">Both hooks may modify the field in place and/or return a new one.  Anything they</span>
+<span class="sd">return is passed through :func:`~sft2d.src.grid.polar_average` so the polar caps</span>
+<span class="sd">stay single-valued.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">DAY_S</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">polar_average</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.operators</span><span class="w"> </span><span class="kn">import</span> <span class="n">Advection</span><span class="p">,</span> <span class="n">Diffusion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.sts</span><span class="w"> </span><span class="kn">import</span> <span class="n">rkl2_num_stages</span><span class="p">,</span> <span class="n">rkl2_step</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Advection sub-step: SSPRK(3,3)</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">ssprk33_step</span><span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""One SSP Runge-Kutta (3,3) step of ``du/dt = operator(u)``.</span>
+
+<span class="sd">    SSP so the TVD property of the limited spatial operator survives the time</span>
+<span class="sd">    integration: no spurious ringing across polarity inversion lines.</span>
+<span class="sd">    """</span>
+    <span class="n">u1</span> <span class="o">=</span> <span class="n">u0</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">operator</span><span class="p">(</span><span class="n">u0</span><span class="p">)</span>
+    <span class="n">u2</span> <span class="o">=</span> <span class="mf">0.75</span> <span class="o">*</span> <span class="n">u0</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="p">(</span><span class="n">u1</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">operator</span><span class="p">(</span><span class="n">u1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">u0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">u2</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">operator</span><span class="p">(</span><span class="n">u2</span><span class="p">)))</span> <span class="o">/</span> <span class="mf">3.0</span>
+
+
+<div class="viewcode-block" id="advect">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.advect.html#sft2d.advect">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">advect</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">cfl</span><span class="o">=</span><span class="mf">0.4</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Advance ``u`` by ``dt`` under advection, sub-cycling at the CFL limit."""</span>
+    <span class="n">dt_max</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">dt_cfl</span><span class="p">(</span><span class="n">cfl</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">dt</span> <span class="o">/</span> <span class="n">dt_max</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dt_max</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">ssprk33_step</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Driver</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="evolve">
+<a class="viewcode-back" href="../../../_autosummary/sft2d.evolve.html#sft2d.evolve">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">evolve</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">num_days</span><span class="p">,</span> <span class="n">steps_per_day</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+           <span class="n">limiter</span><span class="o">=</span><span class="s2">"vanleer"</span><span class="p">,</span> <span class="n">cfl</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">tau_decay_s</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">assimilate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">recorder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">return_stats</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inflow</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Integrate the SFT equation for ``num_days`` days.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    field0 : (n_theta, n_phi) ndarray</span>
+<span class="sd">        Initial radial field [G].</span>
+<span class="sd">    grid : dict</span>
+<span class="sd">        Grid from :func:`~sft2d.src.grid.create_grid`.</span>
+<span class="sd">    mf, dr : ndarray</span>
+<span class="sd">        Meridional flow [m/s] and differential rotation [rad/s], shaped</span>
+<span class="sd">        ``(n_theta,)`` or ``(n_theta, n_phi)``.</span>
+<span class="sd">    eta : float or ndarray</span>
+<span class="sd">        Supergranular diffusivity [m^2/s].</span>
+<span class="sd">    num_days : int</span>
+<span class="sd">        Days to integrate.</span>
+<span class="sd">    steps_per_day : int</span>
+<span class="sd">        Strang steps per day.  One is usually enough -- the splitting error is</span>
+<span class="sd">        second order and both sub-integrators are stable at any step -- but</span>
+<span class="sd">        raise it if a source injects strongly on daily timescales.</span>
+<span class="sd">    limiter : str</span>
+<span class="sd">        Slope limiter for the advection operator.</span>
+<span class="sd">    cfl : float</span>
+<span class="sd">        CFL number for the advective sub-cycling.</span>
+<span class="sd">    tau_decay_s : float, optional</span>
+<span class="sd">        Exponential decay timescale [s], solved analytically over each step so</span>
+<span class="sd">        it imposes no step restriction.</span>
+<span class="sd">    source, assimilate : callable, optional</span>
+<span class="sd">        Daily hooks; see the module docstring.</span>
+<span class="sd">    recorder : object, optional</span>
+<span class="sd">        Anything with ``record(day_index, field)``.</span>
+<span class="sd">    return_stats : bool</span>
+<span class="sd">        If True, return ``(field, stats)`` where ``stats`` reports the chosen</span>
+<span class="sd">        stage and sub-cycle counts.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndarray</span>
+<span class="sd">        Field after ``num_days`` days (plus stats if requested).</span>
+<span class="sd">    """</span>
+    <span class="n">adv</span> <span class="o">=</span> <span class="n">Advection</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">limiter</span><span class="o">=</span><span class="n">limiter</span><span class="p">)</span>
+    <span class="n">dif</span> <span class="o">=</span> <span class="n">Diffusion</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">eta</span><span class="p">)</span>
+
+    <span class="c1"># `inflow` is an optional callable (day, field, grid) -&gt; u_theta perturbation.</span>
+    <span class="c1"># When given, the meridional flow is rebuilt from the current field each day,</span>
+    <span class="c1"># so transport responds to how active the Sun is. A static flow cannot do</span>
+    <span class="c1"># that, and re-scoring a 686-member sweep showed no static combination of</span>
+    <span class="c1"># profile, du, eta and tau reproduces the polar build rate of two cycles at</span>
+    <span class="c1"># once (523/523 members over-respond in cycle 25 relative to cycle 24).</span>
+    <span class="n">_mf_base</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mf</span><span class="p">)</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">DAY_S</span> <span class="o">/</span> <span class="n">steps_per_day</span>
+    <span class="n">dt_half</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dt</span>
+    <span class="n">decay</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">tau_decay_s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dt</span> <span class="o">/</span> <span class="n">tau_decay_s</span><span class="p">))</span>
+
+    <span class="n">dt_adv</span> <span class="o">=</span> <span class="n">adv</span><span class="o">.</span><span class="n">dt_cfl</span><span class="p">(</span><span class="n">cfl</span><span class="p">)</span>
+    <span class="n">dt_dif</span> <span class="o">=</span> <span class="n">dif</span><span class="o">.</span><span class="n">dt_explicit</span>
+    <span class="n">n_sub</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">dt_half</span> <span class="o">/</span> <span class="n">dt_adv</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dt_adv</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="n">n_stage</span> <span class="o">=</span> <span class="n">rkl2_num_stages</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="n">dt_dif</span><span class="p">)</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"dt"</span><span class="p">:</span> <span class="n">dt</span><span class="p">,</span>
+        <span class="s2">"dt_advection_cfl"</span><span class="p">:</span> <span class="n">dt_adv</span><span class="p">,</span>
+        <span class="s2">"dt_diffusion_explicit"</span><span class="p">:</span> <span class="n">dt_dif</span><span class="p">,</span>
+        <span class="s2">"advection_subcycles_per_half_step"</span><span class="p">:</span> <span class="n">n_sub</span><span class="p">,</span>
+        <span class="s2">"rkl2_stages"</span><span class="p">:</span> <span class="n">n_stage</span><span class="p">,</span>
+        <span class="s2">"explicit_diffusion_steps_avoided"</span><span class="p">:</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">dt_dif</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">B</span> <span class="o">=</span> <span class="n">polar_average</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">recorder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">recorder</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">day</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_days</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">inflow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Rebuilding the operator each day is affordable: its setup is O(N)</span>
+            <span class="c1"># while a day of integration is many O(N) sweeps.</span>
+            <span class="n">adv</span> <span class="o">=</span> <span class="n">Advection</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">_mf_base</span> <span class="o">+</span> <span class="n">inflow</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">),</span> <span class="n">dr</span><span class="p">,</span>
+                            <span class="n">limiter</span><span class="o">=</span><span class="n">limiter</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps_per_day</span><span class="p">):</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">advect</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">adv</span><span class="p">,</span> <span class="n">dt_half</span><span class="p">,</span> <span class="n">cfl</span><span class="p">)</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">rkl2_step</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">dif</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">n_stage</span><span class="p">)</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">advect</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">adv</span><span class="p">,</span> <span class="n">dt_half</span><span class="p">,</span> <span class="n">cfl</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">decay</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">B</span> <span class="o">*=</span> <span class="n">decay</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">source</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">B</span> <span class="o">=</span> <span class="n">out</span>
+            <span class="n">polar_average</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">assimilate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">assimilate</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">B</span> <span class="o">=</span> <span class="n">out</span>
+            <span class="n">polar_average</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">recorder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">recorder</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">progress</span> <span class="ow">and</span> <span class="n">day</span> <span class="o">%</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_days</span> <span class="o">//</span> <span class="mi">20</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  day </span><span class="si">{</span><span class="n">day</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">num_days</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">stats</span><span class="p">)</span> <span class="k">if</span> <span class="n">return_stats</span> <span class="k">else</span> <span class="n">B</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

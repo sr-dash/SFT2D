@@ -1,0 +1,6 @@
+﻿sft2d.make\_bmr\_yeates
+=======================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: make_bmr_yeates

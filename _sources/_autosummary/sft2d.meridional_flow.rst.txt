@@ -1,0 +1,6 @@
+﻿sft2d.meridional\_flow
+======================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: meridional_flow

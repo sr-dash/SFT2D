@@ -1,0 +1,6 @@
+﻿sft2d.polar\_average
+====================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: polar_average

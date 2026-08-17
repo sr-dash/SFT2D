@@ -1,0 +1,6 @@
+﻿sft2d.initialize\_field
+=======================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: initialize_field

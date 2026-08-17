@@ -1,0 +1,23 @@
+﻿sft2d.SHARPSource
+=================
+
+.. currentmodule:: sft2d
+
+.. autoclass:: SHARPSource
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SHARPSource.__init__
+      ~SHARPSource.summary
+   
+   
+
+   
+   
+   

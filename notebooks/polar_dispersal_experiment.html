@@ -1,0 +1,460 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/logosft2d.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="BMR approximation vs direct HMI active-region insertion" href="bmr_vs_patch_insertion.html" />
+    <link rel="prev" title="SHARPS-driven SFT: data-driven analysis vs HMI" href="sharps_driven_analysis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#1.-Common-setup">1. Common setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#2.-The-two-mechanisms-—-explicit-algorithm">2. The two mechanisms — explicit algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#3.-Configurations-and-run-loop">3. Configurations and run loop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#4.-Near-pole-latitudinal-profile-at-cycle-max-(the-decisive-plot)">4. Near-pole latitudinal profile at cycle max (the decisive plot)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#5.-Polar-field-(&gt;60°)-vs-HMI">5. Polar field (&gt;60°) vs HMI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.-Axial-dipole-moment">6. Axial dipole moment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#7.-Summary-table">7. Summary table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#8.-Reading-the-results">8. Reading the results</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/polar_dispersal_experiment.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Polar-flux-dispersal-experiment:-decay-term-vs-latitude-enhanced-diffusivity">
+<h1>Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity<a class="headerlink" href="#Polar-flux-dispersal-experiment:-decay-term-vs-latitude-enhanced-diffusivity" title="Link to this heading"></a></h1>
+<p><strong>Problem.</strong> Driven from the SHARPS catalogue, the model reproduces the cycle-24 axial dipole (~3.5 G) and the reversal timing, but flux <strong>piles up at the poles</strong> — by 2020 the &gt;75° cap saturates well above 15 G while the dipole is only ~3.5 G (a ~2.8× over-concentration). The scheme conserves flux exactly, so this is advective <em>concentration</em> not balanced by enough polar diffusion, not a flux-creating boundary condition.</p>
+<p><strong>This notebook compares two physically-motivated cures, side by side:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>A decay term</strong> <code class="docutils literal notranslate"><span class="pre">dB/dt</span> <span class="pre">|=</span> <span class="pre">-B/τ</span></code> — Schrijver et al. (2002). Uniform exponential damping of the whole field. Simple, but it damps the active-region flux and the dipole too, not just the polar concentration.</p></li>
+<li><p><strong>Latitude-enhanced diffusivity</strong> <code class="docutils literal notranslate"><span class="pre">η(θ)</span></code> — raise <code class="docutils literal notranslate"><span class="pre">η</span></code> only toward the poles, leaving mid-latitudes at the calibrated value. Targeted at the concentration; should flatten the near-pole plateau while preserving the dipole.</p></li>
+</ol>
+<p>The key subtlety established earlier: raising <em>uniform</em> <code class="docutils literal notranslate"><span class="pre">η</span></code> makes the pile-up <em>worse</em> (it also pumps more mid-latitude flux poleward). So the enhancement must be <strong>latitude-targeted</strong>.</p>
+<p>We judge each run by three things: (a) the <strong>near-pole latitudinal profile</strong> at cycle max — does the plateau flatten toward the dipole line? (b) the <strong>axial dipole</strong> — does it stay in the observed 3–4 G band? (c) the <strong>polar-field vs HMI</strong> correlation and amplitude.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># bootstrap</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sft2d</span>
+<span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_grid</span><span class="p">,</span> <span class="n">meridional_flow</span><span class="p">,</span> <span class="n">differential_rotation</span><span class="p">,</span> <span class="n">evolve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.src.initial_conditions</span><span class="w"> </span><span class="kn">import</span> <span class="n">initialize_field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.src.sharp_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">SHARPSource</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.analysis.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_polar_field</span><span class="p">,</span> <span class="n">calculate_dm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">HMI_SYNOPTIC_FITS</span><span class="p">,</span> <span class="n">load_hmi_polar_field</span>
+
+<span class="n">YEAR</span> <span class="o">=</span> <span class="mf">365.25</span> <span class="o">*</span> <span class="mf">86400.0</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"sft2d"</span><span class="p">,</span> <span class="n">sft2d</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+sft2d 0.1.0
+</pre></div></div>
+</div>
+<section id="1.-Common-setup">
+<h2>1. Common setup<a class="headerlink" href="#1.-Common-setup" title="Link to this heading"></a></h2>
+<p>Same grid, flows, observed-map initial condition, and SHARPS driver for every run — only the diffusivity and the decay term change between configurations.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CATALOGUE</span> <span class="o">=</span> <span class="s2">"/Users/sdash/NSO/Work/GIT-Projects/sharps-bmrs-db/sharps-bmrs-db/bmrsharps_evol.txt"</span>   <span class="c1"># &lt;-- set to your catalogue</span>
+<span class="k">assert</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">CATALOGUE</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="n">CATALOGUE</span>
+
+<span class="n">grid</span> <span class="o">=</span> <span class="n">create_grid</span><span class="p">(</span><span class="mi">91</span><span class="p">,</span> <span class="mi">180</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">meridional_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">peak_speed</span><span class="o">=</span><span class="mf">15.0</span><span class="p">)</span>        <span class="c1"># +15 = poleward</span>
+<span class="n">dr</span> <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+<span class="n">CAP</span> <span class="o">=</span> <span class="mf">30.0</span>                                          <span class="c1"># analyse poleward of 60 deg (HMI definition)</span>
+<span class="n">ETA0</span> <span class="o">=</span> <span class="mf">2.5e8</span>                                        <span class="c1"># baseline 250 km^2/s</span>
+<span class="n">colat</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="s1">'colatitude'</span><span class="p">]</span>
+<span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">colat</span><span class="p">)</span>
+
+<span class="n">field0</span> <span class="o">=</span> <span class="n">initialize_field</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s1">'read'</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">HMI_SYNOPTIC_FITS</span><span class="p">))</span>   <span class="c1"># observed IC</span>
+<span class="n">src</span> <span class="o">=</span> <span class="n">SHARPSource</span><span class="p">(</span><span class="n">CATALOGUE</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="s1">'2010-05-01'</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="s1">'2023-09-01'</span><span class="p">,</span> <span class="n">flux_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+SHARPSource: 2097 regions, 2010-05-01 -&gt; 2023-09-01 (4871 days)
+</pre></div></div>
+</div>
+</section>
+<section id="2.-The-two-mechanisms-—-explicit-algorithm">
+<h2>2. The two mechanisms — explicit algorithm<a class="headerlink" href="#2.-The-two-mechanisms-—-explicit-algorithm" title="Link to this heading"></a></h2>
+<p><strong>Decay term.</strong> <code class="docutils literal notranslate"><span class="pre">evolve(...,</span> <span class="pre">tau_decay_s=τ)</span></code> multiplies the field by <code class="docutils literal notranslate"><span class="pre">exp(-Δt/τ)</span></code> once per Strang step — an analytic, unconditionally-stable uniform decay with e-folding time <code class="docutils literal notranslate"><span class="pre">τ</span></code>. It removes flux everywhere at the same rate.</p>
+<p><strong>Latitude-enhanced diffusivity.</strong> The <code class="docutils literal notranslate"><span class="pre">Diffusion</span></code> operator accepts <code class="docutils literal notranslate"><span class="pre">η</span></code> as a per-latitude array, so we pass a profile that equals <code class="docutils literal notranslate"><span class="pre">ETA0</span></code> at the equator and rises to <code class="docutils literal notranslate"><span class="pre">enhance</span> <span class="pre">×</span> <span class="pre">ETA0</span></code> at the poles:</p>
+<div class="math notranslate nohighlight">
+\[\eta(\theta) = \eta_0\,\big[\,1 + (A-1)\sin^2(\mathrm{lat})\,\big],\qquad
+\sin^2(\mathrm{lat}) = \cos^2\theta\]</div>
+<p>which is 0 at the equator and 1 at the poles. Mid-latitude transport is unchanged; only the near-pole spreading is boosted. (RKL2 super-time-stepping absorbs the extra stiffness automatically — we print the stage count.)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">eta_theta</span><span class="p">(</span><span class="n">enhance</span><span class="p">,</span> <span class="n">eta0</span><span class="o">=</span><span class="n">ETA0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Latitude-enhanced diffusivity: eta0 at equator -&gt; enhance*eta0 at poles."""</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">colat</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>                       <span class="c1"># = sin^2(latitude): 0 eq, 1 pole</span>
+    <span class="k">return</span> <span class="n">eta0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">enhance</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">s2</span><span class="p">)</span>  <span class="c1"># (n_theta,) array</span>
+
+<span class="c1"># visualise the eta profiles we will use</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">A</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">eta_theta</span><span class="p">(</span><span class="n">A</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">'x</span><span class="si">{</span><span class="n">A</span><span class="si">}</span><span class="s1"> at poles'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'latitude [deg]'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$\eta$ [km$^2$/s]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'diffusivity profiles'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_polar_dispersal_experiment_5_0.png" src="../_images/notebooks_polar_dispersal_experiment_5_0.png" />
+</div>
+</div>
+</section>
+<section id="3.-Configurations-and-run-loop">
+<h2>3. Configurations and run loop<a class="headerlink" href="#3.-Configurations-and-run-loop" title="Link to this heading"></a></h2>
+<p>Five runs from the identical observed IC (~6–7 min total at 91×180). Each records the polar field (&gt;60°), the axial dipole, and a full field snapshot at cycle-24 max (~2016.5) for the near-pole profile. Edit <code class="docutils literal notranslate"><span class="pre">CONFIGS</span></code> to add/trim cases.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CONFIGS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># (label,                         eta,               tau_decay_s)</span>
+    <span class="p">(</span><span class="s2">"baseline  (eta=250, no decay)"</span><span class="p">,</span> <span class="n">ETA0</span><span class="p">,</span>              <span class="kc">None</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"decay  tau=10 yr"</span><span class="p">,</span>              <span class="n">ETA0</span><span class="p">,</span>              <span class="mi">10</span><span class="o">*</span><span class="n">YEAR</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"decay  tau=5 yr"</span><span class="p">,</span>               <span class="n">ETA0</span><span class="p">,</span>              <span class="mi">5</span><span class="o">*</span><span class="n">YEAR</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"eta(theta) x4 poles"</span><span class="p">,</span>           <span class="n">eta_theta</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>      <span class="kc">None</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"eta(theta) x8 poles"</span><span class="p">,</span>           <span class="n">eta_theta</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span>      <span class="kc">None</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_config</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">tau_s</span><span class="p">):</span>
+    <span class="n">rec</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'yr'</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">'pn'</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">'ps'</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">'dip'</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">'mid'</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="n">tmid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mf">2016.5</span> <span class="o">-</span> <span class="mf">2010.33</span><span class="p">)</span> <span class="o">*</span> <span class="mf">365.25</span><span class="p">)</span>     <span class="c1"># ~cycle-24 polar max</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">R</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">day</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">rec</span><span class="p">[</span><span class="s1">'yr'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2010</span> <span class="o">+</span> <span class="mf">0.33</span> <span class="o">+</span> <span class="n">day</span><span class="o">/</span><span class="mf">365.25</span><span class="p">)</span>
+                <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">calculate_polar_field</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="o">=</span><span class="n">CAP</span><span class="p">)</span>
+                <span class="n">rec</span><span class="p">[</span><span class="s1">'pn'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">);</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'ps'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'dip'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calculate_dm</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'mid'</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">day</span> <span class="o">&gt;=</span> <span class="n">tmid</span><span class="p">:</span>
+                <span class="n">rec</span><span class="p">[</span><span class="s1">'mid'</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">Bf</span><span class="p">,</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">evolve</span><span class="p">(</span><span class="n">field0</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">grid</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">num_days</span><span class="p">,</span>
+                       <span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">tau_decay_s</span><span class="o">=</span><span class="n">tau_s</span><span class="p">,</span> <span class="n">recorder</span><span class="o">=</span><span class="n">R</span><span class="p">(),</span> <span class="n">return_stats</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">rec</span><span class="p">[</span><span class="s1">'end'</span><span class="p">]</span> <span class="o">=</span> <span class="n">Bf</span><span class="p">;</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'stats'</span><span class="p">]</span> <span class="o">=</span> <span class="n">stats</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'yr'</span><span class="p">,</span> <span class="s1">'pn'</span><span class="p">,</span> <span class="s1">'ps'</span><span class="p">,</span> <span class="s1">'dip'</span><span class="p">):</span>
+        <span class="n">rec</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">rec</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">tau_s</span> <span class="ow">in</span> <span class="n">CONFIGS</span><span class="p">:</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">();</span> <span class="n">results</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_config</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">tau_s</span><span class="p">)</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s1">'stats'</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">32s</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="si">:</span><span class="s2">4.0f</span><span class="si">}</span><span class="s2">s  | RKL2 stages </span><span class="si">{</span><span class="n">st</span><span class="p">[</span><span class="s1">'rkl2_stages'</span><span class="p">]</span><span class="si">:</span><span class="s2">3d</span><span class="si">}</span><span class="s2"> "</span>
+          <span class="sa">f</span><span class="s2">"| peak |D| </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="s1">'dip'</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> G"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+baseline  (eta=250, no decay)       79s  | RKL2 stages  16 | peak |D| 3.53 G
+decay  tau=10 yr                    87s  | RKL2 stages  16 | peak |D| 2.83 G
+decay  tau=5 yr                     86s  | RKL2 stages  16 | peak |D| 2.70 G
+eta(theta) x4 poles                 96s  | RKL2 stages  31 | peak |D| 3.49 G
+eta(theta) x8 poles                106s  | RKL2 stages  44 | peak |D| 3.47 G
+</pre></div></div>
+</div>
+</section>
+<section id="4.-Near-pole-latitudinal-profile-at-cycle-max-(the-decisive-plot)">
+<h2>4. Near-pole latitudinal profile at cycle max (the decisive plot)<a class="headerlink" href="#4.-Near-pole-latitudinal-profile-at-cycle-max-(the-decisive-plot)" title="Link to this heading"></a></h2>
+<p>Longitude-averaged <code class="docutils literal notranslate"><span class="pre">B_r(lat)</span></code> in the polar region at ~2016.5. The dashed line is a <strong>pure dipole of the baseline’s moment</strong> — the shape the real, dipole-like Sun shows. A cure works if it pulls the near-pole plateau <strong>down toward the dashed line</strong> (less concentration).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="c1"># dipole reference from the baseline's axial dipole at 2016.5</span>
+<span class="n">base</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="n">CONFIGS</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+<span class="n">Dref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="mf">2016.5</span><span class="p">,</span> <span class="n">base</span><span class="p">[</span><span class="s1">'yr'</span><span class="p">],</span> <span class="n">base</span><span class="p">[</span><span class="s1">'dip'</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Dref</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">colat</span><span class="p">),</span> <span class="n">lat</span><span class="p">,</span> <span class="s1">'k--'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">'pure dipole (D=</span><span class="si">{</span><span class="n">Dref</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1"> G)'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s1">'mid'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'grey'</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">':'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$\langle B_r\rangle$ [G]'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'latitude [deg]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'North polar profile at cycle-24 max (2016.5)'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">);</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_polar_dispersal_experiment_9_0.png" src="../_images/notebooks_polar_dispersal_experiment_9_0.png" />
+</div>
+</div>
+</section>
+<section id="5.-Polar-field-(&gt;60°)-vs-HMI">
+<h2>5. Polar field (&gt;60°) vs HMI<a class="headerlink" href="#5.-Polar-field-(>60°)-vs-HMI" title="Link to this heading"></a></h2>
+<p>Model north/south cap field over each configuration, on the observed HMI <code class="docutils literal notranslate"><span class="pre">mean</span> <span class="pre">±</span> <span class="pre">std</span></code>. Reports correlation and the single best-fit scale factor per run.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hmi</span> <span class="o">=</span> <span class="n">load_hmi_polar_field</span><span class="p">();</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'mean_north'</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="n">hyr</span> <span class="o">=</span> <span class="n">idx</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx</span><span class="o">.</span><span class="n">dayofyear</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">365.25</span>
+<span class="n">mn</span><span class="p">,</span> <span class="n">sn</span> <span class="o">=</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'mean_north'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'std_north'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">ms</span><span class="p">,</span> <span class="n">ss</span> <span class="o">=</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'mean_south'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'std_south'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">hyr</span><span class="p">,</span> <span class="n">mn</span><span class="o">-</span><span class="n">sn</span><span class="p">,</span> <span class="n">mn</span><span class="o">+</span><span class="n">sn</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'0.7'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hyr</span><span class="p">,</span> <span class="n">mn</span><span class="p">,</span> <span class="s1">'k'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'HMI N'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">hyr</span><span class="p">,</span> <span class="n">ms</span><span class="o">-</span><span class="n">ss</span><span class="p">,</span> <span class="n">ms</span><span class="o">+</span><span class="n">ss</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'0.7'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hyr</span><span class="p">,</span> <span class="n">ms</span><span class="p">,</span> <span class="s1">'k'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'HMI S'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">label</span><span class="p">,</span> <span class="n">rec</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s1">'yr'</span><span class="p">],</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'pn'</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+    <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s1">'yr'</span><span class="p">],</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'ps'</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.6</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'N polar field (&gt;60) [G]'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'S polar field (&gt;60) [G]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'year'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mf">0.4</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">);</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_polar_dispersal_experiment_11_0.png" src="../_images/notebooks_polar_dispersal_experiment_11_0.png" />
+</div>
+</div>
+</section>
+<section id="6.-Axial-dipole-moment">
+<h2>6. Axial dipole moment<a class="headerlink" href="#6.-Axial-dipole-moment" title="Link to this heading"></a></h2>
+<p>Must stay in the observed 3–4 G band. This is where the decay term is expected to pay a price (it damps the dipole), while <code class="docutils literal notranslate"><span class="pre">η(θ)</span></code> should preserve it.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">3.8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'0.8'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'observed ~3-4 G'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s1">'yr'</span><span class="p">],</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'dip'</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'year'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'axial dipole [G]'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">);</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_polar_dispersal_experiment_13_0.png" src="../_images/notebooks_polar_dispersal_experiment_13_0.png" />
+</div>
+</div>
+</section>
+<section id="7.-Summary-table">
+<h2>7. Summary table<a class="headerlink" href="#7.-Summary-table" title="Link to this heading"></a></h2>
+<p>For each run: peak axial dipole, the <strong>concentration ratio</strong> (cap-mean / dipole-equivalent at 2016.5; 1.0 = dipole-like, &gt;1 = pile-up), and the correlation + best-fit scale of the north cap field vs HMI.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">scale_corr</span><span class="p">(</span><span class="n">model_yr</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">obs</span><span class="p">):</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">model_yr</span><span class="p">,</span> <span class="n">hyr</span><span class="p">,</span> <span class="n">obs</span><span class="p">);</span> <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">o</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">*</span><span class="n">o</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">*</span><span class="n">model</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'configuration'</span><span class="si">:</span><span class="s2">32s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'peakD'</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'conc'</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'corrN'</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'scaleN'</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">Dmid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="mf">2016.5</span><span class="p">,</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'yr'</span><span class="p">],</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'dip'</span><span class="p">])</span>
+    <span class="n">nmid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="mf">2016.5</span><span class="p">,</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'yr'</span><span class="p">],</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'pn'</span><span class="p">])</span>
+    <span class="n">conc</span> <span class="o">=</span> <span class="n">nmid</span><span class="o">/</span><span class="p">(</span><span class="n">Dmid</span><span class="o">*</span><span class="mf">0.933</span><span class="p">)</span>                    <span class="c1"># 0.933 = &gt;60 mean of a unit dipole</span>
+    <span class="n">r</span><span class="p">,</span> <span class="n">sc</span> <span class="o">=</span> <span class="n">scale_corr</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s1">'yr'</span><span class="p">],</span> <span class="n">rec</span><span class="p">[</span><span class="s1">'pn'</span><span class="p">],</span> <span class="n">mn</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">32s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s1">'dip'</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">conc</span><span class="si">:</span><span class="s2">6.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">r</span><span class="si">:</span><span class="s2">+6.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sc</span><span class="si">:</span><span class="s2">7.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+configuration                     peakD   conc  corrN  scaleN
+baseline  (eta=250, no decay)      3.53   1.88  +0.91   0.421
+decay  tau=10 yr                   2.83   1.89  +0.75   0.503
+decay  tau=5 yr                    2.70   1.86  +0.59   0.564
+eta(theta) x4 poles                3.49   1.66  +0.91   0.521
+eta(theta) x8 poles                3.47   1.47  +0.90   0.647
+</pre></div></div>
+</div>
+</section>
+<section id="8.-Reading-the-results">
+<h2>8. Reading the results<a class="headerlink" href="#8.-Reading-the-results" title="Link to this heading"></a></h2>
+<p><strong>Outcome of this run (verify against the table and plots above):</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>mechanism</p></th>
+<th class="head"><p>concentration 1.88 →</p></th>
+<th class="head"><p>axial dipole (obs 3–4 G)</p></th>
+<th class="head"><p>corr with HMI</p></th>
+<th class="head"><p>amplitude scale → 1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>decay τ = 5–10 yr</strong></p></td>
+<td><p><strong>1.86–1.89 (no change)</strong></p></td>
+<td><p><strong>2.7–2.8, and still falling to ~1 by 2020</strong></p></td>
+<td><p>0.59–0.75 (degraded)</p></td>
+<td><p>0.50–0.56</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>η(θ) ×4 poles</strong></p></td>
+<td><p>1.66</p></td>
+<td><p>3.49 (in band)</p></td>
+<td><p>0.91 (preserved)</p></td>
+<td><p>0.52</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>η(θ) ×8 poles</strong></p></td>
+<td><p><strong>1.47</strong></p></td>
+<td><p><strong>3.47 (in band)</strong></p></td>
+<td><p><strong>0.90 (preserved)</strong></p></td>
+<td><p><strong>0.65</strong></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusion — η(θ) is the right mechanism; the decay term is the wrong tool.</strong></p>
+<ul class="simple">
+<li><p>The <strong>decay term fails on all three counts</strong>: it does <em>not</em> change the polar profile <em>shape</em> (concentration stays ~1.88 — it scales everything down uniformly, including the dipole), it <strong>suppresses the axial dipole below the observed band</strong> (and keeps decaying it through the minimum), and it <strong>degrades the reversal correlation</strong>. Physically expected: a uniform <code class="docutils literal notranslate"><span class="pre">−B/τ</span></code> can’t change a ratio.</p></li>
+<li><p><strong>Latitude-enhanced η(θ) works as hypothesised</strong>: it flattens the near-pole plateau toward the dipole line (concentration 1.88 → 1.47 at ×8), <strong>preserves the axial dipole and the reversal timing</strong>, and improves the cap-field amplitude match (scale 0.42 → 0.65). RKL2 absorbs the extra polar stiffness automatically (16 → 44 stages), so there is no stability cost to manage.</p></li>
+</ul>
+<p><strong>Next steps</strong></p>
+<ol class="arabic simple">
+<li><p>Push the η(θ) enhancement further / try a sharper polar profile to see how close concentration → 1.0 and scale → 1.0 can get <em>before</em> the mid-latitude→ pole transport is affected (watch the dipole and corr as guard rails).</p></li>
+<li><p>Fold the winning η(θ) enhancement into a proper (η₀, v₀, enhancement) scan against the axial-dipole and polar-field targets.</p></li>
+<li><p><strong>Resolution check</strong> (91 / 181 / 361): confirm the η(θ) fix is not resolution-dependent before trusting it — the conservative scheme should make the calibrated profile transfer across resolutions.</p></li>
+<li><p>Longer term, compare η(θ) against an explicit supergranular-flow dispersal (the AFT approach), which is the physically-grounded version of “more spreading near the poles”.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sharps_driven_analysis.html" class="btn btn-neutral float-left" title="SHARPS-driven SFT: data-driven analysis vs HMI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bmr_vs_patch_insertion.html" class="btn btn-neutral float-right" title="BMR approximation vs direct HMI active-region insertion" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

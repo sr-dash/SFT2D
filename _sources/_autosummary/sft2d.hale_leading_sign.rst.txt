@@ -1,0 +1,6 @@
+﻿sft2d.hale\_leading\_sign
+=========================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: hale_leading_sign

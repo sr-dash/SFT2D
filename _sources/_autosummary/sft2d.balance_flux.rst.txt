@@ -1,0 +1,6 @@
+﻿sft2d.balance\_flux
+===================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: balance_flux

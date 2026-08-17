@@ -1,0 +1,6 @@
+﻿sft2d.cap\_areas
+================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: cap_areas

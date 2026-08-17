@@ -1,0 +1,6 @@
+﻿sft2d.solar\_cycle\_number
+==========================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: solar_cycle_number

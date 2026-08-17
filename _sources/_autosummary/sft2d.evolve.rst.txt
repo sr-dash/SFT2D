@@ -1,0 +1,6 @@
+﻿sft2d.evolve
+============
+
+.. currentmodule:: sft2d
+
+.. autofunction:: evolve

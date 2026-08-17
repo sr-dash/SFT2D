@@ -1,0 +1,6 @@
+﻿sft2d.calculate\_net\_flux
+==========================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: calculate_net_flux

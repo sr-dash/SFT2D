@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SFT2D — core tour &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/logosft2d.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="RGO-driven run and HMI validation" href="rgo_driven_and_hmi.html" />
+    <link rel="prev" title="Quick start" href="../quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SFT2D — core tour</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Grid">Grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Flows-—-and-the-meridional-flow-sign-convention">Flows — and the meridional-flow sign convention</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Initial-condition">Initial condition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Integrate">Integrate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Conservation-check">Conservation check</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Diagnostics">Diagnostics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sharps_driven_analysis.html">SHARPS-driven SFT: data-driven analysis vs HMI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">SFT2D — core tour</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/example-run.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="SFT2D-—-core-tour">
+<h1>SFT2D — core tour<a class="headerlink" href="#SFT2D-—-core-tour" title="Link to this heading"></a></h1>
+<p>Build a grid, set up the flows, integrate, and check the diagnostics on the pole-to-pole finite-volume mesh. The solver <code class="docutils literal notranslate"><span class="pre">evolve</span></code> does Strang splitting internally: advection with SSPRK(3,3) sub-cycled at its CFL, diffusion with RKL2 super-time-stepping. There is no boundary condition to apply — the poles are ordinary finite-volume cells.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make `sft2d` importable when running from docs/notebooks/ without pip-installing.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sft2d</span>
+<span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sft2d</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sft</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">create_grid</span><span class="p">,</span> <span class="n">total_flux</span><span class="p">,</span> <span class="n">initialize_field</span><span class="p">,</span> <span class="n">evolve</span><span class="p">,</span>
+                   <span class="n">meridional_flow</span><span class="p">,</span> <span class="n">meridional_flow_latitude</span><span class="p">,</span> <span class="n">differential_rotation</span><span class="p">,</span>
+                   <span class="n">calculate_usflx</span><span class="p">,</span> <span class="n">calculate_net_flux</span><span class="p">,</span> <span class="n">calculate_dm</span><span class="p">,</span>
+                   <span class="n">calculate_polar_field</span><span class="p">,</span> <span class="n">calculate_polar_flux</span><span class="p">,</span> <span class="n">plot_bfly</span><span class="p">,</span> <span class="n">plot_mag</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"sft2d"</span><span class="p">,</span> <span class="n">sft</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Grid">
+<h2>Grid<a class="headerlink" href="#Grid" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">n_theta</span></code> counts colatitude cells pole to pole, <em>including</em> the two polar caps, so <code class="docutils literal notranslate"><span class="pre">create_grid(91,</span> <span class="pre">180)</span></code> gives 2° cells spanning the full sphere. The cell areas sum to <span class="math notranslate nohighlight">\(4\pi R^2\)</span> exactly.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">create_grid</span><span class="p">(</span><span class="mi">91</span><span class="p">,</span> <span class="mi">180</span><span class="p">)</span>
+<span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">grid</span><span class="p">[</span><span class="s1">'colatitude'</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"latitude range : </span><span class="si">{</span><span class="n">lat</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">+.1f</span><span class="si">}</span><span class="s2"> .. </span><span class="si">{</span><span class="n">lat</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">+.1f</span><span class="si">}</span><span class="s2"> deg"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cells          : </span><span class="si">{</span><span class="n">grid</span><span class="p">[</span><span class="s1">'n_theta'</span><span class="p">]</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">grid</span><span class="p">[</span><span class="s1">'n_phi'</span><span class="p">]</span><span class="si">}</span><span class="s2">, dtheta = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="s1">'dtheta'</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> deg"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"area closure   : </span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="s1">'area'</span><span class="p">]))</span><span class="o">*</span><span class="n">grid</span><span class="p">[</span><span class="s1">'n_phi'</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">sft</span><span class="o">.</span><span class="n">R_SUN_M</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="si">:</span><span class="s2">.15f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Flows-—-and-the-meridional-flow-sign-convention">
+<h2>Flows — and the meridional-flow sign convention<a class="headerlink" href="#Flows-—-and-the-meridional-flow-sign-convention" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">meridional_flow(grid,</span> <span class="pre">peak_speed)</span></code> returns the <strong>colatitude</strong> velocity <code class="docutils literal notranslate"><span class="pre">u_theta</span></code>, which is what the solver advects with. <strong>Positive ``peak_speed`` is poleward</strong> (the physical case). Because <code class="docutils literal notranslate"><span class="pre">+theta</span></code> points southward everywhere, a poleward <code class="docutils literal notranslate"><span class="pre">u_theta</span></code> is <em>negative in the north, positive in the south</em> — it looks upside-down only because it is the colatitude component.</p>
+<p>For an intuitive picture use <code class="docutils literal notranslate"><span class="pre">meridional_flow_latitude</span></code> (northward-positive <code class="docutils literal notranslate"><span class="pre">v_lat</span> <span class="pre">=</span> <span class="pre">-u_theta</span></code>): a poleward flow is then <code class="docutils literal notranslate"><span class="pre">+</span></code> in the north and <code class="docutils literal notranslate"><span class="pre">-</span></code> in the south, matching meridional-flow figures in the literature. A <strong>negative</strong> <code class="docutils literal notranslate"><span class="pre">peak_speed</span></code> is equatorward and will prevent polar reversal.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">v0</span> <span class="o">=</span> <span class="mf">15.0</span>                                     <span class="c1"># positive = poleward</span>
+<span class="n">mf</span>   <span class="o">=</span> <span class="n">meridional_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">peak_speed</span><span class="o">=</span><span class="n">v0</span><span class="p">)</span>   <span class="c1"># u_theta [m/s]  -&gt; feed to the solver</span>
+<span class="n">vlat</span> <span class="o">=</span> <span class="n">meridional_flow_latitude</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">peak_speed</span><span class="o">=</span><span class="n">v0</span><span class="p">)</span>  <span class="c1"># v_lat [m/s] -&gt; for plotting</span>
+<span class="n">dr</span>   <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s1">'solar'</span><span class="p">,</span> <span class="n">frame</span><span class="o">=</span><span class="s1">'carrington'</span><span class="p">)</span>  <span class="c1"># Omega [rad/s]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">mf</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">'C0'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">'$u_\theta$ (solver)'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">vlat</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">'C3'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">'$v_</span><span class="si">{lat}</span><span class="s1">$ (poleward +)'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'latitude [deg]'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'m/s'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'meridional flow, peak_speed=</span><span class="si">{</span><span class="n">v0</span><span class="si">:</span><span class="s1">+g</span><span class="si">}</span><span class="s1"> (poleward)'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">dr</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mf">1e6</span><span class="p">,</span> <span class="s1">'k'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'latitude [deg]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">'$\Omega$ [$10^{-6}$ rad/s]'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'differential rotation'</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Initial-condition">
+<h2>Initial condition<a class="headerlink" href="#Initial-condition" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">field0</span> <span class="o">=</span> <span class="n">initialize_field</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s1">'dipole'</span><span class="p">)</span> <span class="o">*</span> <span class="mf">3.0</span>   <span class="c1"># amplitude 3 G axisymmetric dipole</span>
+<span class="n">eta</span> <span class="o">=</span> <span class="mf">2.5e8</span>                                        <span class="c1"># m^2/s = 250 km^2/s</span>
+<span class="n">plot_mag</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">bmax</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Integrate">
+<h2>Integrate<a class="headerlink" href="#Integrate" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">return_stats=True</span></code> reports the chosen stage / sub-cycle counts. Compare <code class="docutils literal notranslate"><span class="pre">rkl2_stages</span></code> with <code class="docutils literal notranslate"><span class="pre">explicit_diffusion_steps_avoided</span></code> to see what super-time-stepping buys.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bfly</span><span class="p">,</span> <span class="n">days</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Recorder</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">day</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">days</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">day</span><span class="p">);</span> <span class="n">bfly</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+<span class="n">B</span><span class="p">,</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">evolve</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">num_days</span><span class="o">=</span><span class="mi">365</span><span class="p">,</span>
+                  <span class="n">recorder</span><span class="o">=</span><span class="n">Recorder</span><span class="p">(),</span> <span class="n">return_stats</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">38s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Conservation-check">
+<h2>Conservation check<a class="headerlink" href="#Conservation-check" title="Link to this heading"></a></h2>
+<p>The transport operators are conservative by construction, so with no source term the signed flux must not move.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f0</span><span class="p">,</span> <span class="n">f1</span> <span class="o">=</span> <span class="n">calculate_net_flux</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span> <span class="n">grid</span><span class="p">),</span> <span class="n">calculate_net_flux</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+<span class="n">u0</span> <span class="o">=</span> <span class="n">calculate_usflx</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"net flux   </span><span class="si">{</span><span class="n">f0</span><span class="si">:</span><span class="s2">+.6e</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">f1</span><span class="si">:</span><span class="s2">+.6e</span><span class="si">}</span><span class="s2"> Mx"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"drift      </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">f1</span><span class="o">-</span><span class="n">f0</span><span class="p">)</span><span class="o">/</span><span class="n">u0</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">  (relative to total unsigned flux)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Diagnostics">
+<h2>Diagnostics<a class="headerlink" href="#Diagnostics" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pn</span><span class="p">,</span> <span class="n">ps</span> <span class="o">=</span> <span class="n">calculate_polar_field</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>   <span class="c1"># poleward of +/-70 deg</span>
+<span class="n">fn</span><span class="p">,</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">calculate_polar_flux</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"polar field  N </span><span class="si">{</span><span class="n">pn</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2"> G      S </span><span class="si">{</span><span class="n">ps</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2"> G"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"polar flux   N </span><span class="si">{</span><span class="n">fn</span><span class="si">:</span><span class="s2">+.4e</span><span class="si">}</span><span class="s2"> Mx  S </span><span class="si">{</span><span class="n">fs</span><span class="si">:</span><span class="s2">+.4e</span><span class="si">}</span><span class="s2"> Mx"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"axial dipole </span><span class="si">{</span><span class="n">calculate_dm</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">grid</span><span class="p">)</span><span class="si">:</span><span class="s2">+.4f</span><span class="si">}</span><span class="s2"> G"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unsigned     </span><span class="si">{</span><span class="n">calculate_usflx</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">grid</span><span class="p">)</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> Mx"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plot_bfly</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bfly</span><span class="p">),</span> <span class="n">grid</span><span class="p">,</span> <span class="n">bmax</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plot_mag</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">bmax</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../quickstart.html" class="btn btn-neutral float-left" title="Quick start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rgo_driven_and_hmi.html" class="btn btn-neutral float-right" title="RGO-driven run and HMI validation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

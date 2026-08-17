@@ -1,0 +1,609 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHARPS-driven SFT: data-driven analysis vs HMI &mdash; SFT Simulation 2D and Analysis  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+    <link rel="shortcut icon" href="../_static/logosft2d.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity" href="polar_dispersal_experiment.html" />
+    <link rel="prev" title="RGO-driven run and HMI validation" href="rgo_driven_and_hmi.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            SFT Simulation 2D and Analysis
+              <img src="../_static/logosft2d.jpg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-run.html">SFT2D — core tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rgo_driven_and_hmi.html">RGO-driven run and HMI validation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SHARPS-driven SFT: data-driven analysis vs HMI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#1.-The-SHARPS-catalogue">1. The SHARPS catalogue</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Emergence-properties">Emergence properties</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#2.-BMR-model-faithfulness">2. BMR-model faithfulness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#3.-Set-up-the-data-driven-run">3. Set up the data-driven run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#4.-Run-the-simulation">4. Run the simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#5.-Save-the-full-surface-fields">5. Save the full surface fields</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#6.-Inspect-individual-snapshots-vs-synoptic-magnetograms">6. Inspect individual snapshots vs synoptic magnetograms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#7.-Polar-field-vs-HMI-(poleward-of-±60°)">7. Polar field vs HMI (poleward of ±60°)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#8.-Axial-dipole-moment-—-the-robust-calibration-metric">8. Axial dipole moment — the robust calibration metric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#9.-Butterfly-diagram:-model-vs-HMI">9. Butterfly diagram: model vs HMI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#10.-Where-this-sits-on-the-road-to-a-calibrated-data-driven-SFT">10. Where this sits on the road to a calibrated data-driven SFT</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="polar_dispersal_experiment.html">Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bmr_vs_patch_insertion.html">BMR approximation vs direct HMI active-region insertion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sft2d-theory.html">Theory and numerical method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SFT Simulation 2D and Analysis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">SHARPS-driven SFT: data-driven analysis vs HMI</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/sharps_driven_analysis.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="SHARPS-driven-SFT:-data-driven-analysis-vs-HMI">
+<h1>SHARPS-driven SFT: data-driven analysis vs HMI<a class="headerlink" href="#SHARPS-driven-SFT:-data-driven-analysis-vs-HMI" title="Link to this heading"></a></h1>
+<p><strong>Goal of this line of work:</strong> build <code class="docutils literal notranslate"><span class="pre">sft2d</span></code> towards a <em>fully calibrated, data-driven</em> solar surface-flux-transport simulation. This notebook is the end-to-end test for the SHARPS-driven path: it takes an HMI/SHARPS idealized-BMR catalogue (Yeates <code class="docutils literal notranslate"><span class="pre">bmrsharps_evol</span></code> format), drives the model over cycle 24 starting from an <strong>observed</strong> synoptic map, and analyses the results against the observed HMI data — polar fields, axial dipole moment, and the butterfly diagram.</p>
+<p>Why SHARPS driving is the right substrate for calibration:</p>
+<ul class="simple">
+<li><p>each region’s <strong>flux is measured</strong> and its <strong>tilt/separation are fitted</strong> from the magnetogram, so there is no Joy/Hale assumption and <code class="docutils literal notranslate"><span class="pre">flux_scale</span> <span class="pre">≈</span> <span class="pre">1</span></code>;</p></li>
+<li><p>the only remaining free parameters are the <strong>transport</strong> ones (<code class="docutils literal notranslate"><span class="pre">eta</span></code>, <code class="docutils literal notranslate"><span class="pre">v0</span></code>) and the treatment of the observations, which is exactly what calibration should isolate.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sft2d importable when run from docs/notebooks/ without pip-installing.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sft2d</span>
+<span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_grid</span><span class="p">,</span> <span class="n">meridional_flow</span><span class="p">,</span> <span class="n">differential_rotation</span><span class="p">,</span> <span class="n">evolve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.src.initial_conditions</span><span class="w"> </span><span class="kn">import</span> <span class="n">initialize_field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.src.sharp_driver</span><span class="w"> </span><span class="kn">import</span> <span class="n">SHARPSource</span><span class="p">,</span> <span class="n">_read_catalogue</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.src.source</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_bmr_yeates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.analysis.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_polar_field</span><span class="p">,</span> <span class="n">calculate_dm</span><span class="p">,</span> <span class="n">calculate_usflx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sft2d.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">HMI_SYNOPTIC_FITS</span><span class="p">,</span> <span class="n">load_hmi_polar_field</span><span class="p">,</span> <span class="n">load_hmi_butterfly</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"sft2d"</span><span class="p">,</span> <span class="n">sft2d</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+sft2d 0.1.0
+</pre></div></div>
+</div>
+<section id="1.-The-SHARPS-catalogue">
+<h2>1. The SHARPS catalogue<a class="headerlink" href="#1.-The-SHARPS-catalogue" title="Link to this heading"></a></h2>
+<p>Point <code class="docutils literal notranslate"><span class="pre">CATALOGUE</span></code> at a <code class="docutils literal notranslate"><span class="pre">bmrsharps_evol</span></code> file (headed or headerless). The file is <strong>not bundled</strong> (it is GPL / separate project — see <code class="docutils literal notranslate"><span class="pre">examples/README.md</span></code>); set the path to your local copy.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CATALOGUE</span> <span class="o">=</span> <span class="s2">"/Users/sdash/NSO/Work/GIT-Projects/sharps-bmrs-db/sharps-bmrs-db/bmrsharps_evol.txt"</span>   <span class="c1"># &lt;-- set to your catalogue</span>
+<span class="k">assert</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">CATALOGUE</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">"catalogue not found: </span><span class="si">{</span><span class="n">CATALOGUE</span><span class="si">}</span><span class="s2">"</span>
+
+<span class="n">cat</span> <span class="o">=</span> <span class="n">_read_catalogue</span><span class="p">(</span><span class="n">CATALOGUE</span><span class="p">)</span>      <span class="c1"># headerless + duplicate handling + max-flux dedup</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cat</span><span class="p">)</span><span class="si">}</span><span class="s2"> unique regions, </span><span class="si">{</span><span class="n">cat</span><span class="p">[</span><span class="s1">'date'</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">cat</span><span class="p">[</span><span class="s1">'date'</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cat</span><span class="p">[[</span><span class="s2">"date"</span><span class="p">,</span><span class="s2">"lat"</span><span class="p">,</span><span class="s2">"lon"</span><span class="p">,</span><span class="s2">"flux"</span><span class="p">,</span><span class="s2">"sep"</span><span class="p">,</span><span class="s2">"tilt"</span><span class="p">]]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">"min"</span><span class="p">,</span><span class="s2">"50%"</span><span class="p">,</span><span class="s2">"max"</span><span class="p">]]</span><span class="o">.</span><span class="n">to_string</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2979 unique regions, 2010-07-06 -&gt; 2026-06-22
+                    date       lat        lon          flux       sep        tilt
+min  2010-07-06 00:00:00 -43.21462    0.22143  1.433060e+20   1.00010 -179.980000
+50%  2017-09-09 00:00:00   4.51487  176.32860  6.572710e+21   3.15164    0.021496
+max  2026-06-22 00:00:00  40.62897  359.98279  3.224350e+23  21.71850  179.980000
+</pre></div></div>
+</div>
+<section id="Emergence-properties">
+<h3>Emergence properties<a class="headerlink" href="#Emergence-properties" title="Link to this heading"></a></h3>
+<p>The emergence latitudes trace the butterfly wings; the tilt distribution is important for calibration because it sets how much axial dipole each cycle builds. Note the large fraction of |tilt| &gt; 90° (anti-Joy fits), typical of small/noisy regions.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">yr</span> <span class="o">=</span> <span class="n">cat</span><span class="p">[</span><span class="s1">'date'</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s1">'date'</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofyear</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">365.25</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">yr</span><span class="p">,</span> <span class="n">cat</span><span class="p">[</span><span class="s1">'lat'</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s1">'tilt'</span><span class="p">]),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'coolwarm'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'year'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'emergence latitude [deg]'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'emergence butterfly'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s1">'flux'</span><span class="p">]),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'log10 unsigned flux [Mx]'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'flux distribution'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">cat</span><span class="p">[</span><span class="s1">'tilt'</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">60</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">90</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'r'</span><span class="p">,</span><span class="n">ls</span><span class="o">=</span><span class="s1">':'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">'r'</span><span class="p">,</span><span class="n">ls</span><span class="o">=</span><span class="s1">':'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'fitted tilt [deg]'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'tilt  (|tilt|&gt;90: </span><span class="si">{</span><span class="p">(</span><span class="n">cat</span><span class="o">.</span><span class="n">tilt</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">&gt;</span><span class="mi">90</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s1">.0f</span><span class="si">}</span><span class="s1">%)'</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_sharps_driven_analysis_5_0.png" src="../_images/notebooks_sharps_driven_analysis_5_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="2.-BMR-model-faithfulness">
+<h2>2. BMR-model faithfulness<a class="headerlink" href="#2.-BMR-model-faithfulness" title="Link to this heading"></a></h2>
+<p>Before trusting the driven run, check that our <code class="docutils literal notranslate"><span class="pre">make_bmr_yeates</span></code> reconstructs the axial dipole moment the catalogue itself records (<code class="docutils literal notranslate"><span class="pre">Bip-Dipole</span></code>, column 10). Our <code class="docutils literal notranslate"><span class="pre">calculate_dm</span></code> uses the same normalisation as Yeates, so the two should agree to well within 1%.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">CATALOGUE</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">'</span><span class="se">\t</span><span class="s1">'</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+<span class="n">bipdip</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+<span class="n">gfine</span> <span class="o">=</span> <span class="n">create_grid</span><span class="p">(</span><span class="mi">361</span><span class="p">,</span> <span class="mi">720</span><span class="p">)</span>                     <span class="c1"># fine grid: single-BMR dipole is converged</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ours</span><span class="p">,</span> <span class="n">theirs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sample</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">make_bmr_yeates</span><span class="p">(</span><span class="n">gfine</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="s1">'lat'</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s1">'lon'</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="s1">'flux'</span><span class="p">],</span> <span class="n">sep_deg</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s1">'sep'</span><span class="p">],</span> <span class="n">tilt_deg</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="s1">'tilt'</span><span class="p">])</span>
+    <span class="n">ours</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calculate_dm</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">gfine</span><span class="p">))</span>
+    <span class="c1"># match this region's Bip-Dipole from the raw table by (lat, flux)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="s1">'lat'</span><span class="p">])</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="s1">'flux'</span><span class="p">])</span>
+    <span class="n">theirs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bipdip</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+<span class="n">ours</span><span class="p">,</span> <span class="n">theirs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ours</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">theirs</span><span class="p">)</span>
+<span class="n">ok</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">theirs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"our dipole vs catalogue Bip-Dipole: corr </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">ours</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span><span class="n">theirs</span><span class="p">[</span><span class="n">ok</span><span class="p">])[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, "</span>
+      <span class="sa">f</span><span class="s2">"median ratio </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">ours</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span><span class="o">/</span><span class="n">theirs</span><span class="p">[</span><span class="n">ok</span><span class="p">])</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ParserError</span>                               Traceback (most recent call last)
+<span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[4]</span><span class="ansi-green-fg">, line 1</span>
+<span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> raw = <span class="ansi-yellow-bg">pd</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read_csv</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">CATALOGUE</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">sep</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(175,95,0)">\t</span><span class="ansi-yellow-fg ansi-yellow-bg">&#39;</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">header</span><span class="ansi-yellow-bg">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">None</span><span class="ansi-yellow-bg">)</span>.drop_duplicates()
+<span class="ansi-green-fg">      2</span> bipdip = raw[<span class="ansi-green-fg">10</span>].astype(<span style="color: rgb(0,135,0)">float</span>).values
+<span class="ansi-green-fg">      3</span> gfine = create_grid(<span class="ansi-green-fg">361</span>, <span class="ansi-green-fg">720</span>)                     <span style="color: rgb(95,135,135)"># fine grid: single-BMR dipole is converged</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/miniforge3/envs/sft2d/lib/python3.13/site-packages/pandas/io/parsers/readers.py:1026</span>, in <span class="ansi-cyan-fg">read_csv</span><span class="ansi-blue-fg">(filepath_or_buffer, sep, delimiter, header, names, index_col, usecols, dtype, engine, converters, true_values, false_values, skipinitialspace, skiprows, skipfooter, nrows, na_values, keep_default_na, na_filter, verbose, skip_blank_lines, parse_dates, infer_datetime_format, keep_date_col, date_parser, date_format, dayfirst, cache_dates, iterator, chunksize, compression, thousands, decimal, lineterminator, quotechar, quoting, doublequote, escapechar, comment, encoding, encoding_errors, dialect, on_bad_lines, delim_whitespace, low_memory, memory_map, float_precision, storage_options, dtype_backend)</span>
+<span class="ansi-green-fg">   1013</span> kwds_defaults = _refine_defaults_read(
+<span class="ansi-green-fg">   1014</span>     dialect,
+<span class="ansi-green-fg">   1015</span>     delimiter,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">   1022</span>     dtype_backend=dtype_backend,
+<span class="ansi-green-fg">   1023</span> )
+<span class="ansi-green-fg">   1024</span> kwds.update(kwds_defaults)
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1026</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">_read</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">filepath_or_buffer</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">kwds</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/miniforge3/envs/sft2d/lib/python3.13/site-packages/pandas/io/parsers/readers.py:626</span>, in <span class="ansi-cyan-fg">_read</span><span class="ansi-blue-fg">(filepath_or_buffer, kwds)</span>
+<span class="ansi-green-fg">    623</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> parser
+<span class="ansi-green-fg">    625</span> <span class="ansi-bold" style="color: rgb(0,135,0)">with</span> parser:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">626</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">parser</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">nrows</span><span class="ansi-yellow-bg">)</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/miniforge3/envs/sft2d/lib/python3.13/site-packages/pandas/io/parsers/readers.py:1923</span>, in <span class="ansi-cyan-fg">TextFileReader.read</span><span class="ansi-blue-fg">(self, nrows)</span>
+<span class="ansi-green-fg">   1916</span> nrows = validate_integer(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">nrows</span><span class="ansi-yellow-fg">&#34;</span>, nrows)
+<span class="ansi-green-fg">   1917</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">   1918</span>     <span style="color: rgb(95,135,135)"># error: &#34;ParserBase&#34; has no attribute &#34;read&#34;</span>
+<span class="ansi-green-fg">   1919</span>     (
+<span class="ansi-green-fg">   1920</span>         index,
+<span class="ansi-green-fg">   1921</span>         columns,
+<span class="ansi-green-fg">   1922</span>         col_dict,
+<span class="ansi-green-fg">-&gt; </span><span class="ansi-green-fg">1923</span>     ) = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_engine</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">  </span><span class="ansi-yellow-bg" style="color: rgb(95,135,135)"># type: ignore[attr-defined]</span>
+<span class="ansi-green-fg">   1924</span> <span class="ansi-yellow-bg">        </span><span class="ansi-yellow-bg">nrows</span>
+<span class="ansi-green-fg">   1925</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">   1926</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span class="ansi-bold" style="color: rgb(215,95,95)">Exception</span>:
+<span class="ansi-green-fg">   1927</span>     <span style="color: rgb(0,135,0)">self</span>.close()
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/miniforge3/envs/sft2d/lib/python3.13/site-packages/pandas/io/parsers/c_parser_wrapper.py:234</span>, in <span class="ansi-cyan-fg">CParserWrapper.read</span><span class="ansi-blue-fg">(self, nrows)</span>
+<span class="ansi-green-fg">    232</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">    233</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span>.low_memory:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">234</span>         chunks = <span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">_reader</span><span class="ansi-yellow-bg">.</span><span class="ansi-yellow-bg">read_low_memory</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">nrows</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    235</span>         <span style="color: rgb(95,135,135)"># destructive to chunks</span>
+<span class="ansi-green-fg">    236</span>         data = _concatenate_chunks(chunks)
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:838</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader.read_low_memory</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:905</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader._read_rows</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:874</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader._tokenize_rows</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:891</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.TextReader._check_tokenize_status</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">pandas/_libs/parsers.pyx:2061</span>, in <span class="ansi-cyan-fg">pandas._libs.parsers.raise_parser_error</span><span class="ansi-blue-fg">()</span>
+
+<span class="ansi-red-fg">ParserError</span>: Error tokenizing data. C error: Expected 1 fields in line 8, saw 15
+
+</pre></div></div>
+</div>
+</section>
+<section id="3.-Set-up-the-data-driven-run">
+<h2>3. Set up the data-driven run<a class="headerlink" href="#3.-Set-up-the-data-driven-run" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>pole-to-pole 91×180 grid, poleward meridional flow (<code class="docutils literal notranslate"><span class="pre">v0=+15</span></code>), <code class="docutils literal notranslate"><span class="pre">eta=250</span> <span class="pre">km²/s</span></code>;</p></li>
+<li><p><strong>initial condition = observed HMI synoptic map</strong> (<code class="docutils literal notranslate"><span class="pre">hmi_CR2097.fits</span></code>, ~2010), so the run starts from the real polar field, not an artificial dipole;</p></li>
+<li><p>the HMI polar field is averaged <strong>poleward of ±60°</strong>, so we analyse the model with a matching cap (<code class="docutils literal notranslate"><span class="pre">cap_deg=30</span></code>).</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">grid</span> <span class="o">=</span> <span class="n">create_grid</span><span class="p">(</span><span class="mi">181</span><span class="p">,</span> <span class="mi">360</span><span class="p">)</span>
+<span class="n">mf</span> <span class="o">=</span> <span class="n">meridional_flow</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">peak_speed</span><span class="o">=</span><span class="mf">25.0</span><span class="p">)</span>        <span class="c1"># +15 = poleward</span>
+<span class="n">dr</span> <span class="o">=</span> <span class="n">differential_rotation</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+<span class="n">eta</span> <span class="o">=</span> <span class="mf">3.0e8</span>                                        <span class="c1"># m^2/s = 250 km^2/s</span>
+<span class="n">CAP</span> <span class="o">=</span> <span class="mf">30.0</span>                                          <span class="c1"># cap extent from pole -&gt; poleward of 60 deg</span>
+
+<span class="n">field0</span> <span class="o">=</span> <span class="n">initialize_field</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s1">'read'</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">HMI_SYNOPTIC_FITS</span><span class="p">))</span>
+<span class="n">n0</span><span class="p">,</span> <span class="n">s0</span> <span class="o">=</span> <span class="n">calculate_polar_field</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="o">=</span><span class="n">CAP</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"observed-map IC: polar field (&gt;60) N </span><span class="si">{</span><span class="n">n0</span><span class="si">:</span><span class="s2">+.2f</span><span class="si">}</span><span class="s2"> G, S </span><span class="si">{</span><span class="n">s0</span><span class="si">:</span><span class="s2">+.2f</span><span class="si">}</span><span class="s2"> G, axial dipole </span><span class="si">{</span><span class="n">calculate_dm</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span><span class="n">grid</span><span class="p">)</span><span class="si">:</span><span class="s2">+.2f</span><span class="si">}</span><span class="s2"> G"</span><span class="p">)</span>
+
+<span class="n">src</span> <span class="o">=</span> <span class="n">SHARPSource</span><span class="p">(</span><span class="n">CATALOGUE</span><span class="p">,</span> <span class="n">start_date</span><span class="o">=</span><span class="s1">'2010-05-01'</span><span class="p">,</span> <span class="n">end_date</span><span class="o">=</span><span class="s1">'2023-09-01'</span><span class="p">,</span> <span class="n">flux_scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+observed-map IC: polar field (&gt;60) N -2.28 G, S +2.63 G, axial dipole -1.03 G
+SHARPSource: 2097 regions, 2010-05-01 -&gt; 2023-09-01 (4871 days)
+</pre></div></div>
+</div>
+</section>
+<section id="4.-Run-the-simulation">
+<h2>4. Run the simulation<a class="headerlink" href="#4.-Run-the-simulation" title="Link to this heading"></a></h2>
+<p>One pass records everything: polar field (N/S), axial dipole moment, unsigned flux, and the longitude-averaged butterfly. ~80 s for 13 years at 91×180.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="n">yr</span><span class="p">,</span> <span class="n">pn</span><span class="p">,</span> <span class="n">ps</span><span class="p">,</span> <span class="n">dip</span><span class="p">,</span> <span class="n">usf</span><span class="p">,</span> <span class="n">bfly</span><span class="p">,</span> <span class="n">days</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+<span class="c1"># Full 2D surface-field snapshots.  Saved at ~one Carrington rotation so each map</span>
+<span class="c1"># is directly comparable to an observed synoptic magnetogram (the model longitude</span>
+<span class="c1"># axis is Carrington longitude).  Raise SNAP_EVERY_DAYS to save fewer/larger-gap</span>
+<span class="c1"># maps, lower it for a denser record.</span>
+<span class="n">SNAP_EVERY_DAYS</span> <span class="o">=</span> <span class="mi">27</span>
+<span class="n">snap_br</span><span class="p">,</span> <span class="n">snap_day</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Rec</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">day</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">yr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2010</span> <span class="o">+</span> <span class="mf">0.33</span> <span class="o">+</span> <span class="n">day</span><span class="o">/</span><span class="mf">365.25</span><span class="p">);</span> <span class="n">days</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">day</span><span class="p">)</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">calculate_polar_field</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">pol_cap_extent_deg</span><span class="o">=</span><span class="n">CAP</span><span class="p">)</span>
+            <span class="n">pn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">);</span> <span class="n">ps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="n">dip</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calculate_dm</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">));</span> <span class="n">usf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calculate_usflx</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">grid</span><span class="p">))</span>
+            <span class="n">bfly</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">day</span> <span class="o">%</span> <span class="n">SNAP_EVERY_DAYS</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">snap_br</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">copy</span><span class="p">());</span> <span class="n">snap_day</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">day</span><span class="p">)</span>
+
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">evolve</span><span class="p">(</span><span class="n">field0</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">num_days</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">recorder</span><span class="o">=</span><span class="n">Rec</span><span class="p">())</span>
+<span class="n">yr</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">yr</span><span class="p">);</span> <span class="n">pn</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pn</span><span class="p">);</span> <span class="n">ps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ps</span><span class="p">);</span> <span class="n">dip</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dip</span><span class="p">);</span> <span class="n">usf</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">usf</span><span class="p">)</span>
+<span class="n">model_bfly</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bfly</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+<span class="n">snap_br</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">snap_br</span><span class="p">)</span>                              <span class="c1"># (n_snap, n_lat, n_lon) [G]</span>
+<span class="n">snap_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">start</span><span class="p">)</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_timedelta</span><span class="p">(</span><span class="n">snap_day</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">'D'</span><span class="p">)</span>
+<span class="n">snap_year</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">dayofyear</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">365.25</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">snap_date</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"done in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s;  peak |axial dipole| = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dip</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> G"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"kept </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">snap_br</span><span class="p">)</span><span class="si">}</span><span class="s2"> full-field snapshots, shape </span><span class="si">{</span><span class="n">snap_br</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> "</span>
+      <span class="sa">f</span><span class="s2">"(~</span><span class="si">{</span><span class="n">snap_br</span><span class="o">.</span><span class="n">nbytes</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> MB in memory)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+done in 658s;  peak |axial dipole| = 1.44 G
+kept 181 full-field snapshots, shape (181, 181, 360) (~94 MB in memory)
+</pre></div></div>
+</div>
+</section>
+<section id="5.-Save-the-full-surface-fields">
+<h2>5. Save the full surface fields<a class="headerlink" href="#5.-Save-the-full-surface-fields" title="Link to this heading"></a></h2>
+<p>The recorder above keeps the full 2D <code class="docutils literal notranslate"><span class="pre">B_r(lat,</span> <span class="pre">lon)</span></code> map every ~27 days. Persist them to a compressed <code class="docutils literal notranslate"><span class="pre">.npz</span></code> so individual snapshots can be inspected later and lined up against observed synoptic magnetograms. The longitude axis is <strong>Carrington longitude</strong>, so each map corresponds to the synoptic magnetogram of the nearest Carrington rotation.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">grid</span><span class="p">[</span><span class="s1">'colatitude'</span><span class="p">])</span>          <span class="c1"># +90 .. -90</span>
+<span class="n">lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">grid</span><span class="p">[</span><span class="s1">'longitude'</span><span class="p">])</span>                      <span class="c1"># 0 .. 360, Carrington</span>
+
+<span class="n">OUTFILE</span> <span class="o">=</span> <span class="s1">'sharps_surface_fields.npz'</span>
+<span class="n">np</span><span class="o">.</span><span class="n">savez_compressed</span><span class="p">(</span>
+    <span class="n">OUTFILE</span><span class="p">,</span>
+    <span class="n">br</span><span class="o">=</span><span class="n">snap_br</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>                       <span class="c1"># (n_snap, n_lat, n_lon) [G]</span>
+    <span class="n">date</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">date</span><span class="p">())</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">snap_date</span><span class="p">]),</span>   <span class="c1"># 'YYYY-MM-DD' per snapshot</span>
+    <span class="n">year</span><span class="o">=</span><span class="n">snap_year</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="o">=</span><span class="n">lon</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"wrote </span><span class="si">{</span><span class="n">OUTFILE</span><span class="si">}</span><span class="s2">  "</span>
+      <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">OUTFILE</span><span class="p">)</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_size</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">snap_br</span><span class="p">)</span><span class="si">}</span><span class="s2"> maps)"</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">nearest_snapshot</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">OUTFILE</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return (br_map, date_str, lat, lon) of the saved snapshot nearest `date`."""</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">date</span><span class="p">);</span> <span class="n">ty</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">dayofyear</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">365.25</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="s1">'year'</span><span class="p">]</span> <span class="o">-</span> <span class="n">ty</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">z</span><span class="p">[</span><span class="s1">'br'</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="s1">'date'</span><span class="p">][</span><span class="n">i</span><span class="p">]),</span> <span class="n">z</span><span class="p">[</span><span class="s1">'lat'</span><span class="p">],</span> <span class="n">z</span><span class="p">[</span><span class="s1">'lon'</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+wrote sharps_surface_fields.npz  (42.7 MB, 181 maps)
+</pre></div></div>
+</div>
+</section>
+<section id="6.-Inspect-individual-snapshots-vs-synoptic-magnetograms">
+<h2>6. Inspect individual snapshots vs synoptic magnetograms<a class="headerlink" href="#6.-Inspect-individual-snapshots-vs-synoptic-magnetograms" title="Link to this heading"></a></h2>
+<p>Each saved map is a model synoptic <code class="docutils literal notranslate"><span class="pre">B_r</span></code> in (latitude, Carrington longitude). Two useful checks:</p>
+<ul class="simple">
+<li><p>the <strong>first</strong> snapshot is the model initial state, which is the observed HMI synoptic map used to start the run (<code class="docutils literal notranslate"><span class="pre">hmi_CR2097.fits</span></code>) — a built-in sanity check that the initialisation is faithful;</p></li>
+<li><p><strong>later</strong> snapshots can be compared to the observed HMI synoptic magnetogram for the nearest Carrington rotation (e.g. JSOC <code class="docutils literal notranslate"><span class="pre">hmi.synoptic_mr_720s</span></code> / <code class="docutils literal notranslate"><span class="pre">hmi.mrsynop</span></code>) to check the model keeps the active-region field realistic.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">show_synoptic</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">br</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">bmax</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="n">pm</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">br</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'RdBu_r'</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">bmax</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">bmax</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Carrington longitude [deg]'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'latitude [deg]'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pm</span>
+
+<span class="c1"># Built-in check: the model IC snapshot IS the observed synoptic map (CR2097).</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">pm</span> <span class="o">=</span> <span class="n">show_synoptic</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">snap_br</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span>
+                   <span class="sa">f</span><span class="s1">'model initial state = observed HMI synoptic map  (</span><span class="si">{</span><span class="n">snap_date</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="si">}</span><span class="s1">)'</span><span class="p">,</span> <span class="n">bmax</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'B_r [G]'</span><span class="p">);</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="c1"># A time sequence of model synoptic maps (compare each to the observed synoptic</span>
+<span class="c1"># magnetogram for the nearest Carrington rotation).</span>
+<span class="n">picks</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'2011-06-01'</span><span class="p">,</span> <span class="s1">'2014-01-01'</span><span class="p">,</span> <span class="s1">'2016-06-01'</span><span class="p">,</span> <span class="s1">'2020-01-01'</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">picks</span><span class="p">):</span>
+    <span class="n">br</span><span class="p">,</span> <span class="n">dd</span><span class="p">,</span> <span class="n">la</span><span class="p">,</span> <span class="n">lo</span> <span class="o">=</span> <span class="n">nearest_snapshot</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">pm</span> <span class="o">=</span> <span class="n">show_synoptic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">br</span><span class="p">,</span> <span class="n">la</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">dd</span><span class="p">,</span> <span class="n">bmax</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'G'</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">'model synoptic $B_r$ snapshots'</span><span class="p">);</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_sharps_driven_analysis_15_0.png" src="../_images/notebooks_sharps_driven_analysis_15_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_sharps_driven_analysis_15_1.png" src="../_images/notebooks_sharps_driven_analysis_15_1.png" />
+</div>
+</div>
+</section>
+<section id="7.-Polar-field-vs-HMI-(poleward-of-±60°)">
+<h2>7. Polar field vs HMI (poleward of ±60°)<a class="headerlink" href="#7.-Polar-field-vs-HMI-(poleward-of-±60°)" title="Link to this heading"></a></h2>
+<p>Overlay the model polar field on the observed HMI <code class="docutils literal notranslate"><span class="pre">mean</span> <span class="pre">±</span> <span class="pre">std</span></code>. Report the correlation and the single best-fit scale factor: high correlation with a residual scale means the <em>dynamics</em> are right and only the absolute normalisation differs (the HMI polar-field product reads lower than the true mean radial field near the pole).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hmi</span> <span class="o">=</span> <span class="n">load_hmi_polar_field</span><span class="p">()</span>
+<span class="n">idx</span> <span class="o">=</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'mean_north'</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="n">hyr</span> <span class="o">=</span> <span class="n">idx</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx</span><span class="o">.</span><span class="n">dayofyear</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">365.25</span>
+<span class="n">mn</span><span class="p">,</span> <span class="n">sn</span> <span class="o">=</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'mean_north'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'std_north'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+<span class="n">ms</span><span class="p">,</span> <span class="n">ss</span> <span class="o">=</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'mean_south'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">hmi</span><span class="p">[</span><span class="s1">'std_south'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">score</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obs</span><span class="p">):</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">yr</span><span class="p">,</span> <span class="n">hyr</span><span class="p">,</span> <span class="n">obs</span><span class="p">);</span> <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">o</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">sc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">*</span><span class="n">o</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">model</span><span class="o">*</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">sc</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">sc</span><span class="o">*</span><span class="n">model</span><span class="o">-</span><span class="n">o</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">rN</span><span class="p">,</span> <span class="n">scN</span><span class="p">,</span> <span class="n">rmsN</span> <span class="o">=</span> <span class="n">score</span><span class="p">(</span><span class="n">pn</span><span class="p">,</span> <span class="n">mn</span><span class="p">);</span> <span class="n">rS</span><span class="p">,</span> <span class="n">scS</span><span class="p">,</span> <span class="n">rmsS</span> <span class="o">=</span> <span class="n">score</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="n">ms</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"N: corr </span><span class="si">{</span><span class="n">rN</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">, best-fit scale </span><span class="si">{</span><span class="n">scN</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, RMS-after-scale </span><span class="si">{</span><span class="n">rmsN</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> G"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"S: corr </span><span class="si">{</span><span class="n">rS</span><span class="si">:</span><span class="s2">+.3f</span><span class="si">}</span><span class="s2">, best-fit scale </span><span class="si">{</span><span class="n">scS</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, RMS-after-scale </span><span class="si">{</span><span class="n">rmsS</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> G"</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">hyr</span><span class="p">,</span> <span class="n">mn</span><span class="o">-</span><span class="n">sn</span><span class="p">,</span> <span class="n">mn</span><span class="o">+</span><span class="n">sn</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'C0'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">hyr</span><span class="p">,</span> <span class="n">ms</span><span class="o">-</span><span class="n">ss</span><span class="p">,</span> <span class="n">ms</span><span class="o">+</span><span class="n">ss</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'C2'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hyr</span><span class="p">,</span> <span class="n">mn</span><span class="p">,</span> <span class="s1">'C0'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'HMI N'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hyr</span><span class="p">,</span> <span class="n">ms</span><span class="p">,</span> <span class="s1">'C2'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'HMI S'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yr</span><span class="p">,</span> <span class="n">pn</span><span class="p">,</span> <span class="s1">'C0--'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'model N'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yr</span><span class="p">,</span> <span class="n">ps</span><span class="p">,</span> <span class="s1">'C2--'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'model S'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'year'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'polar field (&gt;60 deg) [G]'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Polar field: SHARPS-driven SFT vs HMI'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">);</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+N: corr +0.866, best-fit scale 0.684, RMS-after-scale 0.87 G
+S: corr +0.807, best-fit scale 0.753, RMS-after-scale 1.36 G
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_sharps_driven_analysis_17_1.png" src="../_images/notebooks_sharps_driven_analysis_17_1.png" />
+</div>
+</div>
+</section>
+<section id="8.-Axial-dipole-moment-—-the-robust-calibration-metric">
+<h2>8. Axial dipole moment — the robust calibration metric<a class="headerlink" href="#8.-Axial-dipole-moment-—-the-robust-calibration-metric" title="Link to this heading"></a></h2>
+<p>The axial dipole moment is cap-independent and is what the SHARPS catalogue is built around. With measured flux (<code class="docutils literal notranslate"><span class="pre">flux_scale=1</span></code>) it should reach the observed cycle-24 value of ~+3 to +4 G. <strong>This is the primary quantity to calibrate against.</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">yr</span><span class="p">,</span> <span class="n">dip</span><span class="p">,</span> <span class="s1">'C3'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'model axial dipole moment'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'0.7'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'observed cycle-24 peak ~3-4 G'</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'0.7'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'k'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'year'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'axial dipole [G]'</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Axial dipole: </span><span class="si">{</span><span class="n">dip</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s1">+.2f</span><span class="si">}</span><span class="s1"> G (2010) -&gt; peak </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dip</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1"> G'</span><span class="p">);</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_sharps_driven_analysis_19_0.png" src="../_images/notebooks_sharps_driven_analysis_19_0.png" />
+</div>
+</div>
+</section>
+<section id="9.-Butterfly-diagram:-model-vs-HMI">
+<h2>9. Butterfly diagram: model vs HMI<a class="headerlink" href="#9.-Butterfly-diagram:-model-vs-HMI" title="Link to this heading"></a></h2>
+<p>Longitude-averaged <span class="math notranslate nohighlight">\(B_r\)</span>. The HMI butterfly’s latitude axis is uniform in <strong>sine of latitude</strong>, so it is plotted as <code class="docutils literal notranslate"><span class="pre">arcsin</span></code>. Look for: equatorward migration of the activity belts, poleward surges of trailing-polarity flux, and the polar-field reversal near 2013–2014.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hmi_bfly</span><span class="p">,</span> <span class="n">hmi_time</span><span class="p">,</span> <span class="n">hmi_sinlat</span> <span class="o">=</span> <span class="n">load_hmi_butterfly</span><span class="p">()</span>
+<span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">grid</span><span class="p">[</span><span class="s1">'colatitude'</span><span class="p">])</span>
+<span class="n">vmax</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">pm0</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">yr</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">model_bfly</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'RdBu_r'</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'latitude [deg]'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'model  &lt;B_r&gt;  (SHARPS-driven)'</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">'G'</span><span class="p">)</span>
+<span class="n">pm1</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">hmi_time</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">hmi_sinlat</span><span class="p">)),</span> <span class="n">hmi_bfly</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'RdBu_r'</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'latitude [deg]'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'year'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'HMI  &lt;B_r&gt;'</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">pm1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">'G'</span><span class="p">);</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">2010.4</span><span class="p">,</span> <span class="mf">2023.6</span><span class="p">);</span> <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_sharps_driven_analysis_21_0.png" src="../_images/notebooks_sharps_driven_analysis_21_0.png" />
+</div>
+</div>
+</section>
+<section id="10.-Where-this-sits-on-the-road-to-a-calibrated-data-driven-SFT">
+<h2>10. Where this sits on the road to a calibrated data-driven SFT<a class="headerlink" href="#10.-Where-this-sits-on-the-road-to-a-calibrated-data-driven-SFT" title="Link to this heading"></a></h2>
+<p><strong>Working now</strong></p>
+<ul class="simple">
+<li><p>SHARPS driving with <strong>measured flux (``flux_scale=1``)</strong> reproduces the cycle-24 <strong>axial dipole moment</strong> (~3.5 G vs observed ~3–4 G) and the <strong>polar-field reversal</strong> timing/shape (corr ≈0.9), starting from the <strong>observed</strong> synoptic map — no free amplitude fudge.</p></li>
+<li><p>The BMR source is validated against the catalogue’s own <code class="docutils literal notranslate"><span class="pre">Bip-Dipole</span></code> to &lt;1%.</p></li>
+</ul>
+<p><strong>Open calibration items</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Polar-cap amplitude.</strong> A residual ~2× offset remains in the cap-<em>field</em> (not the dipole). Prime suspect: the HMI polar-field product is line-of-sight / noise-limited near the pole and reads lower than the true mean <span class="math notranslate nohighlight">\(B_r\)</span>. Next: apply an approximate LOS+noise model to the <em>model</em> field before comparing, or calibrate against a WSO/HMI <strong>axial-dipole</strong> series.</p></li>
+<li><p><strong>Transport parameters.</strong> Scan <code class="docutils literal notranslate"><span class="pre">eta</span></code>, <code class="docutils literal notranslate"><span class="pre">v0</span></code> (and the meridional-flow profile) against the axial-dipole series; quantify degeneracies.</p></li>
+<li><p><strong>Emergence treatment.</strong> Repeat-region handling (avoid double counting across rotations), tilt quenching / anti-Joy regions, and the <code class="docutils literal notranslate"><span class="pre">width_frac</span></code> choice.</p></li>
+<li><p><strong>Objective + optimiser.</strong> Wrap the axial-dipole (and optionally LOS-corrected polar-field) misfit into a scan/optimiser — the forward model, diagnostics and observed references are all in place.</p></li>
+<li><p><strong>Full assimilation.</strong> Longer term, blend observed <span class="math notranslate nohighlight">\(B_r\)</span> at low latitude each rotation via the <code class="docutils literal notranslate"><span class="pre">assimilate=</span></code> hook, leaving the poles to the model.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rgo_driven_and_hmi.html" class="btn btn-neutral float-left" title="RGO-driven run and HMI validation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="polar_dispersal_experiment.html" class="btn btn-neutral float-right" title="Polar flux dispersal experiment: decay term vs latitude-enhanced diffusivity" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Soumyaranjan Dash.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

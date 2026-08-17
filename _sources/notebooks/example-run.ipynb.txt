@@ -1,0 +1,241 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# SFT2D \u2014 core tour\n",
+    "\n",
+    "Build a grid, set up the flows, integrate, and check the diagnostics on the\n",
+    "pole-to-pole finite-volume mesh. The solver `evolve` does Strang splitting\n",
+    "internally: advection with SSPRK(3,3) sub-cycled at its CFL, diffusion with RKL2\n",
+    "super-time-stepping. There is no boundary condition to apply \u2014 the poles are\n",
+    "ordinary finite-volume cells."
+   ],
+   "id": "4c7218112b06"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "# Make `sft2d` importable when running from docs/notebooks/ without pip-installing.\n",
+    "import sys, pathlib\n",
+    "try:\n",
+    "    import sft2d\n",
+    "except ModuleNotFoundError:\n",
+    "    sys.path.insert(0, str(pathlib.Path.cwd().parents[1]))"
+   ],
+   "id": "3dd862fc100b"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "import sft2d as sft\n",
+    "from sft2d import (create_grid, total_flux, initialize_field, evolve,\n",
+    "                   meridional_flow, meridional_flow_latitude, differential_rotation,\n",
+    "                   calculate_usflx, calculate_net_flux, calculate_dm,\n",
+    "                   calculate_polar_field, calculate_polar_flux, plot_bfly, plot_mag)\n",
+    "print(\"sft2d\", sft.__version__)"
+   ],
+   "id": "f54081e2df45"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Grid\n",
+    "\n",
+    "`n_theta` counts colatitude cells pole to pole, *including* the two polar caps,\n",
+    "so `create_grid(91, 180)` gives 2\u00b0 cells spanning the full sphere. The cell\n",
+    "areas sum to $4\\pi R^2$ exactly."
+   ],
+   "id": "e6a80de1e5bb"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "grid = create_grid(91, 180)\n",
+    "lat = np.rad2deg(np.pi/2 - grid['colatitude'])\n",
+    "print(f\"latitude range : {lat.min():+.1f} .. {lat.max():+.1f} deg\")\n",
+    "print(f\"cells          : {grid['n_theta']} x {grid['n_phi']}, dtheta = {np.rad2deg(grid['dtheta']):.2f} deg\")\n",
+    "print(f\"area closure   : {float(np.sum(grid['area']))*grid['n_phi']/(4*np.pi*sft.R_SUN_M**2):.15f}\")"
+   ],
+   "id": "b9c9c0dbd3db"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Flows \u2014 and the meridional-flow sign convention\n",
+    "\n",
+    "`meridional_flow(grid, peak_speed)` returns the **colatitude** velocity\n",
+    "`u_theta`, which is what the solver advects with. **Positive `peak_speed` is\n",
+    "poleward** (the physical case). Because `+theta` points southward everywhere, a\n",
+    "poleward `u_theta` is *negative in the north, positive in the south* \u2014 it looks\n",
+    "upside-down only because it is the colatitude component.\n",
+    "\n",
+    "For an intuitive picture use `meridional_flow_latitude` (northward-positive\n",
+    "`v_lat = -u_theta`): a poleward flow is then `+` in the north and `-` in the\n",
+    "south, matching meridional-flow figures in the literature. A **negative**\n",
+    "`peak_speed` is equatorward and will prevent polar reversal."
+   ],
+   "id": "2f139a7fe12b"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "v0 = 15.0                                     # positive = poleward\n",
+    "mf   = meridional_flow(grid, peak_speed=v0)   # u_theta [m/s]  -> feed to the solver\n",
+    "vlat = meridional_flow_latitude(grid, peak_speed=v0)  # v_lat [m/s] -> for plotting\n",
+    "dr   = differential_rotation(grid, rotation='solar', frame='carrington')  # Omega [rad/s]\n",
+    "\n",
+    "fig, ax = plt.subplots(1, 2, figsize=(10, 3))\n",
+    "ax[0].plot(lat, mf[:, 0], 'C0', label=r'$u_\\theta$ (solver)')\n",
+    "ax[0].plot(lat, vlat[:, 0], 'C3', label=r'$v_{lat}$ (poleward +)')\n",
+    "ax[0].axhline(0, color='k', lw=0.5); ax[0].axvline(0, color='k', lw=0.5)\n",
+    "ax[0].set_xlabel('latitude [deg]'); ax[0].set_ylabel('m/s'); ax[0].legend()\n",
+    "ax[0].set_title(f'meridional flow, peak_speed={v0:+g} (poleward)')\n",
+    "ax[1].plot(lat, dr[:, 0]*1e6, 'k'); ax[1].set_xlabel('latitude [deg]')\n",
+    "ax[1].set_ylabel(r'$\\Omega$ [$10^{-6}$ rad/s]'); ax[1].set_title('differential rotation')\n",
+    "fig.tight_layout()"
+   ],
+   "id": "22310b186b9b"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Initial condition"
+   ],
+   "id": "f6a277c3a3f5"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "field0 = initialize_field(grid, 'dipole') * 3.0   # amplitude 3 G axisymmetric dipole\n",
+    "eta = 2.5e8                                        # m^2/s = 250 km^2/s\n",
+    "plot_mag(field0, grid, bmax=3)"
+   ],
+   "id": "8189695ac612"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Integrate\n",
+    "\n",
+    "`return_stats=True` reports the chosen stage / sub-cycle counts. Compare\n",
+    "`rkl2_stages` with `explicit_diffusion_steps_avoided` to see what\n",
+    "super-time-stepping buys."
+   ],
+   "id": "2da753935671"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "bfly, days = [], []\n",
+    "class Recorder:\n",
+    "    def record(self, day, B):\n",
+    "        if day % 5 == 0:\n",
+    "            days.append(day); bfly.append(B.mean(axis=1).copy())\n",
+    "\n",
+    "B, stats = evolve(field0, grid, mf, dr, eta, num_days=365,\n",
+    "                  recorder=Recorder(), return_stats=True)\n",
+    "for k, v in stats.items():\n",
+    "    print(f\"{k:38s} {v:.4g}\")"
+   ],
+   "id": "e5947f16bcc9"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Conservation check\n",
+    "\n",
+    "The transport operators are conservative by construction, so with no source term\n",
+    "the signed flux must not move."
+   ],
+   "id": "4dfd26987247"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "f0, f1 = calculate_net_flux(field0, grid), calculate_net_flux(B, grid)\n",
+    "u0 = calculate_usflx(field0, grid)\n",
+    "print(f\"net flux   {f0:+.6e} -> {f1:+.6e} Mx\")\n",
+    "print(f\"drift      {abs(f1-f0)/u0:.3e}  (relative to total unsigned flux)\")"
+   ],
+   "id": "26cda12774c7"
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Diagnostics"
+   ],
+   "id": "5e5822ee42b6"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "pn, ps = calculate_polar_field(B, grid, pol_cap_extent_deg=20)   # poleward of +/-70 deg\n",
+    "fn, fs = calculate_polar_flux(B, grid, pol_cap_extent_deg=20)\n",
+    "print(f\"polar field  N {pn:+.3f} G      S {ps:+.3f} G\")\n",
+    "print(f\"polar flux   N {fn:+.4e} Mx  S {fs:+.4e} Mx\")\n",
+    "print(f\"axial dipole {calculate_dm(B, grid):+.4f} G\")\n",
+    "print(f\"unsigned     {calculate_usflx(B, grid):.4e} Mx\")"
+   ],
+   "id": "672cdbf42e6a"
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "execution_count": null,
+   "outputs": [],
+   "source": [
+    "plot_bfly(np.array(bfly), grid, bmax=5)\n",
+    "plot_mag(B, grid, bmax=10)"
+   ],
+   "id": "5dff3c9f9f79"
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python",
+   "version": "3.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -1,0 +1,6 @@
+﻿sft2d.joys\_law\_tilt
+=====================
+
+.. currentmodule:: sft2d
+
+.. autofunction:: joys_law_tilt

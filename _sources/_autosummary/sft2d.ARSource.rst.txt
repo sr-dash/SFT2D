@@ -1,0 +1,23 @@
+﻿sft2d.ARSource
+==============
+
+.. currentmodule:: sft2d
+
+.. autoclass:: ARSource
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ARSource.__init__
+      ~ARSource.summary
+   
+   
+
+   
+   
+   

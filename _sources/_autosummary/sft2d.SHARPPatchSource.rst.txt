@@ -1,0 +1,24 @@
+﻿sft2d.SHARPPatchSource
+======================
+
+.. currentmodule:: sft2d
+
+.. autoclass:: SHARPPatchSource
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SHARPPatchSource.__init__
+      ~SHARPPatchSource.patch_on_grid
+      ~SHARPPatchSource.summary
+   
+   
+
+   
+   
+   
